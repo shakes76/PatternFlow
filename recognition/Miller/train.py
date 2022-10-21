@@ -24,12 +24,12 @@ train_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/k
 
 # Pre process training data set
 train_X = data.process_training(train_X)
-
+train_x_var = np.var(train_X)
 # Load the validaton data from the oasis Data set 
-validate_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_validate")
+#validate_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_validate")
 
 # Pre process validation data set
-validate_X = data.process_training(validate_X)
+#validate_X = data.process_training(validate_X)
 
 # Load the test data from the oasis Data Set 
 test_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_test")
@@ -44,21 +44,21 @@ train_Y = data.load_labels ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/ker
 train_Y = data.process_labels(train_Y)
 
 # Load the segmented validation labels data from the Oasis Data set
-validate_Y = data.load_labels("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_seg_validate")
+#validate_Y = data.load_labels("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_seg_validate")
 # Pre process validation labels data
-validate_Y = data.process_labels(validate_Y)
+#validate_Y = data.process_labels(validate_Y)
  
 # Load the segmented test labels data from the Oasis Data set
 test_Y = data.load_labels("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_seg_test")
 # Pre process test labels data
 test_Y = data.process_labels(test_Y)
-
+#%%
 """ MODEL AND TRAIN VQ-VAE """
 # Create a instance of the VQ-VAE model
-latent_dimensions = 32 #dimensionality if each latent embedding vector
+latent_dimensions = 16 #dimensionality if each latent embedding vector
 embeddings_number = 128 #number of embeddings in the codebook
-#variance = np.var(train_X / 255.0)
-model = mod.VQVAETRAINER(1, latent_dimensions, embeddings_number)
+
+model = mod.VQVAETRAINER(train_x_var, latent_dimensions, embeddings_number)
 
 """
 Optimiser -> learning rate
@@ -69,62 +69,23 @@ Learning rate = more wights but takes longer to compute
 model.compile (optimizer='adam')
 
 # Train model
-history = model.fit(train_X, epochs=2, validation_data=(test_X), batch_size=128)
+history = model.fit(train_X, epochs=15, batch_size=128)
 print("disaster!!!!")
 
-
-# Plot Accuracy
-plt.plot(history.history['accuracy'], label='accuracy')
-plt.plot(history.history['val_accuracy'], label='val_accuracy')
-plt.title('Model Accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.ylim([0.5,1])
-plt.legend(['Train', 'Validation'], loc='upper left')
-plt.show()
-
+#%%
 # Plot Loss
-plt.plot(history.history['loss'], label='loss')
-plt.plot(history.history['val_loss'], label='val_loss')
-plt.title('Model Loss')
+plt.plot(history.history['reconstruction_loss'], label='Reconstruction Loss')
+plt.title('VQVAE Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend(['Train', 'Validation'], loc='upper left')
 plt.show()
 
-# evaluate against testing data 
-test_loss, test_acc = model.evaluate(test_X, test_Y, verbose=2)
-
-print("Accuracy test is: ", test_acc)
-
-
+#%%
 
 """ MODEL AND TRAIN VQ-VAE """
 
 """ RECONSTRUCTION RESULTS"""
-# Plots the original image against the reconstructed one
-def plot_comparision_original_to_reconstructed(original, reconstructed):
-    plt.figure(figsize = (10,12))
-    plt.subplot(1, 2, 1)
-    plt.imshow(original.squeeze() + 0.5, cmap = 'gray')
-    plt.title("Original")
-    plt.axis("off")
-
-    plt.subplot(1, 2, 2)
-    plt.imshow(reconstructed.squeeze() + 0.5, cmap = 'gray')
-    plt.title("Reconstructed")
-    plt.axis("off")
-
-    plt.show()
-
-trained_model = mod.model.model
-idx = np.random.choice(len(test_X), 10)
-test_images = test_X[idx]
-reconstructions_test = trained_model.predict(test_images)
-
-for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-    plot_comparision_original_to_reconstructed(test_image, reconstructed_image)
-
 # Return the average pixel value for the image and the reconstruction
 def calculate_mean(image, reconstructed_image):
     image_pixel = 0
@@ -181,6 +142,42 @@ def structural_similarity(mean_X, predicted_mean, stddev_X, predicted_stddev, co
     structure_x_y = (covariance+C3)/(stddev_X*predicted_stddev+C3)
     return luminance_x_y * contrast_x_y * structure_x_y
 
+# Plots the original image against the reconstructed one with their Structured similarity rating
+def plot_comparision_original_to_reconstructed(original, reconstructed, ssim):
+    plt.suptitle("Structured Similiarity Rating: %.2f" %ssim)
+
+    plt.figure(figsize = (10,12))
+    plt.subplot(1, 2, 1)
+    plt.imshow(original.squeeze() + 0.5, cmap = 'gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(reconstructed.squeeze() + 0.5, cmap = 'gray')
+    plt.title("Reconstructed")
+    plt.axis("off")
+
+    plt.show()
+
+trained_model = model.vqvae_model
+
+# Select 5 random Test images
+idx = np.random.choice(len(test_X), 5)
+test_images = test_X[idx]
+reconstructions_test = trained_model.predict(test_images)
+
+# Perform Predictions on the test images
+for test_image, reconstructed_image in zip(test_images, reconstructions_test):
+    mean, mean_r = calculate_mean(test_image, reconstructed_image)
+    stddev, stddev_r = calculate_stddev(test_image, mean, reconstructed_image, mean_r)
+    cov = calculate_covariance(test_image, reconstructed_image, mean, mean_r)
+    structured_similiarity_rating = structural_similarity(mean, mean_r, stddev, stddev_r, cov)
+    plot_comparision_original_to_reconstructed(test_image, reconstructed_image, structured_similiarity_rating)
+
+
+
+#%%
+
 # Returns the structured similarity for the entire data set
 def structural_similarity_mean(test_X, model):
     structured_similarity_coef = 0
@@ -199,5 +196,27 @@ def structural_similarity_mean(test_X, model):
 
     return structured_similarity_coef / len(test_X)
 
-print(structural_similarity_mean(test_X, trained_model))
+# Calculate the mean structural Similarity for the reconstructed images
+mean_structured_similiarity = structural_similarity_mean(test_X, trained_model)
+print(mean_structured_similiarity)
+
 # %%
+encoder = model.vqvae_model.get_layer("encoder")
+quantizer = model.vqvae_model.get_layer("vector_quantizer")
+
+encoded_outputs = encoder.predict(test_images)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+for i in range(len(test_images)):
+    plt.subplot(1, 2, 1)
+    plt.imshow(test_images[i].squeeze() + 0.5)
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(codebook_indices[i])
+    plt.title("Code")
+    plt.axis("off")
+    plt.show()
