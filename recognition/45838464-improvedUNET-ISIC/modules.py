@@ -104,8 +104,8 @@ def improved_uNET():
     final_seg = Add()([seg2, seg3])
 
     # softmax (one hot encoded)
-    output_layer = Conv2D(3, (1, 1), activation='sigmoid')(final_seg)
-    model = Model(name="Improved uNET", inputs=input_layer, outputs=output_layer)
+    output_layer = Conv2D(2, (1, 1), activation='softmax')(final_seg)
+    model = Model(name="Improved-uNET", inputs=input_layer, outputs=output_layer)
     
     return model
  

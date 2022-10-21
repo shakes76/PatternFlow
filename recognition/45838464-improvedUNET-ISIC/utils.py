@@ -1,4 +1,4 @@
-from tensorflow.keras.backend import flatten, sum
+import tensorflow.keras.backend as K
 def dice_coefficient(a, b):
     """
     Dice Coefficient function from : https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
@@ -7,11 +7,11 @@ def dice_coefficient(a, b):
     """
    
     
-    a = flatten(a)
-    b = flatten(b)
-    a_union_b = sum(a * b)
-    mag_a = sum(a)
-    mag_b = sum(b)
+    a = K.flatten(a)
+    b = K.flatten(b)
+    a_union_b = K.sum(a * b)
+    mag_a = K.sum(a)
+    mag_b = K.sum(b)
     
     return (2.0 * a_union_b) / (mag_a + mag_b)
 
