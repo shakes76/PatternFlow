@@ -66,7 +66,6 @@ class Train:
         plt.xlabel('Epoch')
         plt.ylabel('loss')
         plt.savefig("Loss.jpg")
-        plt.imshow()
         plt.show()
 
         xs = range(self.num_epochs)
@@ -76,8 +75,7 @@ class Train:
         plt.xlabel('Epoch')
         plt.ylabel('accuracy')
         plt.savefig("Accuracy.jpg")
-        plt.imshow()
         plt.show()
 
-        Predict(model)
+        Predict(model) # Calls the predict class to evaluate the model
         return history
