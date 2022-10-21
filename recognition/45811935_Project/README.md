@@ -118,6 +118,9 @@ individual reconstructions and a mean value across the entire test set).
 
 ## Training/Validation - Hyperparameter Tuning & Model Selection
 
+All final hyper-parameter values may be found as constants at the top of `train.py`.
+
+
 ![VQ-VAE Reconstructions 0](ReducedResults/vqvae_total_losses.png)
 
 ![VQ-VAE Reconstructions 0](ReducedResults/quantisation_losses.png)
