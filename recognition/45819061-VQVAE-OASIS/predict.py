@@ -61,7 +61,7 @@ def sample_images(vqvae, pixelcnn):
             priors[:, row, col] = probs[:, row, col]
 
     pretrained_embeddings = quantizer.embeddings
-    prior_onehot = tf.one_hot(priors.astype("int32"), vqvae.num_embeddings).numpy()
+    prior_onehot = tf.one_hot(priors.astype("int32"), quantizer.num_embeddings).numpy()
     quantized = tf.matmul(prior_onehot.astype("float32"), pretrained_embeddings, transpose_b=True)
     quantized = tf.reshape(quantized, (-1, *(vqvae.get_layer('encoder').compute_output_shape((1, 256, 256, 1))[1:])))
 

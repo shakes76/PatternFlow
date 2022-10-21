@@ -8,7 +8,8 @@ Development in computer technology in recognising and classifying brain disease 
 
 # The Model
 The model we train is a VQ-VAE consisting of an encoder feeding into a vector quantizer layer whose output then feeds into the decoder. The encoder and decoder are both made of to convolutional blocks and two residual layers. The convolutional layers are 4x4 windows with stride 2 and reduce the image data by a factor of four before passing to the residual layers. We use filter sizes 32, 64. Next, the residual layers are two convolutions (3x3 and 1x1) with filter size 32 and leaky relu activations between. The output of the residual block is the sum of the out put of this convolution wth the original data. Vector Quantizer layer consists of a codebook of embedding codes, the VQ layer takes the output of the encoder and computes relative distance to these embeddings to find the images supposed place in the latent space. VQ can be thought of as being given the identified key characteristics of the image by the encoder and then the VQ assigns the output the indices where such information is stored in the latent. Finally a decdoer takes a set of odewords from the latent space and via 2 transposed convolutional layers and residual blocks the image is rebuilt. During training the VQVAE attempts to maintain the integrity of its vector quantisation of the latent space and its reproduction of the image. 
-For generation of images we train a PixelCNN on the latent space discovered by the VQVAE to sample the latent space and discover new codes t pass to the decoder to generate realistic brain scans.
+For generation of images we train a PixelCNN on the latent space discovered by the VQVAE to sample the latent space and discover new codes t pass to the decoder to generate realistic brain scans.  
+The model we design in developed was based on that described in [Paper](https://arxiv.org/abs/1711.00937).
 
 # Requirements
 Although versioning may not be strict this is what was used in this case.
@@ -18,6 +19,12 @@ Although versioning may not be strict this is what was used in this case.
 - matplotlib  =              3.6.1
   
 # Training
-We train the models with Adam optimizers tracking commitment loss, codebook loss and reconstruction loss in the case of the VQVAE, and categorical entropy in the case of the pixelcnn. Filter sizes for each convolutional layer in teh sytem must be sufficiently large to avoid the model training to an unusable state as was the case below. 
+We train the models with Adam optimizers tracking commitment loss, codebook loss and reconstruction loss in the case of the VQVAE, and categorical entropy in the case of the pixelcnn. The loss function for the VQ-VAE is described in [Paper](https://arxiv.org/abs/1711.00937) and is essentially the distance of the output of the model at various stages (after decode, after encode) to expected values at that point and is designed to improve the reconstruction clarity as well as keep the latent space meaningful and interpretablke by the later PixelCNN.
+  
+  
+We train the model using the VQVAETrainer class which contains all the logic required for the training. In our experiement we trained the model over the entire training set given with the OASIS brain data for 50 epochs. Relevant parameters such as dimension of the embedding space and filter sizes for layers are given in the driver.py script which trains a VQVAE model, PixelCNN model and produces figures demonstrating training statistics, and expected outputs of the final model. We include our findings below
 
-![0.5](losses.png) ![](fig9.png)
+![](losses.png)
+![](ssim.png)
+# Data
+The data we used was this preprocessed OS brain data available here [Link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). Since this data is already split into training, validation and testing sets we did not perform any dataset splitting. Before passing images to the model we normalised the encoding by loading as grayscale images and scaling all the values to be in the domain [-0.5, 0.5]. 

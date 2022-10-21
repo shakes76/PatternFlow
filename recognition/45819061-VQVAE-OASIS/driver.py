@@ -17,8 +17,8 @@ DATA_DIR = 'data/keras_png_slices_data'
 TRAIN_DATA = DATA_DIR + '/keras_png_slices_train'
 TEST_DATA = DATA_DIR + '/keras_png_slices_test'
 VALIDATE_DATA = DATA_DIR + '/keras_png_slices_validate'
-#model = tf.keras.models.load_model(VQVAE_DIR)
-#pixelcnn = tf.keras.models.load_model(PIXELCNN_DIR)
+#model = tf.keras.models.load_model(VQVAE_DIR, custom_objects={'VectorQuantizer': VectorQuantizer})
+#pixelcnn = tf.keras.models.load_model(PIXELCNN_DIR, custom_objects={'PixelCNN': PixelCNN, 'ResidualBlock': ResidualBlock})
 
 x_train, x_test, x_validate = get_data(TRAIN_DATA, TEST_DATA, VALIDATE_DATA)
 model = train(x_train, x_test, x_validate, 
