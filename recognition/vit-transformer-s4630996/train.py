@@ -25,10 +25,6 @@ from config import *
 
 ##############################   IMPORT DATA  ###################################
 
-path_training = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\training"
-path_validation = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\validation"
-path_test = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\test"
-
 paths = {"training": path_training, "validation": path_validation, "test": path_test} 
 
 data_train, data_validate, data_test = import_data(IMAGE_SIZE, BATCH_SIZE, paths)
