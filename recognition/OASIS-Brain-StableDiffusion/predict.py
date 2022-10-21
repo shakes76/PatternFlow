@@ -2,7 +2,6 @@ import torch
 import matplotlib.pyplot as plt
 from datetime import datetime
 from tqdm import tqdm
-import PIL
 import numpy as np
 from modules import *
 from utils import *
@@ -27,8 +26,8 @@ def show_single_image(model):
 
     # convert image back into range [0, 255]
     image = image[0].permute(1, 2, 0).detach().to("cpu")
-    image = image*255
-    image = np.array(image, dtype=np.uint8)
+    # image = image*255
+    # image = np.array(image, dtype=np.uint8)
     
     # Get unique time stamp
     dt = datetime.now()
@@ -54,7 +53,7 @@ def show_x_images(model, img_num=6):
     model = model.to("cuda")
     
     # Setup pyplot
-    plt.figure(figsize=(24, 4))
+    plt.figure(figsize=(12, 3))
     plt.axis("off")
     plt.title("Images Created from Stable Diffusion Model")
     img_pos = 1
@@ -70,6 +69,7 @@ def show_x_images(model, img_num=6):
         image = image*255
         image = np.array(image, dtype=np.uint8)
         sub = plt.subplot(1, img_num, img_pos)
+        sub.axis("off")
         plt.imshow(image)
         img_pos += 1
 
@@ -98,7 +98,7 @@ def load_model(model_path):
     return model
 
 def main():
-    model_path = r"D:\COMP3710\rangpur\train2\DDPM_Uncondtional\ckpt.pt"
+    model_path = r".\model.pt"
     model = load_model(model_path)
     show_x_images(model)
 

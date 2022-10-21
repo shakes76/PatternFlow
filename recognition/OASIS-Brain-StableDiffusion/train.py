@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 from torch.optim import Adam
-import csv
 from modules import *
 from dataset import *
 from utils import *

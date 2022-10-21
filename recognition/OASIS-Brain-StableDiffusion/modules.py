@@ -211,9 +211,9 @@ class UNet(nn.Module):
 
         # Decoding part of the UNet                                     #  in --> out
         self.decoder1 = DecoderBlock(m_dim*8, m_dim*2)                  # 512 --> 128
-        self.attention4 = AttentionBlock(m_dim*2, int(m_dim/4))              # 128 --> 16
+        self.attention4 = AttentionBlock(m_dim*2, int(m_dim/4))         # 128 --> 16
         self.decoder2 = DecoderBlock(m_dim*4, m_dim)                    # 256 --> 64
-        self.attention5 = AttentionBlock(m_dim, int(m_dim/2))                #  64 --> 32
+        self.attention5 = AttentionBlock(m_dim, int(m_dim/2))           #  64 --> 32
         self.decoder3 = DecoderBlock(m_dim*2, m_dim)                    # 128 --> 64
         self.attention6 = AttentionBlock(m_dim, m_dim)                  # 64 --> 64
         self.out_layer = nn.Conv2d(m_dim, dim_in_out, kernel_size=1)    # 64 --> 3
