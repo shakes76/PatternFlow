@@ -15,7 +15,7 @@ class IUNET(nn.Module):
         """ 
         Initialize model modules
         in_channels: Number of expected channels in input image (3 for RGB)
-        filter_size: 
+        filter_size: Number of initial output filters, to be adjusted at each depth
         """
         super(IUNET, self).__init__()
         self.in_channels = in_channels
@@ -70,6 +70,12 @@ class IUNET(nn.Module):
 
 
     def conv(self, filters_in, filters_out, stride, kernel_size=3, padding=1) -> nn.Sequential:
+        """
+        Generic Convolution layer sequence as described by Isensee et al.
+        Biases not stored in convolution layer as it is immediately followed by
+            Instance Normalization
+        returns: Sequence of 2D Convolution -> Instance Normalization -> Leaky ReLU Activation
+        """
         return nn.Sequential(
             nn.Conv2d(
                 filters_in, 
@@ -82,6 +88,10 @@ class IUNET(nn.Module):
     def context(self, filters) -> nn.Sequential:
         """
         Context module as described by Isensee et al.
+        "Pre activation residual block with 3x3x3 convolutional layers
+        and a dropout layer (p_drop = 0.3) in between"
+        In this case we use 3x3 convolution layers as this is a 2D segmentation problem.
+        returns: context module sequence
         """
         return nn.Sequential(
             self.conv(filters, filters, stride=1),
@@ -92,6 +102,9 @@ class IUNET(nn.Module):
     def upsample(self, filters_in, filters_out) -> nn.Sequential:
         """ 
         Upsample module as described by Isensee et al.
+        Simple upscale followed by a 3x3 convolution that halves
+            the number of feature maps
+        returns: upsampling module sequence
         """
         return nn.Sequential(
             nn.Upsample(scale_factor=2),
@@ -101,6 +114,9 @@ class IUNET(nn.Module):
     def localization(self, filters_in, filters_out) -> nn.Sequential:
         """ 
         Localization module as described by Isensee et al.
+        3x3 Convolution followed by 1x1 convolution which halves
+            the number of feature maps
+        returns: localization module sequence
         """
         return nn.Sequential(
             self.conv(filters_in, filters_in, 1),
@@ -121,34 +137,33 @@ class IUNET(nn.Module):
         returns segmentation for the image
         """
         ### Context Pathway
-        ### TODO: refactor???
         # depth 1: 16 filters out
         out = self.conv1(x)
         residual = out
         out = self.context1(out)
         out = torch.add(residual, out) # elementwise sum
-        out1 = out
+        out1 = out                     # store features for skip connection
 
         # depth 1: 32 filters out
         out = self.conv2(out)
         residual = out
         out = self.context2(out)
         out = torch.add(residual, out) # elementwise sum
-        out2 = out
+        out2 = out                     # store features for skip connection
 
         # depth 3: 64 filters out
         out = self.conv3(out)
         residual = out
         out = self.context3(out)
         out = torch.add(residual, out) # elementwise sum
-        out3 = out
+        out3 = out                     # store features for skip connection
 
         # depth 4: 128 filters out
         out = self.conv4(out)
         residual = out
         out = self.context4(out)
         out = torch.add(residual, out) # elementwise sum
-        out4 = out
+        out4 = out                     # store features for skip connection
 
         # depth 5: 256 filters out
         out = self.conv5(out)
@@ -161,7 +176,8 @@ class IUNET(nn.Module):
         out = self.upsample5(out)
 
         # depth 4
-        out = torch.cat((out, out4), dim=1)
+        # concatenate current filters with results of context layers at the same depth
+        out = torch.cat((out, out4), dim=1) 
         # conv1 256-256
         # conv2 256-128
         out = self.localize4(out)
@@ -185,11 +201,13 @@ class IUNET(nn.Module):
         out = self.conv1_localization(out)
 
         # segmentation layers
-        s3 = self.seg3(l3)
+        s3 = self.seg3(l3) # from depth 3
         s3 = self.upscale(s3)
-        s2 = self.seg2(l2)
+
+        s2 = self.seg2(l2) # from depth 2
         s23 = torch.add(s3, s2)
         s23 = self.upscale(s23)
+
         out = self.seg1(out)
         out = torch.add(s23, out)
 
@@ -199,6 +217,7 @@ class IUNET(nn.Module):
         
 
 if __name__ == '__main__':
+    # test network on random input
     x = torch.rand((2, 3, 256, 256)).to('cuda')
     iunet = IUNET(3, 16).to('cuda')
     y = iunet(x)
