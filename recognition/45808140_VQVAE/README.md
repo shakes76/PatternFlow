@@ -3,9 +3,7 @@
 This project aims to create a generative model for the ADNI dataset using VQVAE and PixelCNN. We use VQVAE to create discrete latent codebooks for which we will feed into PixelCNN to learn how to generate new codebook images that will decode into new brain images. We look to achieve this by getting at least 0.6 SSIM in the VQVAE model.
 
 # **Models**
-
 ## **VQVAE Model**
----
 <p align="center"><img src="./images/vqvae_model.png" /></p>
 
 The image above depicts the high-level structure of a VQVAE model which consists of an encoder, vector quantisation layer which includes the discrete latent space and codebook vectors and a decoder. 
@@ -19,13 +17,16 @@ With the VQVAE we incorporate the vector-quantisation layer and use discrete lat
 **Loss**
 <p align="center"><img src="./images/loss.png"/></p>
 
-According to the paper there are 3 key loss metrics associated with the VQVAE model: total loss, vector quantisation loss and the reconstruction loss. The total loss is the combined loss from the VQ layer and the reconstructions. There are 2 components for the VQ loss: commitment and codebook. The codebook loss is just the L2-norm error to move the embedding/codebook vectors and commitment loss is to ensure the encoder commits to a codebook as the codebooks do not learn as fast as the encoder. 
+According to the paper there are 3 key loss metrics associated with the VQVAE model: total loss, vector quantisation loss and the reconstruction loss. The total loss is the combined loss from the VQ layer and the reconstructions. There are 2 components for the VQ loss: commitment and codebook. The codebook loss is just the L2-norm error to move the embedding/codebook vectors and commitment loss is to ensure the encoder commits to a codebook as the codebooks do not learn as fast as the encoder. We also scale the commitment loss with the beta parameter but as the VQVAE paper suggests, the model is quite robust to changes in this parameter.
 
 ### **VQVAE results**
 ---
 
 We initially started with fitting with a large codebook and small latent space but the VQVAE demonstrated some erratic loss behaviour after a few steps but it still eventually converged to high SSIM. However, we did some hyperparameter tuning and found that with a latent space of 32 and 64 embeddings yielded the best performance in SSIM score with the least amount of epochs. We obtain >0.6 SSIM within 2 epochs and gain incremental improvements subsequently
 
+<p align='center'> <strong>VQVAE model structure</strong> </p>
+<p align="center"><img src="./images/vq_keras.png"/></p>
+<p align='center'> <strong>Loss Plot</strong> </p>
 <p align="center"><img src="./results/vq_result_graph.png"/></p>
 
 <p align='center'> <strong>30 epochs</strong> </p>
@@ -37,7 +38,7 @@ We initially started with fitting with a large codebook and small latent space b
 <p align="center"><img src="./results/vq_50epochs.png" /></p>
 
 ## **PixelCNN Model**
----
+
 <p align="center"><img src="./images/pcnn_model.png" height=600 ></p>
 
 PixelCNN is a generative model that uses convolutional and residual blocks to generate images by iteratively calculating the distribution of prior pixels to generate the probability of later pixels.
@@ -53,7 +54,9 @@ Then we pass the initial convolution layer to residual blocks. These layers are 
 ### **PixelCNN results**
 ---
 We experimented with tuning the number of convolutional layers and residual blocks of our model to see if the model would perform better, but it resulted with marginal improvements. The most significant hyperparameter to tune for the PixelCNN is the VQVAE model and subsequently the codebook/embeddings as that is how the PixelCNN model is trained. As such we experimented with a few variations of the VQVAE model and found that latent space of 32 and 128 codebooks obtained the best generated samples. We observe that the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains; we are only able to roughly capture the shape of the brain and some details
-
+<p align='center'> <strong>PCNN model structure</strong> </p>
+<p align="center"><img src="./images/pcnn_keras.png"/></p>
+<p align='center'> <strong>Loss plot</strong> </p>
 <p align="center"><img src="./results/pcnn_result_graph.png" /></p>
 
 <p align='center'><img src="./results/generated_3.png"/></p>
@@ -80,11 +83,8 @@ There is not much data pre-processing required for the ADNI dataset. Using the c
 
 We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
 
-
-
 ## **Scope for improvements**
-
-As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples. Similarly, we can also train the model for more epochs but we do have to be cautious of overfitting.
+As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by training for more epochs as the results obtained were only trained on <50 epochs which is minimal for a PixelCNN. This was because I had to do all the training on my own computer as Rangpur environment was not stable. Additionally, increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples.
 
 # **Example usages**
 
@@ -94,7 +94,7 @@ Where root_path is where your image data is following the folder structure descr
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 ```
 
-**Creating new VQVAE model:** where image shape is the size of your inputs.
+**Creating new VQVAE model:** where img_shape is the size of your inputs.
 ```
 VQVAE = VQVAE_model(img_shape, train_var, latent_dim=32, no_embeddings=64)
 VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
@@ -137,7 +137,7 @@ pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=N
 **Loading trained PixelCNN:** similar to loading weight for VQVAE
 ```
 pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
-pcnn.load_weights('path to weights')
+pcnn.load_weights('path_to_weights')
 pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=pcnn, pcnn_epoch=pcnn_epoch)
 ```
 
@@ -147,7 +147,6 @@ generate_PixelCNN(vqvae_trained, pcnn_trained, n=10)
 ```
 
 ## **Reproduce results**
----
 ```
 root_path = 'AD_NC'
 img_shape = 256
@@ -166,14 +165,13 @@ generate_PixelCNN(vqvae_trained, pcnn_trained, 10)
 ```
 
 ## **Dependencies**
----
 This project was completed with the following modules for which you should install in order to run the scripts in this repo.
 - tensorflow 2.9.2
 - tensorflow-probability 0.17.0 (crucial to get stable version against your tensorflow version)
 - numpy 1.23.3
 - matplotlib 3.5.3
 
-### **References**
+## **References**
 - https://arxiv.org/pdf/1711.00937v2.pdf
 - https://arxiv.org/pdf/1601.06759v3.pdf
 - https://pedroferreiradacosta.github.io/post/auto_encoder/
