@@ -110,7 +110,7 @@ def main():
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
 
-    history = vqvae_trainer.fit(train_data, epochs=10, batch_size=32)
+    history = vqvae_trainer.fit(train_data, epochs=10, batch_size=16)
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time)
