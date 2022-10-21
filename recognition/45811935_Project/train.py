@@ -12,19 +12,19 @@ from dataset import *
 from modules import *
 import keras.callbacks
 from keras import optimizers, losses
-import tensorflow_probability as tfp
 import matplotlib.pyplot as plt
 import pandas as pd
 
 """ Main data/setup-related constants """
 FILE_PATH = "./ADNI_AD_NC_2D/AD_NC/"
-SAVED_WEIGHTS_PATH = "./SavedWeights/"  # Doesn't have to exist - code will create directory if not
+VQVAE_WEIGHTS_PATH = "./VQVAEWeights/"  # Doesn't have to exist - code will create directory if not
+PIXEL_WEIGHTS_PATH = "./PixelWeights/"  # Doesn't have to exist - code will create directory if not
 RESULTS_PATH = "./Results/"  # Doesn't have to exist yet - code will create directory if not
 IMG_SHAPE = 256
 SEED = 42
 NUM_IMAGES_TO_SHOW = 5
 
-TRAINING_VQVAE = False  # Set to True to train the VQ-VAE
+TRAINING_VQVAE = True  # Set to True to train the VQ-VAE
 TRAINING_PIXELCNN = True  # Set to True train the PixelCNN
 
 """ Hyper-parameters """
@@ -41,6 +41,9 @@ VQVAE_LEARNING_RATE = 0.001
 VQVAE_OPTIMISER = optimizers.Adam(learning_rate=VQVAE_LEARNING_RATE)
 NUM_RESIDUAL_LAYERS = 2
 NUM_PIXEL_B_LAYERS = 2
+NUM_PIXEL_FILTERS = 128
+PIXEL_KERNEL_SIZE = 7
+PIXEL_ACTIVATION = "relu"
 PIXEL_CNN_LEARNING_RATE = VQVAE_LEARNING_RATE
 PIXEL_CNN_OPTIMISER = VQVAE_OPTIMISER
 PIXEL_CNN_LOSS = losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -134,17 +137,17 @@ vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LAT
 
 
 # Create directory to store model weights (if said directory does not already exist)
-if not exists(SAVED_WEIGHTS_PATH):
-    mkdir(SAVED_WEIGHTS_PATH)
+if not exists(VQVAE_WEIGHTS_PATH):
+    mkdir(VQVAE_WEIGHTS_PATH)
     
 # Create directory to save all results (if said directory does not already exist)
-    if not exists(RESULTS_PATH):
-        mkdir(RESULTS_PATH)
+if not exists(RESULTS_PATH):
+    mkdir(RESULTS_PATH)
 
 # Store training loss/metric results in CSV file - change append parameter to True if wanting to
 # continue training
-training_csv_logger = keras.callbacks.CSVLogger(SAVED_WEIGHTS_PATH + 'training.log', separator=',',
-                                                append=False)
+training_csv_logger_vqvae = keras.callbacks.CSVLogger(VQVAE_WEIGHTS_PATH + 'training_vqvae.log',
+                                                      separator=',', append=False)
 
 # Initialise final mean SSIM values
 final_train_mean_ssim = final_val_mean_ssim = 0
@@ -156,7 +159,7 @@ if TRAINING_VQVAE:
     with tf.device(device):
         # Train data (datasets are of type tf.dataset, so are already batched - hence no need to
         # specify batch sizes here)
-        vqvae.fit(train_data, epochs=NUM_EPOCHS_VQVAE, callbacks=[training_csv_logger],
+        vqvae.fit(train_data, epochs=NUM_EPOCHS_VQVAE, callbacks=[training_csv_logger_vqvae],
                   validation_data=val_data)
 
         # Final SSIM Values
@@ -173,18 +176,18 @@ if TRAINING_VQVAE:
             sys.stdout = main_stdout
 
         # Save trained model
-        vqvae.save_weights(SAVED_WEIGHTS_PATH + "trained_model_weights")
+        vqvae.save_weights(VQVAE_WEIGHTS_PATH + "trained_model_weights")
 
 # Load trained model
 vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM,
               num_channels=num_channels)
-vqvae.load_weights(SAVED_WEIGHTS_PATH + "trained_model_weights")
+vqvae.load_weights(VQVAE_WEIGHTS_PATH + "trained_model_weights")
 
-# Plot training losses/metrics
+# Plot training/validation losses/metrics
 
 
-def plot_train_val_results(epoch_results):
-    """ Plots and saves all train/val losses"""
+def plot_vqvae_train_val_results(epoch_results):
+    """ Plots and saves all train/val losses of the VQVAE """
     # Total losses
     plt.figure()
     plt.plot(epoch_results['total_loss'], label='Total Loss (Training)')
@@ -192,10 +195,10 @@ def plot_train_val_results(epoch_results):
 
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Total Loss')
+    plt.title('Total Loss (VQVAE)')
     plt.legend(loc='upper right')
 
-    plt.savefig(RESULTS_PATH + 'total_losses.png')
+    plt.savefig(RESULTS_PATH + 'vqvae_total_losses.png')
 
     # Reconstruction losses
     plt.figure()
@@ -204,7 +207,7 @@ def plot_train_val_results(epoch_results):
 
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Total Loss')
+    plt.title('Reconstruction Loss (VQVAE)')
     plt.legend(loc='upper right')
 
     plt.savefig(RESULTS_PATH + 'reconstruction_losses.png')
@@ -216,14 +219,18 @@ def plot_train_val_results(epoch_results):
 
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Total Loss')
+    plt.title('Quantisation Loss')
     plt.legend(loc='upper right')
 
     plt.savefig(RESULTS_PATH + 'quantisation_losses.png')
 
 
-training_results = pd.read_csv(SAVED_WEIGHTS_PATH + 'training.log', sep=',', engine='python')
-plot_train_val_results(training_results)
+training_results_vqvae = pd.read_csv(VQVAE_WEIGHTS_PATH + 'training_vqvae.log', sep=',',
+                                     engine='python')
+plot_vqvae_train_val_results(training_results_vqvae)
+
+
+# Generate and plot some reconstructions from test set, along with their codes and inputs and SSIMs
 
 
 def generate_vqvae_images(images):
@@ -233,9 +240,6 @@ def generate_vqvae_images(images):
     
     Args:
         images: images to pass through the VQ-VAE
-
-    Returns:
-        Saves VQ-VAE images and SSIM results
     """
 
     # Reconstruction
@@ -278,7 +282,7 @@ def generate_vqvae_images(images):
         plt.savefig(RESULTS_PATH + f'vq_vae_reconstructions_{i}.png')
     
         ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image,
-                                                ax_val=1.0)).numpy()
+                                                max_val=1.0)).numpy()
     
         main_stdout = sys.stdout
         with open(RESULTS_PATH + 'main_results.txt', 'a') as f:
@@ -287,7 +291,6 @@ def generate_vqvae_images(images):
             sys.stdout = main_stdout
 
 
-# Generate and plot some reconstructions from test set, along with their codes and inputs and SSIMs
 for sample_batch in test_data.take(1).as_numpy_iterator():
     sample_batch = sample_batch[:NUM_IMAGES_TO_SHOW]
     generate_vqvae_images(sample_batch)
@@ -304,18 +307,81 @@ with tf.device(device):
 
 """ PixelCNN Model (Train/Val/Test/Save/Plot) """
 
-# Get trained VQ-VAE codebooks
+
+def get_learned_codebook_indices_wrapper(encoder, vq):
+    """
+    To avoid memory overload issues, define a wrapper function to use with the
+    tf.dataset.map() function that returns the learned codebook indices.
+
+    Args:
+        encoder: The VQ-VAE Encoder
+        vq: The VQ Layer in the VQ-VAE
+
+    Returns:
+        A mapper() that can be used with a tf.dataset() to prevent loading codebooks into memory.
+    """
+
+    def mapper(data):
+        """ The mapper() to be used with a tf.dataset()"""
+        encoded = encoder(data)
+        encoded_flattened = tf.reshape(encoded, [-1, tf.shape(encoded)[-1]])
+        codebook_indices_flattened = vq.get_codebook_indices(encoded_flattened)
+        codebook_indices = tf.reshape(codebook_indices_flattened, tf.shape(encoded)[:-1])
+        return codebook_indices
+    return mapper
+
+
+# Get learned VQ-VAE codebooks
+learned_codebook_indices = get_learned_codebook_indices_wrapper(vqvae.get_encoder(), vqvae.get_vq())
+codebook_train = train_data.map(learned_codebook_indices)
+codebook_val = val_data.map(learned_codebook_indices)
 
 # Create PixelCNN model
+pixelCNN = PixelCNN(num_res=NUM_RESIDUAL_LAYERS, num_pixel_B=NUM_PIXEL_B_LAYERS,
+                    num_encoded=NUM_EMBEDDINGS, num_filters=NUM_PIXEL_FILTERS,
+                    kernel_size=PIXEL_KERNEL_SIZE, activation=PIXEL_ACTIVATION)
+pixelCNN.compile(optimizer=PIXEL_CNN_OPTIMISER, loss=PIXEL_CNN_LOSS)
 
-# Compile & Fit (with trained VQ-VAE codebooks)
+# Create directory to store model weights (if said directory does not already exist)
+if not exists(PIXEL_WEIGHTS_PATH):
+    mkdir(PIXEL_WEIGHTS_PATH)
 
-# Save
+# Store training loss/metric results in CSV file - change append parameter to True if wanting to
+# continue training
+training_csv_logger_pixel = keras.callbacks.CSVLogger(PIXEL_WEIGHTS_PATH + 'training_pixel.log',
+                                                      separator=',', append=False)
 
-# Plot
+# Train PixelCNN (with trained VQ-VAE codebooks)
+if TRAINING_PIXELCNN:
+    with tf.device(device):
+        pixelCNN.fit(codebook_train, epochs=NUM_EPOCHS_PIXEL, callbacks=[training_csv_logger_pixel],
+                     validation_data=codebook_val)
+        # Save trained model
+        pixelCNN.save_weights(PIXEL_WEIGHTS_PATH + "trained_model_weights")
 
-# Test/generate --> maybe load saved model above and put this in predict.py
+# Load trained model
+pixelCNN = PixelCNN(num_res=NUM_RESIDUAL_LAYERS, num_pixel_B=NUM_PIXEL_B_LAYERS,
+                    num_encoded=NUM_EMBEDDINGS, num_filters=NUM_PIXEL_FILTERS,
+                    kernel_size=PIXEL_KERNEL_SIZE, activation=PIXEL_ACTIVATION)
+pixelCNN.load_weights(PIXEL_WEIGHTS_PATH + "trained_model_weights")
 
-# FROM Ed: I would do a full test set prediction in train.py as it is a necessary step during
-# model development, and only predict on a few samples in predict.py to demonstrate running the code
-# in inference mode.
+
+# Plot losses
+def plot_pixel_train_val_results(epoch_results):
+    """ Plots and saves the train/val losses of the PixelCNN """
+    # Total losses
+    plt.figure()
+    plt.plot(epoch_results['loss'], label='Training')
+    plt.plot(epoch_results['val_loss'], label='Validation')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Sparse Categorical Cross Entropy Loss')
+    plt.legend(loc='upper right')
+
+    plt.savefig(RESULTS_PATH + 'pixel_losses.png')
+
+
+training_results_pixel = pd.read_csv(PIXEL_WEIGHTS_PATH + 'training_pixel.log', sep=',',
+                                     engine='python')
+plot_pixel_train_val_results(training_results_pixel)

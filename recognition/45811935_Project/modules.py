@@ -46,7 +46,7 @@ class VQ(layers.Layer):
         # Calculate 'closeness' between the (flattened) inputs and the encodings.
         norms = (
                 tf.reduce_sum(inputs ** 2, axis=1, keepdims=True) +
-                tf.reduce_sum(self._encoded ** 2, axis=0) -
+                tf.reduce_sum(self._encoded ** 2, axis=0, keepdims=True) -
                 2 * tf.linalg.matmul(inputs, self._encoded)
         )
         return tf.argmin(norms, axis=1)
@@ -356,7 +356,7 @@ class PixelCNN(Model):
         self._pixel_Bs = [PixelConv(kernel_mask_type="B", filters=self._num_filters, kernel_size=1,
                                     activation=self._activation)
                           for _ in range(self._num_pixel_B)]
-        self._conv = layers.Conv2D(filters=self._num_encoded, kernel_size=1, activation="sigmoid")
+        self._conv = layers.Conv2D(filters=self._num_encoded, kernel_size=1)
 
     def call(self, inputs):
         """
@@ -399,3 +399,16 @@ class PixelCNN(Model):
         return {
             "loss": self._total_loss.result()
         }
+
+    def test_step(self, data):
+        """
+            Performs one iteration of evaluation and returns loss values.
+
+            Args:
+                data: input data
+
+            Returns: loss values
+
+        """
+        # Exact same procedure as training
+        return self.train_step(data)
