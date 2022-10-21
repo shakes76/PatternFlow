@@ -117,7 +117,7 @@ def prepare_encodings(train_np, vqvae_trainer):
     encoder = vqvae_trainer.vqvae.get_layer("encoder")
     quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
 
-    pixel_train = train_np[:2000,:,:,:]
+    pixel_train = train_np[:1000,:,:,:]
     encoded_outputs = encoder.predict(pixel_train, batch_size=2)
 
     # Create batches to prevent 
