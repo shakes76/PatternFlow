@@ -13,7 +13,6 @@ import numpy as np
 from keras import layers
 from CustomLayers import *
 
-
 def sinusoidalTimeEmbedding(input):
     frequencies = tf.exp(
         tf.linspace(
@@ -28,21 +27,19 @@ def sinusoidalTimeEmbedding(input):
     return embeddings
 
 
+
 class UNetBlock(kr.layers.Layer) :
     def __init__(self, outputSize, blockSize = 32, upBlock = False, upSampler = ConvUpsample, downSampler = ConvDownsample) :
         super().__init__()
         self.blockSize = blockSize
         self.outputSize = outputSize
         
-        self.conv1 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
-        self.bNorm1 = kr.layers.BatchNormalization()
+        self.conv1 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.swish)
+        self.bNorm1 = tfa.layers.GroupNormalization(groups = 8)
 
-        self.conv2 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
-        self.bNorm2 = kr.layers.BatchNormalization()
-        
-        #self.embedder = kr.layers.Dense(blockSize)
-        #self.embedderConv = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
-        
+        self.conv2 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.swish)
+        self.bNorm2 = tfa.layers.GroupNormalization(groups = 8)
+
         # If upsampling occurs in block
         if (upBlock) :
             self.transformer = upSampler(outputSize)
@@ -51,26 +48,89 @@ class UNetBlock(kr.layers.Layer) :
     
     def call(self, input) :
         
-        
-        #print("ImageIS")
-        #print(imageInput)
-
-        #print("PRE EMBEDDING:", timeEmbedding)
-        #e = self.embedder(timeEmbedding)
-        
 
         x = self.conv1(input) 
-
-        #print("--------------\nX :", x)
-        #print("e :", e, "\n---------------------------")
         x = self.bNorm1(x)
 
         x = self.conv2(x)
         x = self.bNorm2(x)
         
+        if (input.shape[-1] == x.shape[-1]) :
+          x = (x + input)
+        else :
+          x = kr.layers.concatenate([x, input])
+
         transformed = self.transformer(x)
         #print(transformed)
-        return (x, transformed)
+
+        return (x,transformed)
+
+def buildUnet(latentSpaceSize) :
+    noisedImages = kr.Input(shape=(32, 32, 1))
+    noiseIntensity = kr.Input(shape=(1, 1, 1))
+
+    embedding = kr.layers.Lambda(sinusoidalTimeEmbedding)(noiseIntensity)
+    embedding1 = kr.layers.UpSampling2D(size=latentSpaceSize, interpolation="nearest")(embedding)
+    embedding2 = kr.layers.UpSampling2D(size=(32, 32), interpolation="nearest")(embedding)
+    embedding2 = kr.layers.UpSampling2D(size=(32, 32), interpolation="nearest")(embedding)
+
+    initialConvLayer = kr.layers.Conv2D(64, kernel_size = 1)
+    
+    # Downsampling Layers
+    convLeftLayer1 = UNetBlock(64, 32, upBlock = False)
+    convLeftLayer2 = UNetBlock(128, 16, upBlock = False)
+    convLeftLayer3 = UNetBlock(256, 8, upBlock = False)
+    convLeftLayer4 = UNetBlock(512, 4, upBlock = False)
+
+    # Upsampling Layers
+    convRightLayer4 = UNetBlock(512, 4, upBlock = True)
+    convRightLayer3 = UNetBlock(256, 8, upBlock = True)
+    convRightLayer2 = UNetBlock(128, 16, upBlock = True)
+    #convRightLayer1 = UNetBlock(64, 32, upBlock = True) ## SHOULD NOT BE CALLED
+
+    # Final Layers
+    conv1 = kr.layers.Conv2D(filters = 64, kernel_size = 1, strides = 1, padding="same", activation = kr.activations.swish)
+    conv2 = kr.layers.Conv2D(filters = 64, kernel_size = 1, strides = 1, padding="same", activation = kr.activations.swish)
+    conv3 = kr.layers.Conv2D(filters = 32, kernel_size = 1, strides = 1, padding="same", activation = kr.activations.swish)
+    finalLayer = kr.layers.Conv2D(filters = 1, kernel_size = 1, strides = 1, activation = kr.activations.swish)
+
+    bNorm1 = tfa.layers.GroupNormalization(groups = 8)
+    bNorm2 = tfa.layers.GroupNormalization(groups = 8)
+    bNorm3 = tfa.layers.GroupNormalization(groups = 8)
+
+    # Bottleneck
+    bottleNeck = UNetBlock(1024, blockSize = 2, upBlock = True)  
+
+    x = initialConvLayer(noisedImages)
+    x = kr.layers.concatenate([x, embedding1])
+
+    # Concatenating embedding onto topmost layer
+    layer1Skip, x = convLeftLayer1(x)
+    layer2Skip, x = convLeftLayer2(x)
+    layer3Skip, x = convLeftLayer3(x)
+    layer4Skip, x = convLeftLayer4(x)
+
+    _, x = bottleNeck(x) 
+
+    x = kr.layers.concatenate([x,layer4Skip])
+    _, x = convRightLayer4(x)
+
+    x = kr.layers.concatenate([x,layer3Skip])
+    _, x = convRightLayer3(x)
+    x = kr.layers.concatenate([x,layer2Skip])
+    _, x = convRightLayer2(x)
+
+    x = kr.layers.concatenate([x, layer1Skip])
+
+    x = conv1(x)
+    x = bNorm1(x)
+    x = conv2(x)
+    #x = bNorm2(x)
+    x = conv3(x)
+    #x = bNorm3(x)
+    x = finalLayer(x)
+
+    return kr.Model([noisedImages, noiseIntensity], x)
 
 def buildUnet(latentSpaceSize) :
     noisedImages = kr.Input(shape=(32, 32, 1))
