@@ -18,10 +18,11 @@ class ModelTrainer:
     """
     __init__(checkpointPath): initialises data pulled from dataset class and other variables for model training.
     params: checkpointPath - place where model checkpoints/weights should be saved to for later recall.
+            dataPath - path to where dataset is stored
     """
-    def __init__(self, checkpointPath):
+    def __init__(self, dataPath, checkpointPath):
         self.optimizer = Adam(learning_rate=0.001)
-        self.dataset = DataProcess()
+        self.dataset = DataProcess(dataPath)
 
         (self.features, 
         self.labels, 
