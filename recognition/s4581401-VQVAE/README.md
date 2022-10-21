@@ -63,7 +63,8 @@ the next pixel, based on all prior predicted pixels.
 <p align = "center"><img src = "./images/PixelCNN_image.PNG", height = 400></p>
 
 To correctly define the conditional probability of the prior predicted pixels to predict the next pixel, a mask is applied so that
-pixels which have not been predicted are not considered in the convolution operation.
+pixels which have not been predicted are not considered in the convolution operation. The PixelCNN is trained on codebook samples, which
+are obtained by passing the training input images through VQ-VAE's trained encoder from the previous section.
 
 **Types of Masked Convolution Layer**
 
@@ -72,7 +73,7 @@ convolutional layer
 - Type "B": The mask zeros out all unpredicted pixels but not the current pixel, allowing convolutional connections between the
 current pixel and itself. This is applied to all subsequent convolutional layers after the first one.
 
-<p align = "center"><img src = "./images/maskA.PNG"><img src = "./images/maskB.PNG"></p>
+<p align = "center"><img src = "./images/maskA.PNG", height=150><img src = "./images/maskB.PNG" height = 150></p>
 
 **Pixel Convolutional Layer**
 
@@ -87,7 +88,7 @@ The idea is that the block learns the functions on the residuals compared to the
 
 **Loss Function**
 
-For the PixelCNN, the Sparse Categorical CrossEntropy loss function was chosen. This is because the prediction for PixelCNN
+For the PixelCNN, the ***Sparse Categorical CrossEntropy loss function*** was chosen. This is because the prediction for PixelCNN
 is the codebook embedding index for each pixel, and we want to minimise the loss between the predicted embedding index and the actual embedding index.
 
 ### Implemented PixelCNN Model
@@ -147,6 +148,7 @@ It was found that keeping the number of embeddings low, codebook small but the d
 significantly improved PixelCNN performance. 
 - This is because the codebook is simpler to learn as
 there are less choices for selecting the codebook embedding for the PixelCNN, but enough dimensions to give the model capacity to learn the features of input images.
+- As a result, ***VQ-VAE performance was sacrificed in order to make it easier to PixelCNN to learn the codebooks, resulting in clearer generated images.***
 - ***Adam optimiser with learning rate 0.001 for VQ-VAE and 0.0003 for PixelCNN*** were chosen as through many tests in the range [0.0001, 0.001] 
 - ***The commitment loss scaling of 0.25 was selected for VQ-VAE***, as this was selected in the original paper and was found to
 give the best performance. Although, the performance seems robust with the choice of this parameter.
@@ -172,8 +174,9 @@ seemed to have converged and the rate of decline slowed.
  
 <p align = "center"><img src = "./images/PixelCNNLossWhitebg.PNG", height = 400></p>
 
-***The final training loss was 0.6441 and the final validation loss was 0.6481.*** Interestingly, it was found that more complex 
-models with smaller loss did not always result in better generated images, but instead simpler models with smaller codebook 
+***The final training loss was 0.6441 and the final validation loss was 0.6481. This loss is still relatively high for a PixelCNN.*** 
+However, interestingly it was found that more complex 
+models a with smaller training loss did not always result in better generated images, but instead simpler models with smaller codebook 
 sizes and number of embeddings performed better.
 
 ## Results
@@ -202,7 +205,7 @@ shape and size of the generated brains are too large and not perfect.
 
 Despite this, the images indicate that the VQ-VAE and PixelCNN are learning the input images and codebooks appropriately.
 
-It should be noted that some images constructed end up being much larger in size, but maintains the same shape
+It should be noted that some images constructed end up being much in size, but the images maintain the same shape
 and internal structure.
 
 ## Improvements
