@@ -68,7 +68,7 @@ def main():
 	vqvae.save(MODEL_PATH)
 	encoder			= trainer.vqvae.get_layer("encoder")
 	encoded_out		= encoder.predict(test)
-	encoded_out		= encoded_out[:len(encoded_out) // 2] # Nothing to see here
+	encoded_out		= encoded_out[:len(encoded_out) // 2] # Dump half of them because I have no memory left
 	qtiser			= trainer.vqvae.get_layer("quantiser")
 	flat_encs		= encoded_out.reshape(FLAT, encoded_out.shape[FLAT])
 	codebooks		= qtiser.code_indices(flat_encs)
