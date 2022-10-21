@@ -162,35 +162,3 @@ if __name__ == '__main__':
 
     end = time.time()
     print(f'Done in {end - start}s')
-
-    with torch.no_grad():
-        test = enumerate(dataloader_train)
-        batch_no, (data, truth) = next(test)
-
-        x = data[0]
-        x = x.permute(1, 2, 0)
-        print(x.shape)
-        y = truth[0]
-        y = y.permute(1,2,0)
-
-        out = model(data.to('cuda'))
-        # out = torchvision.transforms.Grayscale(3)(out)
-        out_img = out.to('cpu')[0].permute(1,2,0)[:,:,0]
-        out_img2 = torch.where(out_img > 0.5, 1.0, 0.0)
-
-        print(out_img.max())
-        print(out_img.min())
-
-        print(y.max())
-        print(y.min())
-
-        fig = plt.figure()
-        fig.add_subplot(4,1,1)
-        plt.imshow(x)
-        fig.add_subplot(4,1,2)
-        plt.imshow(y)
-        fig.add_subplot(4,1,3)
-        plt.imshow(out_img)
-        fig.add_subplot(4,1,4)
-        plt.imshow(out_img2)
-        plt.show()
