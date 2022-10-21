@@ -1,4 +1,5 @@
 from modules import *
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 VQVAE_EPOCHS = 25
 VQVAE_BATCHSIZE = 64
@@ -33,3 +34,31 @@ def PCNN_training_plot(pcnn_history):
   plt.xlabel('Epoch')
   plt.legend(['Training Loss'])
   plt.show()
+
+def plot_vqvae_recons(original, reconstructed):
+  """
+  Plots 2 reconstructed images from vqvae along with original images in a grid
+  and returns the average ssim
+  """
+  total = 0
+  i1 ,i3 = original[:2] 
+  i2, i4 = reconstructed[:2]
+  fig = plt.figure(figsize = (8,8))
+  count = 0
+  grid = ImageGrid(fig, 111, nrows_ncols=(2,2), axes_pad=0.1)
+  for ax, im in zip(grid, [i1,i2,i3,i4]):
+    if (count%2 != 0): 
+      ax.set_title('Reconstructed')
+    else:
+      ax.set_title('Original test image')
+
+    if (count == 0):
+      total += tf.image.ssim(i1, i2, max_val=1)
+    elif (count == 2):
+      total += tf.image.ssim(i3, i4, max_val=1)
+    ax.axis("off")
+    ax.imshow(im.squeeze(),  cmap='gray')
+    count += 1
+  plt.show()
+
+  return total/2
