@@ -11,15 +11,18 @@ def predict(model, results, X_test, Y_test):
     print("Dice Coefficient", eval[2])
 
     plt.plot(results.history['loss'])
-    plt.title("Model Loss vs Epochs Trained")
-    plt.xlabel('Loss')
-    plt.ylabel('Epoch')
+    plt.plot(results.history['val_loss'])
+
+    plt.title("Loss (Blue) & Val_loss (Orange)")
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
     plt.show()
 
     plt.plot(results.history['diceCoefficient'])
-    plt.title("Dice Coefficient vs Epochs Trained")
-    plt.xlabel('Dice Coefficient')
-    plt.ylabel('Epoch')
+    plt.plot(results.history['val_diceCoefficient'])
+    plt.title("Dice Coefficient (blue) & Val Dice Coefficient (orange)")
+    plt.xlabel('Epoch')
+    plt.ylabel('Dice Coefficient')
     plt.show()
 
     # Plot the original image, ground truth and result from the network.

@@ -7,84 +7,50 @@ from keras.layers.pooling import MaxPooling2D
 import tensorflow as tf
 
 
-def unet():
-    conv_args = {
-    "activation": "relu",
-    "kernel_initializer": "he_normal",
-    "padding": "same",
-    }
-
+def Unet():
+  
     inputs = Input((256,256,3))
 
-    skip_1, skip_2, skip_3, skip_4, x = contraction(inputs, conv_args)
-    x = bottleneck(x, conv_args)
-    x = expansion(x, skip_1, skip_2, skip_3, skip_4, conv_args)
-    output = output_layer(x)
+    """ Encoder """
+    s1, x1 = contraction(inputs, 64)
+    s2, x2 = contraction(x1, 128)
+    s3, x3 = contraction(x2, 256)
+    s4, x4 = contraction(x3, 512)
 
-    model = tf.keras.Model(inputs=inputs, outputs=output)
+    """ Bridge """
+    x5 = conv_block(x4, 1024)
 
+    """ Decoder """
+    x6 = expansion(x5, s4, 512)
+    x7 = expansion(x6, s3, 256)
+    x8 = expansion(x7, s2, 128)
+    x9 = expansion(x8, s1, 64)
+
+    """ Outputs """
+    outputs = Conv2D(1, 1, padding="same", activation="sigmoid")(x9)
+
+    """ Model """
+    model = Model(inputs, outputs)
     return model
 
+def conv_block(inputs, num_filters):
+    x = Conv2D(num_filters, 3, padding="same")(inputs)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
 
-def contraction(input, conv_args):
-    x = Conv2D(32, 3, **conv_args)(input)
-    x = Conv2D(32, 3, **conv_args)(x)
-    x = BatchNormalization()(x, training=False)
-    skip_1 = x
-    x = MaxPool2D(pool_size = (2,2))(x)
-    x = tf.keras.layers.Dropout(0.3)(x)
-    
+    x = Conv2D(num_filters, 3, padding="same")(x)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
 
-    x = Conv2D(64, 3, **conv_args)(x)
-    x = Conv2D(64, 3, **conv_args)(x)
-    x = BatchNormalization()(x, training=False)
-    skip_2 = x
-    x = MaxPool2D(pool_size = (2,2))(x)
-    x = tf.keras.layers.Dropout(0.3)(x)
+    return x
 
-    x = Conv2D(128, 3, **conv_args)(x)
-    x = Conv2D(128, 3, **conv_args)(x)
-    x = BatchNormalization()(x, training=False)
-    skip_3 = x
-    x = MaxPool2D(pool_size = (2,2))(x)
-    x = tf.keras.layers.Dropout(0.3)(x)
+def contraction(inputs, num_filters):
+    x = conv_block(inputs, num_filters)
+    p = MaxPool2D((2, 2))(x)
+    return x, p
 
-    x = Conv2D(256, 3, **conv_args)(x)
-    x = Conv2D(256, 3, **conv_args)(x)
-    x = BatchNormalization()(x, training=False)
-    skip_4 = x
-    x = MaxPool2D(pool_size = (2,2))(x)
-    output = tf.keras.layers.Dropout(0.3)(x)
-
-    return skip_1, skip_2, skip_3, skip_4, output
-
-def bottleneck(input, conv_args):
-    x = Conv2D(512, 3, **conv_args)(input)
-    output = Conv2D(512, 3, **conv_args)(x)
-    return output
-
-def expansion(input, skip_1, skip_2, skip_3, skip_4, conv_args):
-    x = Conv2DTranspose(256, (3,3), strides=(2,2), padding='same')(input)
-    x = concatenate([x, skip_4], axis=3)
-    x = Conv2D(256, 3, **conv_args)(x)
-    x = Conv2D(256, 3, **conv_args)(x)
-
-    x = Conv2DTranspose(128, (3,3), strides=(2,2), padding='same')(x)
-    x = concatenate([x, skip_3], axis=3)
-    x = Conv2D(128, 3, **conv_args)(x)
-    x = Conv2D(128, 3, **conv_args)(x)
-
-    x = Conv2DTranspose(64, (3,3), strides=(2,2), padding='same')(x)
-    x = concatenate([x, skip_2], axis=3)
-    x = Conv2D(64, 3, **conv_args)(x)
-    x = Conv2D(64, 3, **conv_args)(x)
-
-    x = Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(x)
-    x = concatenate([x, skip_1], axis=3)
-    x = Conv2D(32, 3, **conv_args)(x)
-    output = Conv2D(32, 3, **conv_args)(x)
-    return output
-
-def output_layer(input):
-    output = Conv2D(1, 1, padding="same", activation = "sigmoid")(input)
-    return output
+def expansion(inputs, skip_features, num_filters):
+    x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(inputs)
+    x = Concatenate()([x, skip_features])
+    x = conv_block(x, num_filters)
+    return x

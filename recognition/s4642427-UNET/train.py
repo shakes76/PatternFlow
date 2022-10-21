@@ -5,31 +5,24 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Adam
 
 def diceCoefficient(y_true, y_pred):
-        """   
-            DSC Tensorflow implementation sourced from Medium: 
-            [https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c]
-            [25/10/2019]
-        """
-        
-        y_true_f = K.flatten(y_true)
-        y_pred_f = K.flatten(y_pred)
-        
-        # Get the pixel intersection of the two images 
-        intersection = K.sum(y_true_f * y_pred_f)
-        
-        # DSC = (2 * intersection) / total_pixels
-        diceCoeff = (2. * intersection + 1.) / K.sum(y_true_f) + K.sum(y_pred_f) + 1.)
-        
-        return diceCoeff
-        
-        
+
+    y_true_f = tf.keras.backend.flatten(y_true)
+    y_pred_f = tf.keras.backend.flatten(y_pred)
+    
+    # Get the pixel intersection of the two images 
+    intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
+    
+    # DSC = (2 * intersection) / total_pixels
+    diceCoeff = (2. * intersection + 1.) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_pred_f) + 1.)
+    
+    return diceCoeff
+    
+    
 def diceLoss(y_true, y_pred):
-    """
-        Defines the dice coefficient loss function, ie 1 - Dice Coefficient.
-    """
+  
     return 1 - diceCoefficient(y_true, y_pred)
 
-#TODO need to graph the dice Loss and metric
+
 def train(dset_path, mask_path):
     DL = Dataloader(dset_path, mask_path)
     X_train, Y_train, X_test, Y_test, X_val, Y_val = DL.get_XY_split()
