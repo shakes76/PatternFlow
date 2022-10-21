@@ -33,10 +33,10 @@ Train a model for the image segmentation of skin lesion using the improved U-net
 ## How it works
 
 ### Data preprocessing
-Firstly, we need to resize all the images to 256 x 256 becauser the images of the dataset do not have the same size. And save all the resized images into new directories. Then, create blank arrays to store the resized training, validation, and test images and join the resized images to the blank arrays respectively.
-This process is going to take some time. And create data frames to store the excel files containing the names of the images. After that, load and generate the nomrmalized images and masks of training, validation, and test data.
+Firstly, we needed to resize all the images to 256 x 256 because the images of the dataset ddi not have the same size. And saved all the resized images into new directories. Then, created blank arrays to store the resized training, validation, and test images and joined the resized images to the blank arrays respectively.
+This process has taken some time. And created data frames to store the excel files containing the names of the images. After that, loaded and generated the normalized images and masks of training, validation, and test data.
 
 ### Training
-After data preprocessing, we now have train_x, train_y, validation_x, and validation_y.
+After data preprocessing, we had train_x, train_y, validation_x, and validation_y. And loaded an improve U-net model that takes an image with 256 x 256 x 3 created by Input fucntion in Keras library. And we set the learning rate as 0.0005 and the decay rate as learning rate x 0.985 as the paper stated. And we compiled a model using Adam for optimization, and dice similarity loss wss used as a metric. And we fitted the model with train_x, train_y, validation_x, and validation_y. The batch size was 8, and 
 
 
