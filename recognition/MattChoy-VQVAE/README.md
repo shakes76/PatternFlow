@@ -3,11 +3,16 @@ By Matthew Choy
 > Creation of a generative model of the ADNI dataset using the VQVAE model ([paper](arxiv.org/abs/1711.00937))
 
 # Files of Interest
-The following files to look at:
+What files to look at, and what purpose they serve.
+- [modules.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/modules.py) Contains module definitions for the VQVAE (& Encoder, Decoder) as well as PixelCNN
+- [train.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/train.py) Uses the modules defined in `modules.py` to train and save the VQVAE and PixelCNN models.
+- [dataset.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/dataset.py) Loads and normalises dataset.
+- [constants.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/constants.py) Defines constants and hyperparameters to ensure that this model can be adapted to other datasets more easily.
+- [predict.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/predict.py) Loads the trained VQVAE and PixelCNN models located in `./vqvae` and `./pixel_cnn` respectively to generate OASIS-like brain scan images.
+- [util.py](https://github.com/MattPChoy/PatternFlow/blob/topic-recognition/recognition/MattChoy-VQVAE/util.py) Defines helper methods for visualisation, data processing etc.
 
 ## Table of Contents
-- [Table of Contents](#table-of-contents)
-  - [Algorithm Description](#description-of-algorithm)
+- [Algorithm Description](#description-of-algorithm)
 - [How Does it Work?](#how-does-it-work)
 - [Inputs, Outputs and Algorithm Performance](#inputs-outputs-and-algorithm-performance)
 - [Implementation Details](#implementation-details)
@@ -26,7 +31,10 @@ The following files to look at:
 - Include a visualisation
 
 ## Inputs, Outputs and Algorithm Performance
-- Example inputs, outputs and plots of your algorithm
+Images fed into the model are of dimensionality $(\text{batch\_size}, 256, 256, 1)$ and are taken from the OASIS brain dataset. Some sample images include those shown below:
+<p align="center">
+  <img style="width:60vw" src="./images/sample_inputs.png"/>
+</p>
 
 ## Implementation Details
 ### Dependencies
