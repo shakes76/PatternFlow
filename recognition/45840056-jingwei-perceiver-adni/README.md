@@ -5,7 +5,7 @@ The ADNI brain dataset consists of cross-sectional scans of patients' brains. Ea
 
 The Perceiver model is a transformer-based model that can be used to process sequential data - it makes very little assumptions about the type of input data.<sup>[1]</sup> Rather than feeding a Perceiver with a sequence of raw images, it is more effective to feed the Perceiver with feature vectors. We can produce feature vectors from images using a CNN. I decided to use ResNet50 with the last fully-connected layer removed. This outputs a 2048-dimension vector. We can further take advantage of ResNet50 through the PyTorch library with transfer learning by using pre-trained weights from training on ImageNet. Another change to ResNet50 that has to be made is adding a conv2d layer to the beginning of the model that takes in 1-channel images and outputs 3-channels. This conv2d layer is otherwise identical to the existing conv1 layer in ResNet50. It is necessary to add this layer because the ADNI data is grayscale.
 
-Additionally, as part of preprocessing the data, each image is cropped to 224 x 224 which are the ImageNet dimensions and the images are also standardized with a pre-calculated mean and standard deviation.
+Additionally, as part of preprocessing the data, each image is cropped to 224 x 224 which are the ImageNet dimensions and the images are also standardized with a pre-calculated mean and standard deviation. Overall, this approach towards solving the problem is more about building a model out of the Perceiver instead of the Perceiver itself.
 
 ### Quick diagram of model: inputs and outputs
 ![](figures/model.png)
