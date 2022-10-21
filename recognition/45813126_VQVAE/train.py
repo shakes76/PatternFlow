@@ -9,7 +9,6 @@ from dataset import Dataset
 from modules import VAE
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import numpy as np
 
 # https://keras.io/examples/generative/vq_vae/#wrapping-up-the-training-loop-inside-vqvaetrainer
 class VQVAETrainer(tf.keras.models.Model):
@@ -22,9 +21,7 @@ class VQVAETrainer(tf.keras.models.Model):
         self.vqvae = VAE(self.num_embeddings, self.latent_dim).model
 
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(
-            name="reconstruction_loss"
-        )
+        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
         self.vq_loss_tracker = tf.keras.metrics.Mean(name="vq_loss")
 
     @property
@@ -70,5 +67,15 @@ num_embeddings = 128
 latent_dim = 32
 vae_trainer = VQVAETrainer(1, latent_dim, num_embeddings)
 vae_trainer.compile(optimizer = 'adam')
-vae_trainer.fit(data.train_data, epochs = 5, batch_size = 128)
+history = vae_trainer.fit(data.train_data, epochs = 5, batch_size = 128)
 trained_model = vae_trainer.vqvae
+
+# Plot of loss metrics
+plt.plot(history.history['loss'])
+plt.plot(history.history['reconstruction_loss'])
+plt.plot(history.history['vqvae_loss'])
+plt.title('Model losses')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(['total_loss', 'rec_loss', 'vqvae_loss'], loc='upper left')
+plt.show()

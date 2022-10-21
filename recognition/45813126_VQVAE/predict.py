@@ -9,6 +9,7 @@ from train import data, trained_model
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
+# Plot the original and reconstructed image on the same plot
 def show_subplot(original, reconstructed):
     plt.subplot(1, 2, 1)
     plt.imshow(original.squeeze() + 0.5)
