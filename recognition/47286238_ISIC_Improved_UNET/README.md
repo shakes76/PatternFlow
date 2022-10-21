@@ -12,11 +12,11 @@ Submission for the final report in the course COMP3710 (Pattern Recognition & An
 
 ## Algorithm Overview
 ![IUNET Architecture](static/IUNET.png)
-The Improved UNET network, as detailed in the paper by Isensee et al. (2018) [1], is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover finer details to be included in the final output mask. Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization.
+The Improved UNET network, as detailed in the paper by Isensee et al. (2018) [1], is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover features from previous context layers to be included in the final output mask. Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization.
 
 This algorithm aims to utilize the Improved UNET network to segment areas of lesions on skin. The network will take an RGB image of skin with lesions on it, and output a mask detailing what region the lesion occupies.
 
-### How It Works
+### How It Works (with regards to the segmentation task)
 As the input passes forward through the network, what results are images of a similar shape as its input. To generate a mask from this output image, the implemented algorithm isolates the first RGB channel of the image, then sets whatever elements are of a value greater than or equal to a given threshold value (in this case, 0.5) to 1.0, and whatever is lower than that is set to 0.0. This resulting mask can then be compared with the ground truth of the data. From this the loss can be calculated, and have its result backpropagated along the network via chain rule in order to tune the weights of the layers.
 
 ### Loss and Metrics
@@ -64,6 +64,8 @@ The resulting masks can be seen in the figure below:
 
 Here, the first column represents the image which the network takes as its input. The second column shows the ground truth mask of the image. The third column shows the isolated channel output of the network, and the final column shows the resulting mask, where values above the threshold of 0.5 are set to 1.0, and those below are set to 0.0.
 
+### Reproducibility of Results
+Due to the shuffling of the dataset during training, it cannot be guaranteed that the resulting model after training can be exactly reproduced over multiple training sessions. However, once the model is saved, it is trivial to reproduce the model predictions over the test set, as no shuffling is involved there.
 
 ## Prerequisites
 
@@ -77,8 +79,6 @@ torchvision == 0.13.1
 cudatoolkit == 11.3.1
 ```
 
-## Reproducibility of Results
-Due to the shuffling of the dataset during training, it cannot be guaranteed that the resulting model after training can be exactly reproduced over multiple iterations.
 
 ## Notes
 ### On Hyperparameters
