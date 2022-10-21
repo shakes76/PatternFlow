@@ -4,6 +4,7 @@ from datetime import datetime
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.metrics import structural_similarity
 
 
 class Trainer(tf.keras.models.Model):
@@ -44,7 +45,7 @@ class Trainer(tf.keras.models.Model):
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "vqvae_loss": self.vq_loss_tracker.result(),
+            "vqvae_loss": self.vq_loss_tracker.result()
         }
 
 
@@ -72,14 +73,17 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
     i = 0
     plt.figure(figsize=(4, num_tests * 2), dpi=512)
     for test_image, reconstructed_image in zip(test_images, reconstructions):
+        test_image = test_image.squeeze()
+        reconstructed_image = reconstructed_image[:, :, 0]
         plt.subplot(num_tests, 2, 2 * i + 1, )
-        plt.imshow(test_image.squeeze(), cmap='gray')
+        plt.imshow(test_image, cmap='gray')
         plt.title("Original")
         plt.axis("off")
 
         plt.subplot(num_tests, 2, 2 * i + 2)
-        plt.imshow(reconstructed_image[:, :, 0], cmap='gray')
-        plt.title("Reconstructed")
+        plt.imshow(reconstructed_image, cmap='gray')
+        plt.title(f"Reconstructed (SSIM:{structural_similarity(test_image, reconstructed_image, data_range=test_image.max() - test_image.min()):.2f})")
+
         plt.axis("off")
 
         i += 1
@@ -88,8 +92,27 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
     plt.close()
 
 
+def get_structural_similarity(model, dataset):
+    sample_size = 10
+    similarity_scores = []
+    idx = np.random.choice(len(dataset), sample_size)
+    test_images = dataset[idx]
+    reconstructions_test = model.predict(test_images)
+
+    for i in range(reconstructions_test.shape[0]):
+        original = test_images[i, :, :, 0]
+        reconstructed = reconstructions_test[i, :, :, 0]
+
+        similarity_scores.append(
+            structural_similarity(original, reconstructed, data_range=original.max() - original.min()))
+
+    average_similarity = np.average(similarity_scores)
+
+    return average_similarity
+
+
 def main():
-    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(5000)
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(4000)
     time = datetime.now().strftime('%H:%M:%S')
 
     num_embeddings = 128
@@ -102,6 +125,8 @@ def main():
     vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
 
     history = vqvae_trainer.fit(train_data, epochs=10, batch_size=batch_size)
+
+    print(f"#################\n\rSSIM:{get_structural_similarity(vqvae_trainer.vqvae, test_data)}\n\r#################")
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time, "vq_vae")
