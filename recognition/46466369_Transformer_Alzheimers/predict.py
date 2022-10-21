@@ -9,7 +9,11 @@ import modules
 import matplotlib.pyplot as plt
 import train
 
+def load_weights():
+    train.vit_model.load_weights(train.file_path)
 
-def predict_single_image(image):
-    image = np.array([np.array(Image.open(image).resize((train.IMAGE_SIZE, train.IMAGE_SIZE)))])
+
+def predict_single_image(image_filepath):
+    image = np.array([np.array(Image.open(image_filepath).resize((train.IMAGE_SIZE, train.IMAGE_SIZE)))])
+    load_weights()
     train.vit_model.predict(image)

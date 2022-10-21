@@ -48,6 +48,21 @@ Loss:
 - matplotlib 3.5.1
 
 ## Installation & Usage
+### First time use
+The ADNI dataset has been stored in the form:
+```
+|-- ADNI
+    |-- test_AD.zip
+    |-- test_NC.zip
+    |-- train_AD.zip
+    |-- train_NC.zip
+```
+Where each of the zip files contains images for the corresponding data set. 
+
+It is sufficient to run `train.py` to train the dataset and set up the weights, which are stored in `./checkpoint`.
+
+### Prediction and subsequent use
+For prediction of individual images, run `predict.py` in the format `predict_single_image(image_filepath)`.
 
 
 ## Papers and references
