@@ -40,4 +40,4 @@ I was unable to complete the functionality as a result of the lack of training. 
 
 ## Other
 Original commit log:
-![Original Commit Log](./assets/example_lesion.jpg)
+![Original Commit Log](./assets/original_commits.png)
