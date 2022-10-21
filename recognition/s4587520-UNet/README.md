@@ -3,11 +3,17 @@ This repository contains functionality to segment the [ISIC 2017 Lesion Dataset]
 
 ## Dependencies
 This model was created/tested using the following software versions:
+
 Python 3.7.15
+
 Pytorch 1.12.1
+
 CUDA 11.3
+
 Pillow 7.1.2
+
 matplotlib 3.2.2
+
 
 ## Functionality
 ### Modules
@@ -19,16 +25,17 @@ It also includes a simple calculator for the DICE loss coefficient for use in tr
 
 ### Dataset
 [dataset.py](dataset.py) Contains functionality for important png and jpg images from a folder directory into Tensors for operation.
+
 Images should be lesions and segmentations should be one-hot masks.
 
 ![Lesion Example](./assets/example_lesion.jpg)
 ![Mask Example](./assets/example_mask.png)
 
 ### Training
-[train.py](train.py) Traings the model over the dataset specified
+[train.py](train.py) Trains the model over the dataset specified.
 
 ### Prediction
-[predict.py](predict.py) Uses the model to make a segmentation of a given image
+[predict.py](predict.py) Uses the model to make a segmentation of a given image.
 
 ## Results
 Data was split into sections Training, Testing and Validation as provided by the [ISIC 2017 Lesion Dataset](https://challenge.isic-archive.com/data/#2017).
@@ -37,4 +44,5 @@ I was unable to complete the functionality. [modules.py](modules.py) is a comple
 
 ## Other
 Original commit log:
-![Original Commit Log](./assets/example_lesion.jpg)
+
+![Original Commit Log](./assets/original_commits.png)
