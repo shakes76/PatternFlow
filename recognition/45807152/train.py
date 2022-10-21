@@ -80,6 +80,9 @@ def main():
     # Save plot with a tight boarder
     plt.savefig("./figures/iouVsEpoch.png", bbox_inches='tight')
 
+    # Evaluate model performance against test subset
+    print(model.evaluate(test_x, test_y, verbose=2, batch_size=64))
+
     # Utilise test set to make predictions for evaluation
     make_prediction(model, test_x, test_y, slice=(151, 161))
 
