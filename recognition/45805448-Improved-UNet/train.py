@@ -102,16 +102,15 @@ class Trainer:
         if not os.path.isdir(self.plots_path):
             os.makedirs(self.plots_path)
 
-        for metric in ['accuracy', 'dice_coefficient']:
-            plt.figure(figsize=(8,8))
-            plt.title(f'Model {metric}')
-            plt.plot(self.history.history[metric])
-            plt.plot(self.history.history[f'val_{metric}'])
-            plt.xlabel('Epoch')
-            plt.ylabel(metric)
-            plt.legend(['training', 'validation'], loc='upper left')
-            plt.savefig(self.plots_path + f'/model_{metric}.png')
-            print(f'Saved plot to {self.plots_path}/model_{metric}.png')
+        plt.figure(figsize=(8,8))
+        plt.title(f'Model Dice Coefficient')
+        plt.plot(self.history.history['dice_coefficient'])
+        plt.plot(self.history.history[f'val_dice_coefficient'])
+        plt.xlabel('Epoch')
+        plt.ylabel('Dice Coefficient')
+        plt.legend(['training', 'validation'], loc='upper left')
+        plt.savefig(self.plots_path + f'/model_dice_coefficient.png')
+        print(f'Saved plot to {self.plots_path}/model_dice_coefficient.png')
 
     def load_model(self):
         if self.model == None:
@@ -122,7 +121,7 @@ class Trainer:
     def save_model(self):
         if not os.path.isdir(self.model_path):
             os.makedirs(self.model_path)
-            
+
         self.model.save_weights(self.model_path + '/model', overwrite=True)
 
 
