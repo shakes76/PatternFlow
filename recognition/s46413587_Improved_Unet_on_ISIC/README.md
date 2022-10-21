@@ -9,7 +9,7 @@ By utilizing an improved U-Net algorithm, this project works to identify regions
 An Improved U-Net works in 8 main sections, each comprised of two convolutional layers. These 8 sections are split into two parts - condensing and upsampling. The condensing part has 4 of these two part layers, where in the data goes through the standard convolutional layers, but at the end of each 'part' (or, every two layers), a snapshot of the state of the network layer is taken and stored for later use. Then, the network goes through 4 corresponding 'upsampling' layers, which replace the standard pooling layers by instead upscaling the previous layer and concatenating with the appropriate 'snapshot' from the convolutional layers. 
 I have followed the concepts and principals as explained the paper [Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge](https://arxiv.org/pdf/1802.10508v1.pdf). This paper also provides this diagram, which provides a clearer visualization of how these layers interact. 
 
-![1](Images\unet.png)
+![1](Images/unet.png)
 
 I have also taken inspiration and advice from [This Kaggel U-Net implementation](https://www.kaggle.com/code/mukulkr/camvid-segmentation-using-unet/notebook) which segments an images into 32 different possible categories.  
 
@@ -20,17 +20,17 @@ The U-Net I have implemented has been very successful, getting these sound resul
 
 Which can be visualised:
 
-![3](Images\good.png)
-![4](Images\good1.png)
-![5](Images\good3.png)
-![6](Images\good5.png)
+![3](Images/good.png)
+![4](Images/good1.png)
+![5](Images/good3.png)
+![6](Images/good5.png)
 
 
 I have also created a plot of loss, Accuracy, and Dice Similarity (for more details on this metric, please read the paper above).
 
-![7](\recognition\s46413587_Improved_Unet_on_ISIC\Images\loss.png)
-![8](recognition\s46413587_Improved_Unet_on_ISIC\Images\acc.png)
-![9](Images\dsc.png)
+![7](Images/loss.png)
+![8](Images/acc.png)
+![9](Images/dsc.png)
 
 ## Reproducibility 
 These results were attained by running the code on google colab, with random seed set to 909, and all packages at their most current version as at 20/10/22. Note that due to computing and time constraints, it was run using only the 'training' set from the ISIC data, and was downloaded and split with the following code:
