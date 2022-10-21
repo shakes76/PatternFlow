@@ -33,25 +33,30 @@ Note: If using collab to run the project, run the below given commands to get th
 !unzip 'download'
 ```
 
-But if running locally, change TRAIN, TEST in predict.py to the location where your data is stored.
+But if running locally, change TRAIN, TEST in predict.py to the location where your data is stored, and run predict.py
 
 ## Training
 
 I am training VQVAE for 30 epochs with a batch size of 64 and plotting the losses. Also, the value of beta in initializing vector quantizer is chosen to be 1 after trying many values, as this gives the best performance in lesser number of epochs.
-![image](readme_images/VQVAE%20loss.png)
-Image showing reconstructed image with SSIM>0.6
-![image](readme_images/VQVAE%20reconstructed.png)
+
+
+<img src="readme_images/VQVAE%20loss.png" alt="readme_images/VQVAE%20loss.png" width="400"/>
+
+Image showing reconstructed image with SSIM = 0.79, (>0.6 condition satisfied)
+
+<img src="readme_images/VQVAE%20reconstructed.png" alt="readme_images/VQVAE%20reconstructed.png" width="350"/>
 
 I am training PixelCNN for 100 epochs with a batch size = 128 and plotting the losses
-![image](readme_images/PCNN%20training%20loss.png)
+
+<img src="readme_images/PCNN%20training%20loss.png" alt="readme_images/PCNN%20training%20loss.png" width="400"/>
 
 ## Novel Image Generation
 
 I am generating fake brain images using VQVAE along with PixelCNN and they closely resemble images in the dataset.
-
 I am plotting new generated image against image from test dataset below.
 
-![image](readme_images/Novel%20images.png)
+
+<img src="readme_images/Novel%20images.png" alt="readme_images/Novel%20images.png" width="300"/>
 
 ## Dependencies
 
@@ -62,4 +67,14 @@ I am plotting new generated image against image from test dataset below.
 * Numpy: 1.21.6
 * Glob
 
+## References
+
+[1] A.v. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: https://arxiv.org/pdf/1711.00937.pdf. 
+
+[2] A.v. Oord, N. Kalchbrenner, and K. Kavukcuoglu, 2016. Pixel Recurrent Neural Networks, [Online]. Available: http://arxiv.org/abs/1601.06759
+
+[3] A.v. Oord, N. Kalchbrenner, O. Vinyals, L. Espeholt, A. Graves, and K. Kavukcuoglu, 2016. Conditional Image Generation with PixelCNN Decoders, [Online]. Available: http://arxiv.org/abs/1606.05328
+
+[4] S. Paul, 2021. Vector-Quantized Variational Autoencoders on Keras website, [Online]. Available: https://keras.io/examples/generative/vq_vae/
+ 
 
