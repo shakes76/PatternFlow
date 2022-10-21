@@ -22,7 +22,7 @@ TRANSFORMER_UNITS = [
     PROJECTION_DIM * 2,
     PROJECTION_DIM
 ]
-TRANSFORMER_LAYERS = 8
+TRANSFORMER_LAYERS = 5
 MLP_LAYER_COUNTS = [2048, 1024]
 
 file_path = './checkpoint'
@@ -58,7 +58,7 @@ def train_model(model):
                                 y=trainy,
                                 batch_size=BATCH_SIZE,
                                 epochs=NUM_EPOCH,
-                                validation_split=0.2,
+                                validation_split=0.1,
                                 callbacks=[callback])
 
     return (train_history)
