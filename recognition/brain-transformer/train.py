@@ -1,31 +1,31 @@
 import matplotlib.pyplot as plt
-import vit_pytorch
 import torch
 import numpy as np
 import dataset
 import modules
 
+#Load training data with train valid split of 0.8 to 0.2
+train_data, valid_data = dataset.torch_train('train',validation_split=0.2) 
 
-train_data, valid_data = dataset.torch_train('train')
-test_data = dataset.torch_test('test')
-
+#Create model and training coponents
 model, optimizer, criterion, scheduler = modules.build_model(
-    dim=1024, 
+    dim=512, 
     image_size=256, 
     patch_size=32,
     num_classes=2,
-    depth=12,
-    heads=16,
-    mlp_dim=2048,
+    depth=8,
+    heads=12,
+    mlp_dim=1024,
     channels=1,
-    dropout=0.4,
-    emb_dropout=0.4,
+    dropout=0.5,
+    emb_dropout=0.5,
     lr = 0.0001
     )
 model = model.cuda()
 
 EPOCHS = 30
 
+#Calcualte dataset size
 train_iter = iter(train_data)
 train_size = 0
 valid_iter = iter(valid_data)
@@ -34,13 +34,23 @@ for i in train_iter:
     train_size += i[0].shape[0]
 for i in valid_iter:
     valid_size += i[0].shape[0]
-min_valid_loss = np.inf
 
+#Tracking minimum loss
+min_valid_loss = np.inf 
+
+#Tracking accuracy and loss of during training, populate with 0 for visualisation at end
 history = {'train_loss':[0], 'train_acc':[0],'valid_loss':[0],'valid_acc':[0]}
+
+#Training Loop
 for epoch in range(EPOCHS):
+    #Metrics to track
     train_loss = 0
     train_acc = 0
-    train_iter = iter(train_data)
+    valid_loss = 0
+    valid_acc = 0
+
+    #Train phase
+    train_iter = iter(train_data) #Create generator
     model.train()
     for batch, labels in train_iter:
         batch, labels = batch.cuda(), labels.cuda()
@@ -51,24 +61,27 @@ for epoch in range(EPOCHS):
         optimizer.step()
         acc = sum(torch.argmax(prediction,dim=1) == torch.argmax(labels,dim=1)).cpu().detach().numpy()
         train_acc += acc
-        train_loss += loss.cpu().detach().numpy() * len(batch)/train_size
+        train_loss += loss.item() * len(batch)/train_size
     train_acc /= train_size
 
-    valid_loss = 0
-    valid_acc = 0
-    model.eval()
+
+    #Validation Phase
+    model.eval()    
     valid_iter = iter(valid_data)
-    test_valid_size = 0
     for batch, labels in valid_iter:
-        test_valid_size+= labels.shape[0]
         batch, labels = batch.cuda(),labels.cuda()
         prediction = model(batch)
         loss = criterion(prediction, labels)
         acc = sum(torch.argmax(prediction,dim=1) == torch.argmax(labels,dim=1)).item()
         valid_acc += acc
-        valid_loss += loss.cpu().detach().numpy()*len(batch)/valid_size
+        valid_loss += loss.item()*len(batch)/valid_size #Weighted loss for tracking
     valid_acc /= valid_size
-    # scheduler.step()
+
+
+
+    scheduler.step() 
+
+    #Append metric history
     history['train_acc'].append(train_acc)
     history['train_loss'].append(train_loss)
     history['valid_acc'].append(valid_acc)
