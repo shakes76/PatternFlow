@@ -183,7 +183,7 @@ vqvae.load_weights(SAVED_WEIGHTS_PATH + "trained_model_weights")
 # Plot training losses/metrics
 
 
-def plot_results(epoch_results):
+def plot_train_val_results(epoch_results):
     """ Plots and saves all train/val losses"""
     # Total losses
     plt.figure()
@@ -223,10 +223,10 @@ def plot_results(epoch_results):
 
 
 training_results = pd.read_csv(SAVED_WEIGHTS_PATH + 'training.log', sep=',', engine='python')
-plot_results(training_results)
+plot_train_val_results(training_results)
 
 
-def show_vqvae_results(images):
+def generate_vqvae_images(images):
     """
     Plots and saves the input, codebook, and reconstructions made by the VQ-VAE, of the given 
     images. Also calculates and saves the SSIM between each image and its reconstruction.
@@ -277,7 +277,8 @@ def show_vqvae_results(images):
     
         plt.savefig(RESULTS_PATH + f'vq_vae_reconstructions_{i}.png')
     
-        ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image, max_val=1.0)).numpy()
+        ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image,
+                                                ax_val=1.0)).numpy()
     
         main_stdout = sys.stdout
         with open(RESULTS_PATH + 'main_results.txt', 'a') as f:
@@ -286,10 +287,10 @@ def show_vqvae_results(images):
             sys.stdout = main_stdout
 
 
-# Generate and plot 10 reconstructions from test set, along with their codes and inputs and SSIMs
+# Generate and plot some reconstructions from test set, along with their codes and inputs and SSIMs
 for sample_batch in test_data.take(1).as_numpy_iterator():
     sample_batch = sample_batch[:NUM_IMAGES_TO_SHOW]
-    show_vqvae_results(sample_batch)
+    generate_vqvae_images(sample_batch)
 
 
 # Print overall mean test SSIM for VQ-VAE to file:
