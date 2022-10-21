@@ -8,7 +8,7 @@ __author__ = "Lachlan Comino"
 from dataset import DataLoader
 import tensorflow as tf
 
-from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses, utils
+from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses
 
 # Default Model Parameters
 CHANNELS        = 256
