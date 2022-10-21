@@ -40,25 +40,25 @@ component, this would involve passing the data through a number of residual bloc
 
 The Autoencoder was trained against the mean-squared-error between its reconstructions of the input images and the output image. The loss can be seen below (note that since the task was to generate instances of data belonging to the original dataset, only training loss was recorded and used)
 <br>
-![loss1](/recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderLoss2.png)
+[![loss1](Images/AutoEncoderLoss2.png)]
 <br>
-![loss2](/recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderLoss.png)
+[![loss2](Images/AutoEncoderLoss.png)]
 <br>
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
 <br>
-![aEExample](/recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderExample.png)
+[![aEExample](/recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderExample.png)]
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
 
 For an illustration of the loss during the training process, see below:
 <br>
-![UNetLoss](/recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)
+[![UNetLoss](/recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)]
 <br>
 
 For an illustration of the denoising process occuring on the latent space, see below:
 <br>
-![LatentSpaceDenoising](/recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)
+[![LatentSpaceDenoising](/recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)]
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
