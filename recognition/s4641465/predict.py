@@ -1,10 +1,5 @@
-from dataset import get_datasets
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import array_to_img
 from tensorflow.keras.preprocessing.image import img_to_array
-import matplotlib.pyplot as plt
-import numpy as np
-
 from train import get_lowres_image, plot_results, train, upscale_image
 
 def predict():

@@ -1,17 +1,11 @@
 import math
 from dataset import get_datasets
 from modules import get_model
-
-from pkgutil import get_data
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.utils
-from tensorflow.keras.preprocessing.image import array_to_img
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow import keras
-from tensorflow.keras import layers
 import matplotlib.pyplot as plt
-import PIL
 
 def upscale_image(model, img):
     # The model takes a 4 dimensional array with shape (Batch, x, y, channels)

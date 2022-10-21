@@ -1,15 +1,7 @@
-from pkgutil import get_data
-import numpy as np
 import tensorflow as tf
-import tensorflow.keras.utils
-from tensorflow.keras.preprocessing.image import array_to_img
-from tensorflow.keras.preprocessing.image import img_to_array
-import matplotlib.pyplot as plt
 
 def process_input(input, input_size):
     return tf.image.resize(input, [input_size, input_size], method="area")
-
-
 
 """
 Retrieves the datasets from the folder for use by the algorithm
