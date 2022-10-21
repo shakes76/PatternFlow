@@ -5,6 +5,17 @@ TRAIN_DATA_PATH = "your/path/to/data"
 TEST_DATA_PATH = "your/path/to/data"
 
 def get_data(batch_size_train, batch_size_test):
+    """ 
+    Loads the train and test data based on the given batch size and normalises 
+    the data. 
+
+    Parameters:
+        batch_size_train: the batch size for the train set. 
+        batch_size_test: the batch size for the test set.
+
+    Returns:
+        A tuple containing the train and test data loaders.
+    """
     transform = transforms.Compose([
     # Convert the images to tensors
     transforms.ToTensor(),
