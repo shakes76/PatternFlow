@@ -164,15 +164,13 @@ test_ds = load_test_data(test_path, img_height, img_width, batch_size)
 vqvae_model = VQVAEModel(img_shape=(img_height, img_width, 3), embedding_num=num_embeddings,
                          embedding_dim=latent_dim, beta=0.25,
                          data_variance=0.05)
-vqvae_model.load_weights("Placeholder path to trained weights")
+vqvae_model.load_weights("Placeholder path to VQ-VAE trained weights")
 
 # Loading PixelCNN
 pixelcnn_input_shape = vqvae_model.get_encoder().output.shape[1:3]
-
 pixelcnn_model = PixelCNNModel(pixelcnn_input_shape, vqvae_model._embedding_num, 128, 2, 2)
-pixelcnn_model.load_weights("drive/MyDrive/trained_pcnn_14th_128dim_32embed")
+pixelcnn_model.load_weights("Placeholder path to pixelCNN trained weights")
 
-# Plots of VQVAE reconstructions
 # Plot some reconstructed images from the vqvae model
 number_images = 3
 reconstructed_image(test_ds, vqvae_model, number_images, img_height, img_width)

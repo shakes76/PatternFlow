@@ -96,6 +96,7 @@ def pixel_cnn_training_plots(history2):
     plt.legend(loc='upper right')
     plt.show()
 
+
 # Constants / Hyperparameters
 val_split = 0.2
 img_height = 256
@@ -122,7 +123,7 @@ device = "/GPU:0" if len(tf.config.list_physical_devices('GPU')) else '/CPU:0'
 
 # Training the model
 with tf.device("/GPU:0"):
-  history = vqvae_model.fit(train_ds, epochs = 10, validation_data = val_ds, batch_size = batch_size)
+    history = vqvae_model.fit(train_ds, epochs=30, validation_data=val_ds, batch_size=batch_size)
 
 # Saving the weights. Put the path of where you want to store the weights as input
 vqvae_model.save_weights("path to store weights")
@@ -150,7 +151,7 @@ pixelcnn_model.compile(optimizer=keras.optimizers.Adam(0.0003),
 
 # Training the model
 with tf.device("/GPU:0"):
-  history2 = pixelcnn_model.fit(codebook_dataset, batch_size=64,epochs=100, validation_data = codebook_val_dataset)
+    history2 = pixelcnn_model.fit(codebook_dataset, batch_size=64, epochs=100, validation_data=codebook_val_dataset)
 
 # Saving the weights. Put the path of where you want to store the weights as input
 pixelcnn_model.save_weights("path to store weights")
