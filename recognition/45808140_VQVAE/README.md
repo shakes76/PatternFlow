@@ -22,7 +22,7 @@ According to the paper there are 3 key loss metrics associated with the VQVAE mo
 ### **VQVAE results**
 ---
 
-We initially started with fitting with a large codebook and small latent space but the VQVAE demonstrated some erratic loss behaviour after a few steps but it still eventually converged to high SSIM. However, we did some hyperparameter tuning and found that with a latent space of 32 and 64 embeddings yielded the best performance in SSIM score with the least amount of epochs. We obtain >0.6 SSIM within 2 epochs and gain incremental improvements subsequently
+We initially started with fitting with a large codebook and small latent space but the VQVAE demonstrated some erratic loss behaviour after a few steps but it still eventually converged to high SSIM. However, we did some hyperparameter tuning and found that with a latent space of 32 and 64 embeddings yielded the best performance in SSIM score with the least amount of epochs. We obtain >0.6 SSIM within 2 epochs and gain incremental improvements subsequently.
 
 <p align='center'> <strong>VQVAE model structure</strong> </p>
 <p align="center"><img src="./images/vq_keras.png"/></p>
@@ -36,6 +36,8 @@ We initially started with fitting with a large codebook and small latent space b
 <p align='center'> <strong>50 epochs</strong> </p>
 
 <p align="center"><img src="./results/vq_50epochs.png" /></p>
+
+We observe that the obtained results are great as we successfully recapture the shape and most of the detail of the image which corroborates with the high SSIM score.
 
 ## **PixelCNN Model**
 
@@ -57,7 +59,7 @@ We experimented with tuning the number of convolutional layers and residual bloc
 <p align='center'> <strong>PCNN model structure</strong> </p>
 <p align="center"><img src="./images/pcnn_keras.png"/></p>
 <p align='center'> <strong>Loss plot</strong> </p>
-<p align="center"><img src="./results/pcnn_result_graph.png" /></p>
+<p align="center"><img src="./results/pcnn_20.png" /></p>
 
 <p align='center'><img src="./results/generated_3.png"/></p>
 
@@ -84,7 +86,7 @@ There is not much data pre-processing required for the ADNI dataset. Using the c
 We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
 
 ## **Scope for improvements**
-As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by training for more epochs as the results obtained were only trained on <50 epochs which is minimal for a PixelCNN. This was because I had to do all the training on my own computer as Rangpur environment was not stable. Additionally, increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples.
+As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by training for more epochs as the results obtained were only trained on 20 epochs which is minimal for a PixelCNN. This was because I had to do all the training on my own computer as Rangpur environment was not stable. Additionally, increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples.
 
 # **Example usages**
 
