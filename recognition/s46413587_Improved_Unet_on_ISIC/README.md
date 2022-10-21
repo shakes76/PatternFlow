@@ -28,8 +28,8 @@ Which can be visualised:
 
 I have also created a plot of loss, Accuracy, and Dice Similarity (for more details on this metric, please read the paper above).
 
-![7](Images\loss.png)
-![8](Images\acc.png)
+![7](\recognition\s46413587_Improved_Unet_on_ISIC\Images\loss.png)
+![8](recognition\s46413587_Improved_Unet_on_ISIC\Images\acc.png)
 ![9](Images\dsc.png)
 
 ## Reproducibility 
