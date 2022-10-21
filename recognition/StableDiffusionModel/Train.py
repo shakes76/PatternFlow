@@ -142,7 +142,7 @@ def checkPointManager(model, path):
 
 
 
-def trainLoop(epochs, encoder):
+def trainLoop(epochs, encoder, losses):
     for e in range(1, epochs+1):
         bar = tf.keras.utils.Progbar(len(trainingData)-1)
         for i, batch in enumerate(iter(trainingData)):
@@ -192,6 +192,10 @@ if __name__ == "__main__":
     
     # Batching and shuffling training data
     trainingData = tf.data.Dataset.from_tensor_slices(trainData).shuffle(1000).batch(64)
+    
+    # Training diffusion model
+    losses = []
+    trainLoop(epochs = 50, encoder = autoEnc.buildEncoder(), losses = losses)
     
     
     
