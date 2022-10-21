@@ -44,11 +44,9 @@ This isn't applicable as the results are very reproducable
 
 ## Inputs
 
-### Input 1
+### Input 
 ![The first input of the low-resolution image](./images/Input%201%20for%20ESPCN.png)
 
-### Input 2
-![The second input of the low-resolution image](./images/Input%202%20for%20ESPCN.png)
 
 
 ## Outputs
