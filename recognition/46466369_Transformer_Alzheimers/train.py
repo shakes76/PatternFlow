@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import tensorflow_addons as tfa
 # images are of 256 x 240 size
 
-IMAGE_SIZE = 64
+IMAGE_SIZE = 128
 PATCH_SIZE = 8
 NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 3)
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0015
 NUM_EPOCH = 100
@@ -22,12 +22,10 @@ TRANSFORMER_UNITS = [
     PROJECTION_DIM * 2,
     PROJECTION_DIM
 ]
-TRANSFORMER_LAYERS = 5
+TRANSFORMER_LAYERS = 8
 MLP_LAYER_COUNTS = [2048, 1024]
 
 file_path = './checkpoint'
-
-
 
 train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
 
