@@ -21,7 +21,23 @@ After training the VQVAE on a subset of the training dataset, the model was eval
 
 ![](samples/reconstruction.png)
 
-During this run, a SSIM sample of 0.9147026308620341 was generated, this can be evaluated in the predictions script, evaluating the vqvae model in the samples.
+During this run, a SSIM of 0.91 on a sample 500 of the test dataset images. This can be re-evaluated in the predict script. While running the training the following loss plots were produced:
+
+VQVAE:\
+![](samples/training_loss_curves_vq_vae.png)
+
+PixelCNN:\
+![](samples/training_loss_curves_pixelcnn.png)
+
+Both of these come to a plateau which suggests that there likely isn't much that more epochs of training would do. Adding more data may benefit but I touch on this in the final section.
+
+However while these models seem to train well and VQVAE does function, there must be some issue either with pixelCNN or the generation code as new brains cannot be produced well
+
+![](samples/Figure_2.png)
+
+![](samples/Figure_3.png)
+
+I'm not sure where this implementation went wrong and it requires further analysis but it does illustrate how a low dimensionality code can be transformed into a arguably more brainlike reproduction.
 
 
 ## How to setup this project
