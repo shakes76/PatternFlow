@@ -53,7 +53,7 @@ NOTE: The below images and Avergae SSIM rating was originally run on 15 epochs. 
 
 >Figure 4: 5 randomly chosen reconstructed images and their ssim value compared to it original image
 
-The reconstructed images achieved a mean Structured Similarity of 73.4
+The reconstructed images achieved a mean Structured Similarity of 0.734
 
 ## Dependencies
 * Python 3.7
