@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plpt
 
 from tensorflow import keras
+from tensorflow.python.ops.unconnected_gradients import enum
 from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
@@ -27,18 +28,17 @@ class VectorQuantizer(layers.Layer):
         )
 
     def call(self, x):
-        # Calculate the input shape of the inputs and 
-        # then flatten the inputs keeping 'embedding_dim' intact.
-
+        # Calculate the input shape of the inputs and
+        # then flatten the inputs keeping `embedding_dim` intact.
         input_shape = tf.shape(x)
-        flatten = tf.reshape(x, [-1, self.embedding_dim])
+        flattened = tf.reshape(x, [-1, self.embedding_dim])
 
         # Quantization.
         encoding_indices = self.get_code_indices(flattened)
         encodings = tf.one_hot(encoding_indices, self.num_embeddings)
-        quantized = tf.reshape(quantized, input_shape, transpose_b=True)
+        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
 
-        #Reshape the quantized values back to the original input shape
+        # Reshape the quantized values back to the original input shape
         quantized = tf.reshape(quantized, input_shape)
 
         # Calculate vector quantization loss and add that to the layer. You can learn more
@@ -49,7 +49,7 @@ class VectorQuantizer(layers.Layer):
         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
         self.add_loss(self.beta * commitment_loss + codebook_loss)
 
-        # Straight-through estimator
+        # Straight-through estimator.
         quantized = x + tf.stop_gradient(quantized - x)
         return quantized
 
@@ -73,11 +73,12 @@ def get_encoder(latent_dim=16, input_image_shape=(256,256,3)):
     # OLD 
     #encoder_inputs = keras.Input(shape=(28, 28, 1))
 
-    encoder_inputs = keras.Input(shape = (None,input_image_shape))
+    encoder_inputs = keras.Input(shape = (input_image_shape))
 
-    x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
-        encoder_inputs
-    )
+    #normalization_layer = tf.keras.layers.Rescaling(1./255)
+    #x = encoder_inputs(normalization_layer)
+
+    x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
     x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
     encoder_outputs = layers.Conv2D(latent_dim, 1, padding="same")(x)
     return keras.Model(encoder_inputs, encoder_outputs, name="encoder")
@@ -91,26 +92,51 @@ def get_decoder(latent_dim=16):
     decoder_outputs = layers.Conv2DTranspose(1, 3, padding="same")(x)
     return keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-def get_vqvae(latent_dim=16, num_embeddings=64, input_shape = (256,256,3)):
-    vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
-    encoder = get_encoder(latent_dim, input_shape)
-    decoder = get_decoder(latent_dim)
-    inputs = keras.Input(shape = input_shape) #inputs = keras.Input(shape=(28, 28, 1))
-    encoder_outputs = encoder(inputs)
-    quantized_latents = vq_layer(encoder_outputs)
-    reconstructions = decoder(quantized_latents)
-    return keras.Model(inputs, reconstructions, name="vq_vae")
+# def get_vqvae(latent_dim=16, num_embeddings=64, input_shape = (256,256,3)):
+
+#     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+#     encoder = get_encoder(latent_dim, input_shape)
+#     decoder = get_decoder(latent_dim)
+#     inputs = keras.Input(shape = input_shape) #inputs = keras.Input(shape=(28, 28, 1))
+#     encoder_outputs = encoder(inputs)
+#     quantized_latents = vq_layer(encoder_outputs)
+#     reconstructions = decoder(quantized_latents)
+#     return keras.Model(inputs, reconstructions, name="vq_vae")
+
+class VQVAE(keras.models.Model):
+
+    def __init__(self, latent_dim = 16, num_embeddings = 64, image_shape = (256,256,3) ):
+        super().__init__()
+        self.latent_dim = latent_dim
+        self.num_embeddings = num_embeddings
+        self.image_shape = image_shape
+        self.normalization_layer = tf.keras.layers.Rescaling(1./255.)
+        self.vq_layer = VectorQuantizer(self.num_embeddings, self.latent_dim)
+        self.encoder = get_encoder(self.latent_dim,  self.image_shape)
+        self.decoder = get_decoder(self.latent_dim)
+    
+    def call(self, x):
+        x = self.normalization_layer(x)
+        x = self.vq_layer(x)
+        x = self.encoder(x)
+        return self.decoder(x)#keras.Model(inputs, reconstructions, name="vq_vae")
+
+    def save_model(self, path):
+        super.save_model(path)
 
 class VQVAETrainer(keras.models.Model):
-    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, input_shape = (256,256,3), **kwargs):
+
+    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, image_shape = (256,256,3), **kwargs):
         super(VQVAETrainer, self).__init__(**kwargs)
         self.train_variance = train_variance
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
-        self.input_shape = input_shape
 
-        self.vqvae = get_vqvae(self.latent_dim, self.num_embeddings, self.input_shape)
+        self.image_shape = image_shape
 
+        #self.vqvae = get_vqvae(self.latent_dim, self.num_embeddings, self.image_shape)
+        self.vqvae = VQVAE(self.latent_dim, self.num_embeddings, self.image_shape)
+        
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = keras.metrics.Mean(
             name="reconstruction_loss"
@@ -124,12 +150,18 @@ class VQVAETrainer(keras.models.Model):
             self.reconstruction_loss_tracker,
             self.vq_loss_tracker,
         ]
+    
+    def call(self, x):
+        return
 
+    @tf.function
     def train_step(self, x):
+    
         with tf.GradientTape() as tape:
+
             # Outputs from the VQ-VAE.
             reconstructions = self.vqvae(x)
-
+            print(reconstructions)
             # Calculate the losses.
             reconstruction_loss = (
                 tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance
@@ -151,3 +183,47 @@ class VQVAETrainer(keras.models.Model):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
+
+class PixelConvLayer(layers.Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        # Build the conv2d layer to initialize kernel variables
+        self.conv.build(input_shape)
+        # Use the initialized kernel to create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+class ResidualBlock(keras.layers.Layer):
+    def __init__(self, filters, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.conv1 = keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+        self.pixel_conv = PixelConvLayer(
+            mask_type="B",
+            filters=filters // 2,
+            kernel_size=3,
+            activation="relu",
+            padding="same",
+        )
+        self.conv2 = keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return keras.layers.add([inputs, x])

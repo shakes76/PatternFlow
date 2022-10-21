@@ -19,9 +19,10 @@ image_size = 256
 input_shape = (None, image_size, image_size, 3)
 
 
-train_ds = np.asarray(list(train_ds.unbatch()))
+#train_ds = np.asarray(list(train_ds.unbatch()))
 
 data_variance = tf.math.reduce_variance(train_ds)
+
 print("HEYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 print(data_variance)
 vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128, input_shape=input_shape)
@@ -29,11 +30,11 @@ vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
 
 #np.asarray(list(dataset.unbatch()))
 
-# vqvae_trainer.fit(
-#     train_ds.unbatch(),
-#     validation_data = val_ds,
-#     epochs = 5
-# )
+vqvae_trainer.fit(
+    train_ds,
+    validation_data = val_ds,
+    epochs = 5
+)
 
 
 print("all done")
