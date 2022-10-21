@@ -62,7 +62,7 @@ the next pixel, based on all prior predicted pixels.
 
 <p align = "center"><img src = "./images/PixelCNN_image.PNG", height = 400></p>
 
-To correctly define the conditional probaility of the prior predicted pixels to predict the next pixel, a mask is applied so that
+To correctly define the conditional probability of the prior predicted pixels to predict the next pixel, a mask is applied so that
 pixels which have not been predicted are not considered in the convolution operation.
 
 **Types of Masked Convolution Layer**
@@ -72,7 +72,7 @@ convolutional layer
 - Type "B": The mask zeros out all unpredicted pixels but not the current pixel, allowing convolutional connections between the
 current pixel and itself. This is applied to all subsequent convolutional layers after the first one.
 
-<p align = "center"><img src = "./images/PixelCNN_mask.PNG"></p>
+<p align = "center"><img src = "./images/maskA.PNG"><img src = "./images/maskB.PNG"></p>
 
 **Pixel Convolutional Layer**
 
@@ -85,6 +85,10 @@ pixels which have been predicted, to ensure the conditional distribution is a pr
 A layer within the PixelCNN model which involves convolutional layers, activation functions and use of residual connections or skip conenctions.
 The idea is that the block learns the functions on the residuals compared to the input images as seen below.
 
+**Loss Function**
+
+For the PixelCNN, the Sparse Categorical CrossEntropy loss function was chosen. This is because the prediction for PixelCNN
+is the codebook embedding index for each pixel, and we want to minimise the loss between the predicted embedding index and the actual embedding index.
 
 ### Implemented PixelCNN Model
 
