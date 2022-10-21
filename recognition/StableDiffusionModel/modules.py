@@ -14,6 +14,7 @@ import tensorflow.keras as kr
 import tensorflow as tf
 
 import math
+from inspect import isfunction
 
 from tensorflow import einsum
 from tensorflow.keras import Model, Sequential
@@ -33,18 +34,11 @@ ALPHA_HAT = np.concatenate((np.array([1.]), ALPHA_HAT[:-1]), axis=0)
 SQRT_ALPHA_HAT = np.sqrt(ALPHA_HAT)
 SQRT_ALPHA_HAT_COMPLIMENT = np.sqrt(1-ALPHA_HAT)
 
-# Constants relating to training
 TARGET_SIZE = (32, 32)
 CHANNELS = 1
 BATCH_SIZE=64
 TIME_STEPS = 200
 EPOCHS = 10
-NEW_INPUT = kr.Input((128, 128, 1))
-ENCODER = kr.models.Model(NEW_INPUT, autoEnc.encoder(NEW_INPUT))
-
-
-
-
 
 ############################### HELPER LAYERS #################################
 
@@ -656,8 +650,8 @@ class Unet(Model):
                 Upsample(dim_in) if not is_last else Identity()
             ])
         
-        default_outputDim = CHANNELS * (1 if not learningVar else 2)
-        self.outputDim = default(outputDim, default_outputDim)
+        defaultOutputDim = CHANNELS * (1 if not learningVar else 2)
+        self.outputDim = default(outputDim, defaultOutputDim)
         
         self.finalConv = Sequential([
             wrappedBlock(dim * 2, dim),
