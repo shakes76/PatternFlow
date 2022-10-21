@@ -54,9 +54,22 @@ Once the model was trained, it was exported as a trained TF model.
 ### Model Testing
 Using the _make_prediction_ function within _[predict.py](./predict.py)_, the model can be tested using the reserved test data subset. Calling _make_prediction_ generates plots which compare the predicted lesion segmentation to the original image and ground truth segmentation. Furthermore, the dice coefficient and IoU metrics can be assessed.
 
+## Results
+Overall, the model performed very well and from investigating the training history, it is clear the loss was minimised as the dice coefficient and IoU metrics approached _1.0_.
 
+Loss                       |  Dice Coefficient         |  Intersection Over Union
+:-------------------------:|:-------------------------:|:-------------------------:
+![Loss vs Epoch](./figures/lossVsEpoch.png)   | ![Dice vs Epoch](./figures/diceVsEpoch.png) | ![IoU vs Epoch](./figures/iouVsEpoch.png)
 
+To evaluate the performance against 'unseen' data, the model was made to predict the segmentation mask from the test subset images. Below is the resulting comparisons between the original image, ground truth segmentation mask and the segmentation prediction. The dice coefficient and IoU metric for each prediction is also noted.
 
+Prediction Evaluation      
+:-------------------------:
+![Loss vs Epoch](./figures/testComparison151.png)
+![Loss vs Epoch](./figures/testComparison152.png)
+![Loss vs Epoch](./figures/testComparison153.png)
+![Loss vs Epoch](./figures/testComparison154.png)
+![Loss vs Epoch](./figures/testComparison155.png)
 
 
 
