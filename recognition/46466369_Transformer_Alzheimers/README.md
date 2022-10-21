@@ -61,7 +61,7 @@ Several other omitted attempts to improve the model performance were made, rangi
 
 While the task was to achieve greater than 80% accuracy on the test set, this proved quite difficult and would require fine tuning of each of the hyperparameters to see improvement. 
 
-A potential cause for this difficulty may be the nature of the train and test images being too different, preventing the model from drawing reasonable connections between features. A method of cropping the images to better fit the brains themselves may also benefit the model, and reduce computation time for smaller images.
+A potential cause for this difficulty may be the nature of the train and test images being too different, preventing the model from drawing reasonable connections between features, instead overfitting to the test set. A method of cropping the images to better fit the brains themselves may also benefit the model, and reduce computation time for smaller images.
 
 ## Requirements
 - tensorflow 2.10.0
