@@ -1,5 +1,8 @@
 # Stable Diffusion Implementation on the OASIS Brain MRI Dataset
 
+Student: Daniel Ju Lian Wong
+Student ID: 46069340
+
 Diffusion Models are a relatively new generative model that operate by training a neural network to reverse a sequence of noise additions to some dataset. These models have shown a lot of promise with regards to image generation.
 
 A recent development in Diffusion Model architectures is Latent Diffusion Models. Latent diffusion models involve finding training a diffusion model
@@ -17,7 +20,7 @@ The implemented latent diffusion model can be broken down into two parts:
 
 For a broad overview of the model, see below (note that this implemnetaiton lacks the crossattention blocks and conditioning component, as the task involved only generating new images from the OASIS brain dataset)
 
-![](images/ModelCard.png)
+![ModelCard](images/ModelCard.png)
 
 Image from: https://arxiv.org/pdf/2112.10752.pdf
 
@@ -35,21 +38,21 @@ the upsampling part of the model would be reached. Similarly to the downsampling
 component, this would involve passing the data through a number of residual blocks, except that they would pass through an upsampling convolutional layer instead of a downsampling one at the end.
 
 The Autoencoder was trained against the mean-squared-error between its reconstructions of the input images and the output image. The loss can be seen below (note that since the task was to generate instances of data belonging to the original dataset, only training loss was recorded and used)
-![](images/autoEncoderLoss.png)
+![loss1](images/autoEncoderLoss.png)
 <br>
-![](images/autoEncoderLoss2.png)
+![loss2](images/autoEncoderLoss2.png)
 
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
-![](images/autoEncoderExample.png)
+![aEExample](images/autoEncoderExample.png)
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
 
 For an illustration of the loss during the training process, see below:
-![](images/UNetLoss.png)
+![UNetLoss](images/UNetLoss.png)
 
 For an illustration of the denoising process occuring on the latent space, see below:
-![](images/DenoisingLatentSpace.png)
+![LatentSpaceDenoising](images/DenoisingLatentSpace.png)
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
