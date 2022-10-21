@@ -1,14 +1,15 @@
-from dataset	import get_ttv, normalise
-from modules	import *
+from dataset			import get_ttv, normalise
+from modules			import *
 
-from numpy			import var
-from tensorflow		import keras
+from matplotlib.pyplot	import plot, title, xlabel, ylabel, show, legend
+from numpy				import var
+from tensorflow			import keras
 
-LATENT_DIMENSION_SIZE	= 16
+LATENT_DIMENSION_SIZE	= 8
 NUM_EMBEDDINGS			= 64
 BETA					= 0.25
-VQVAE_EPOCHS			= 100
-PCNN_EPOCHS				= 100
+VQVAE_EPOCHS			= 30
+PCNN_EPOCHS				= 50
 # Based on GTX1660Ti Mobile
 BATCH_SIZE				= 128
 OPTIMISER				= keras.optimizers.Adam
@@ -18,7 +19,7 @@ VALIDATION_SPLIT		= 0.1
 METRICS					= ["accuracy"]
 MODEL_PATH				= "vqvae.h5"
 PCNN_PATH				= "pixel_communist_news_network.h5"
-#TRAINER_PATH			= "trainer.h5"
+LOC						= "upper right"
 
 def train_vqvae(train_set, train_vnce):
 	"""Train up a VQVAE from a training dataset and serialise it to a h5
@@ -27,16 +28,36 @@ def train_vqvae(train_set, train_vnce):
 
 	return		- the trained VQVAE and its wrapper trainer object
 	"""
-	print(train_vnce)
 
 	trainer		= Trainer(train_vnce, LATENT_DIMENSION_SIZE, NUM_EMBEDDINGS, BETA)
 	trainer.compile(optimizer = OPTIMISER())
 	training	= trainer.fit(train_set, epochs = VQVAE_EPOCHS, batch_size = BATCH_SIZE)
 	vqvae		= trainer.vqvae
 
+	plot(training.history["reconstruction_loss"])
+	title("VQVAE Training Loss per Epoch")
+	ylabel("Loss")
+	xlabel("Epoch")
+	show()
+
 	# In terms of testing and validating for the vqvae, we have no testing and validation for the vqvae
 
 	return vqvae, trainer
+
+def pcnn_graph(first, second, metric):
+	plot(first)
+	plot(second)
+	title(f"PCNN {metric} per Epoch")
+	ylabel(metric)
+	xlabel("Epoch")
+	legend(["Training", "Validation"], loc = LOC)
+	show()
+
+def pcnn_metrics(metrics):
+	tloss,	vloss	= metrics["loss"],		metrics["val_loss"]
+	tacc,	vacc	= metrics["accuracy"],	metrics["val_accuracy"]
+	pcnn_graph(tloss, vloss, "Loss")
+	pcnn_graph(tacc, vacc, "Accuracy")
 
 def main():
 	tr, te, va		= get_ttv()
@@ -55,8 +76,8 @@ def main():
 	pcnn			= build_pcnn(trainer, encoded_out)
 	pcnn.compile(optimizer = OPTIMISER(PCNN_OPT), loss = LOSS, metrics = METRICS)
 	pcnn_training	= pcnn.fit(x = codebooks, y = codebooks, batch_size = BATCH_SIZE, epochs = PCNN_EPOCHS, validation_split = VALIDATION_SPLIT)
+	pcnn_metrics(pcnn_training.history)
 	pcnn.save(PCNN_PATH)
-	#trainer.save_weights(TRAINER_PATH)
 
 if __name__ == "__main__":
 	main()

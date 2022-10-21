@@ -28,7 +28,7 @@ KERN_INIT			= 1.0
 RESIDUAL_BLOCKS		= 2
 ENC_IN_SHAPE		= (80, 80, 1)
 NO_RESID_BLOCKS		= 2
-NO_PCNN_LAYERS		= 2
+NO_PCNN_LAYERS		= 4
 
 class VectorQuantiser(layers.Layer):
 	"""
@@ -96,7 +96,8 @@ def encoder(lat_dim):
 	enc_in	= keras.Input(shape = ENC_IN_SHAPE)
 	convos	= layers.Conv2D(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(enc_in)
 	convos2	= layers.Conv2D(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
-	enc_out	= layers.Conv2D(lat_dim, 1, padding = "same")(convos2)
+	convos3	= layers.Conv2D(4 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	enc_out	= layers.Conv2D(lat_dim, 1, padding = "same")(convos3)
 
 	return keras.Model(enc_in, enc_out, name = "encoder")
 
@@ -111,8 +112,9 @@ def decoder(lat_dim):
 	"""
 
 	lat_in	= keras.Input(shape = encoder(lat_dim).output.shape[1:])
-	convos	= layers.Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
-	convos2	= layers.Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	convos	= layers.Conv2DTranspose(4 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
+	convos2	= layers.Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	#convos3	= layers.Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos2)
 	dec_out	= layers.Conv2DTranspose(1, KERN_SIZE, padding = "same")(convos2)
 
 
@@ -239,9 +241,10 @@ class ResidualBlock(layers.Layer):
 def build_pcnn(trainer, enc_outs):
 	"""Construct the Pixel CNN
 
-	TODO FIXME
+	trainer		- the vqvae trainer class
+	enc_outs	- encoded outputs from the vqvae
 
-	return			- the assembled Pixel CNN
+	return		- the assembled Pixel CNN
 	"""
 
 	in_shape	= enc_outs.shape[1:-1]

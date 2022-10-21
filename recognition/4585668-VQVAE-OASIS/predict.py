@@ -9,64 +9,73 @@ from	dataset					import	get_ttv, normalise
 from	modules					import	VectorQuantiser, PixelConvolution, ResidualBlock, Trainer, FLAT
 from	train					import	PCNN_PATH, LATENT_DIMENSION_SIZE, NUM_EMBEDDINGS, BETA, OPTIMISER, MODEL_PATH
 
-RECONS_TO_VIEW	= 5
-NOVELS			= 5
+VISUALISATIONS	= 5
 COLS			= 2
 MAX_VAL			= 1.0
 CENTRE			= 0.5
 GREY			= cm.gray
 BATCH			= 10
 
-def compare(images, recons):
-	ssims = 0
-	for i, pair in enumerate(zip(images, recons)):
+def compare(originals, recons):
+	ssims	= 0
+	pairs	= zip(originals, recons)
+	for i, pair in enumerate(pairs):
 		o, r	= pair
 		orig	= convert_image_dtype(o, tf.float32)
 		recon	= convert_image_dtype(r, tf.float32)
 		sim		= ssim(orig, recon, max_val = MAX_VAL)
 		ssims	+= sim
-		subplot(RECONS_TO_VIEW, COLS, COLS * i + 1)
+		subplot(VISUALISATIONS, COLS, COLS * i + 1)
 		imshow(o + CENTRE, cmap = GREY)
 		title("Test Input")
 		axis("off")
-		subplot(RECONS_TO_VIEW, COLS, COLS * (i + 1))
+		subplot(VISUALISATIONS, COLS, COLS * (i + 1))
 		imshow(r + CENTRE, cmap = GREY)
 		title("Test Reconstruction")
 		axis("off")
-		suptitle("SSIM: %.2f" %sim)
+	suptitle("SSIM: %.2f" %(ssims / len(originals)))
 	show()
 
 	return ssims
 
-def validate_vqvae(test):
-	vqvae		= load_model(MODEL_PATH, custom_objects = {"VectorQuantiser": VectorQuantiser})
-	image_inds	= choice(len(test), RECONS_TO_VIEW)
+def validate_vqvae(vqvae, test):
+	image_inds	= choice(len(test), VISUALISATIONS)
 	images		= test[image_inds]
 	recons		= vqvae.predict(images)
 	ssim		= compare(images, recons)
-	avg_ssim	= ssim / RECONS_TO_VIEW
+	avg_ssim	= ssim / VISUALISATIONS
 	print(f"Average SSIM: {avg_ssim}")
 
 def show_new_brains(priors, samples):
-	for i in range(NOVELS):
-		subplot(NOVELS, COLS, COLS * i + 1)
+	for i in range(VISUALISATIONS):
+		subplot(VISUALISATIONS, COLS, COLS * i + 1)
 		imshow(priors[i], cmap = GREY)
 		title("PCNN Prior")
 		axis("off")
-		subplot(NOVELS, COLS, COLS * (i + 1))
+		subplot(VISUALISATIONS, COLS, COLS * (i + 1))
 		imshow(samples[i] + CENTRE, cmap = GREY)
 		title("Decoded Prior")
 		axis("off")
 	show()
 
-def validate_pcnn(train_vnce, test):
+def show_quantisations(test, encodings, quantiser):
+	encodings	= encodings[:len(encodings) // 2] # Throw out half the encodings because I have no memory
+	flat		= encodings.reshape(FLAT, encodings.shape[FLAT])
+	codebooks	= quantiser.code_indices(flat).numpy().reshape(encodings.shape[:FLAT])
+
+	for i in range(VISUALISATIONS):
+		subplot(VISUALISATIONS, COLS, COLS * i + 1)
+		imshow(test[i] + CENTRE, cmap = GREY)
+		title("Test Image")
+		axis("off")
+		subplot(VISUALISATIONS, COLS, COLS * (i + 1))
+		imshow(codebooks[i], cmap = GREY)
+		title("VQ Encoding")
+		axis("off")
+	show()
+
+def validate_pcnn(vqvae, train_vnce, test):
 	pcnn	= load_model(PCNN_PATH, custom_objects = {"PixelConvolution": PixelConvolution, "ResidualBlock": ResidualBlock})
-	#trainer	= Trainer(train_vnce, LATENT_DIMENSION_SIZE, NUM_EMBEDDINGS, BETA)
-	#trainer.build(inputs = ENC_IN_SHAPE)
-	#trainer.build((None, *(ENC_IN_SHAPE)[:-1]))
-	#trainer.compile(optimizer = OPTIMISER())
-	#trainer.build(inputs = ENC_IN_SHAPE, outputs = ENC_IN_SHAPE)
-	#trainer.load_weights(TRAINER_PATH)
 	priors	= zeros(shape = (BATCH,) + (pcnn.input_shape)[1:])
 	batch, rows, columns = priors.shape
 
@@ -77,10 +86,12 @@ def validate_pcnn(train_vnce, test):
 			prob	= sampler.sample()
 			priors[:, r, c] = prob[:, r, c]
 
-	vqvae		= load_model(MODEL_PATH, custom_objects = {"VectorQuantiser": VectorQuantiser})
+
 	encoder		= vqvae.get_layer("encoder")
+	quantiser	= vqvae.get_layer("quantiser")
 	encoded_out	= encoder.predict(test)
-	old_embeds	= vqvae.get_layer("quantiser").embeddings
+	show_quantisations(test, encoded_out, quantiser)
+	old_embeds	= quantiser.embeddings
 	pr_onehots	= tf.one_hot(priors.astype("int32"), NUM_EMBEDDINGS).numpy()
 	qtised		= tf.matmul(pr_onehots.astype("float32"), old_embeds, transpose_b = True)
 	qtised		= tf.reshape(qtised, (FLAT, *(encoded_out.shape[1:])))
@@ -93,8 +104,9 @@ def main():
 	test		= normalise(te)
 	train		= normalise(tr)
 	vnce		= var(train)
-	#validate_vqvae(test)
-	validate_pcnn(vnce, test)
+	vqvae		= load_model(MODEL_PATH, custom_objects = {"VectorQuantiser": VectorQuantiser})
+	validate_vqvae(vqvae, test)
+	validate_pcnn(vqvae, vnce, test)
 
 if __name__ == "__main__":
 	main()
