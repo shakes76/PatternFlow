@@ -63,8 +63,8 @@ def preprocess():
   np.fill_diagonal(A_copy, diags)
 
   # adjacency matrix = row normalised matrix with self loops 
-  adj_mtrx = torch.from_numpy(rownormalise(A_copy[0:1, 0:1])) 
-  features = rownormalise(features[0:1000])
+  adj_mtrx = torch.from_numpy(rownormalise(A_copy)) 
+  features = rownormalise(features)
 
   # reserve 60% for training,  20% for validation, and another 20% for testing
   train_end = int(0.6*len(features))
