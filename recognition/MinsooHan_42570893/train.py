@@ -9,7 +9,7 @@ from skimage import io
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 
-data_processing = dataset.data_preprocessing()
+#data_processing = dataset.data_preprocessing()
 
 save_train_data = 'E:/Uni/COMP3710/Assignment\PatternFlow/recognition/MinsooHan_42570893/train_data/'
 save_training_ground_truth_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/train_ground_truth_data/'
@@ -83,7 +83,6 @@ test_y = np.concatenate((test_y, z3), axis=-1)
 input_image = Input((256, 256, 3))
 model = modules.improved_Unet(input_image)
 learning_rate = 0.0005
-epochs = 100
 decay_rate = learning_rate * 0.985
 model.compile(optimizer=Adam(learning_rate=learning_rate, decay=decay_rate), loss=utils.dice_coef_loss, metrics=[utils.dice_coef])
 model.summary()

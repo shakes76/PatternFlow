@@ -1,7 +1,5 @@
 import os
 import cv2 as cv
-import numpy as np
-import pandas as pd
 import SimpleITK as itk
 from skimage import io
 
@@ -9,6 +7,8 @@ from skimage import io
 # Preprocesses the data and stores the preprocessed data into the directories.
 # And returns train_x, train_y, test_x, and test_y respectively.
 def data_preprocessing():
+    print("Data preprocessing started")
+    print("Data loading started")
     # Paths of the training, validation, and test images of ISIC dataset.
 
     training_images_path = 'E:/Uni/COMP3710/ISIC-2017_Training_Data/'
@@ -28,15 +28,16 @@ def data_preprocessing():
 
     test_ground_truth_images_path = 'E:/Uni/COMP3710/ISIC-2017_Test_v2_Part1_GroundTruth/'
     test_ground_truth_images = os.listdir(test_ground_truth_images_path)
-
+    print("Data loading ended")
+    print("Data saving started")
     # Path for saving the data. Change the paths to where you are going to save the data.
-    save_train_data = 'E:/Uni/COMP3710/Assignment\PatternFlow/recognition/MinsooHan_42570893/train_data/'
+    save_train_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/train_data/'
     save_training_ground_truth_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/train_ground_truth_data/'
     save_validation_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/validation_data/'
     save_validation_ground_truth_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/validation_ground_truth_data/'
     save_test_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/test_data/'
     save_test_ground_truth_data = 'E:/Uni/COMP3710/Assignment/PatternFlow/recognition/MinsooHan_42570893/test_ground_truth_data/'
-
+    print("Data saving ended")
     # Create directories for saving.
 
     if not os.path.exists(save_train_data):
@@ -52,7 +53,7 @@ def data_preprocessing():
     if not os.path.exists(save_test_ground_truth_data):
         os.mkdir(save_test_ground_truth_data)
 
-    image_size = 512
+    image_size = 256
 
     # Define functions for creating training, validation, and test images.
 
@@ -116,6 +117,7 @@ def data_preprocessing():
             io.imsave(save_test_ground_truth_data + image[:-4] + '.png', resized_array)
         return data
 
+    print("Creating images started")
     # Create the images
 
     training_data = create_training_images()
@@ -124,44 +126,4 @@ def data_preprocessing():
     validation_ground_truth_data = create_validation_ground_truth_images()
     test_data = create_test_images()
     test_ground_truth_data = create_test_ground_truth_images()
-
-    # Define a function for standardization.
-    def standardize_image(image):
-        standardized_image = np.zeros(image.shape)
-
-        for i in range(image.shape[2]):
-            slice_image = image[:, :, i]
-            centered = slice_image - np.mean(slice_image)
-            if (np.std(centered) != 0):
-                centered = centered / np.std(centered)
-            standardized_image[:, :, i] = centered
-
-        return standardized_image
-
-    # Load metadata.csv files of training and test data. And also load and store the images and masks in the training and test directories.
-
-    metadata_training = pd.read_csv('E:/Uni/COMP3710/ISIC-2017_Training_Data_metadata.csv')
-    metadata_test = pd.read_csv('E:/Uni/COMP3710/ISIC-2017_Test_v2_Data_metadata.csv')
-
-    train_x, train_y = [], []
-    test_x, test_y = [], []
-
-    for index, cell in metadata_training.iterrows():
-        read_image = itk.ReadImage(save_train_data + cell[0] + '.png')
-        image_array = itk.GetArrayFromImage(read_image)
-        mask = io.imread(save_training_ground_truth_data + cell[0] + '_segmentation.png')
-        standardized_image = standardize_image(image_array)
-        standardized_mask = standardize_image(mask)
-        train_x.append(standardized_image)
-        train_y.append(standardized_mask)
-
-    for index, cell in metadata_test.iterrows():
-        read_image = itk.ReadImage(save_test_data + cell[0] + '.png')
-        image_array = itk.GetArrayFromImage(read_image)
-        mask = io.imread(save_test_data + cell[0] + '_segmentation.png')
-        standardized_image = standardize_image(image_array)
-        standardized_mask = standardize_image(mask)
-        test_x.append(standardized_image)
-        test_y.append(standardized_mask)
-
-    return train_x, train_y, test_x, test_y
+    print("Creating images ended")
