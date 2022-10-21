@@ -1,5 +1,6 @@
 from dataset import parse_data
 from train import run_model
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # Parse facebook.npz to get features, adjacency matrix and targets
@@ -7,3 +8,7 @@ if __name__ == "__main__":
 
     # Run the model - builds and tests - set tsne plot to true
     run_model(features, adjacency_matrix, targets, tsne_plot=True)
+
+    # Show any graphs
+    plt.show()
+    

@@ -36,15 +36,17 @@ class GCN(torch.nn.Module):
     def __init__(self, in_features, out_classes):
         super().__init__()
         # Uses two GCN layers
-        self.conv1 = GCNLayer(in_features, 32)
-        self.conv2 = GCNLayer(32, out_classes)
+        self.conv1 = GCNLayer(in_features, 64)
+        self.conv2 = GCNLayer(64, 32)
+        self.conv3 = GCNLayer(32, out_classes)
 
     def forward(self, x, adjacency_matrix):
         """
         Structure:
-            Convolutional layer (? -> 32)
-            Relu
-            Dropout layer
+            Convolutional layer (? -> 64)
+            Relu + Dropout Layer
+            Convolutional layer (64 -> 32)
+            Relu + Dropout Layer
             Convolutional layer (32 -> 4)
             Logarithmic softmax
         """
@@ -52,5 +54,8 @@ class GCN(torch.nn.Module):
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
         x = self.conv2(x, adjacency_matrix)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.conv3(x, adjacency_matrix)
 
         return F.log_softmax(x, dim=1)
