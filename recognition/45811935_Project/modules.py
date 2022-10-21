@@ -146,8 +146,7 @@ class VQVAE(Model):
     """
 
     def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, num_channels=3,
-                 name="vq_vae",
-                 **kwargs):
+                 name="vq_vae", **kwargs):
         super(VQVAE, self).__init__(name=name, **kwargs)
         self._tr_var = tr_var
         self._num_encoded = num_encoded

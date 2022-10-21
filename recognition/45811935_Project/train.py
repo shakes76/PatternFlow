@@ -5,6 +5,7 @@
     Author: Adrian Rahul Kamal Rajkamal
     Student Number: 45811935
 """
+import sys
 from os import mkdir
 from os.path import exists
 from dataset import *
@@ -19,15 +20,16 @@ import pandas as pd
 FILE_PATH = "./ADNI_AD_NC_2D/AD_NC/"
 SAVED_WEIGHTS_PATH = "./SavedWeights/"  # Doesn't have to exist - code will create directory if not
 RESULTS_PATH = "./Results/"  # Doesn't have to exist yet - code will create directory if not
-IMG_DIMENSION = 256
+IMG_SHAPE = 256
 SEED = 42
-NUM_IMAGES_TO_SHOW = 10
+NUM_IMAGES_TO_SHOW = 5
 
 TRAINING_VQVAE = False  # Set to True to train the VQ-VAE
 TRAINING_PIXELCNN = True  # Set to True train the PixelCNN
 
 """ Hyper-parameters """
 RGB = True
+BETA = 0.25
 NUM_EMBEDDINGS = 256
 BATCH_SIZE = 32
 LATENT_DIM = 32
@@ -53,17 +55,17 @@ device = "/GPU:0" if gpu_used else "/CPU:0"
 """ Loading Data and Calculating Variance & Mean SSIM """
 
 # Load and pre-process data
-train_data = load_preprocess_image_data(path=FILE_PATH + "train", img_dim=IMG_DIMENSION,
+train_data = load_preprocess_image_data(path=FILE_PATH + "train", img_dim=IMG_SHAPE,
                                         batch_size=BATCH_SIZE, rgb=RGB,
                                         validation_split=VALIDATION_SPLIT, subset="training",
                                         seed=SEED, shift=PIXEL_SHIFT)
 
-val_data = load_preprocess_image_data(path=FILE_PATH + "train", img_dim=IMG_DIMENSION,
+val_data = load_preprocess_image_data(path=FILE_PATH + "train", img_dim=IMG_SHAPE,
                                       batch_size=BATCH_SIZE, rgb=RGB,
                                       validation_split=VALIDATION_SPLIT, subset="validation",
                                       seed=SEED, shift=PIXEL_SHIFT)
 
-test_data = load_preprocess_image_data(path=FILE_PATH + "test", img_dim=IMG_DIMENSION,
+test_data = load_preprocess_image_data(path=FILE_PATH + "test", img_dim=IMG_SHAPE,
                                        batch_size=BATCH_SIZE, rgb=RGB, shift=PIXEL_SHIFT)
 
 
@@ -78,7 +80,7 @@ full_test_data = test_data.unbatch()
 num_test_images = full_test_data.reduce(np.int32(0), lambda x, _: x + 1).numpy()
 
 # Calculate (unbiased) training variance (across all pixels of all images)
-num_train_pixels = num_train_images * num_channels * IMG_DIMENSION ** 2
+num_train_pixels = num_train_images * num_channels * IMG_SHAPE ** 2
 
 image_sum = full_train_data.reduce(np.float32(0), lambda x, y: x + y).numpy().flatten()
 total_pixel_sum = image_sum.sum()
@@ -127,13 +129,17 @@ def mean_ssim(data, data_size, model):
 
 
 # Create VQ-VAE model
-vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM,
+vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM, beta=BETA,
               num_channels=num_channels)
 
 
-# Create directory to store model results (if said directory does not already exist)
+# Create directory to store model weights (if said directory does not already exist)
 if not exists(SAVED_WEIGHTS_PATH):
     mkdir(SAVED_WEIGHTS_PATH)
+    
+# Create directory to save all results (if said directory does not already exist)
+    if not exists(RESULTS_PATH):
+        mkdir(RESULTS_PATH)
 
 # Store training loss/metric results in CSV file - change append parameter to True if wanting to
 # continue training
@@ -156,8 +162,15 @@ if TRAINING_VQVAE:
         # Final SSIM Values
         final_train_mean_ssim = mean_ssim(train_data, num_train_images, vqvae)
         final_val_mean_ssim = mean_ssim(val_data, num_val_images, vqvae)
-        print("Final Training Mean SSIM", final_train_mean_ssim)
-        print("Final Validation Mean SSIM", final_val_mean_ssim)
+
+        # Print results to file
+        main_stdout = sys.stdout
+
+        with open(RESULTS_PATH + 'main_results.txt', 'a') as f:
+            sys.stdout = f
+            print("Final Training Mean SSIM", final_train_mean_ssim)
+            print("Final Validation Mean SSIM", final_val_mean_ssim)
+            sys.stdout = main_stdout
 
         # Save trained model
         vqvae.save_weights(SAVED_WEIGHTS_PATH + "trained_model_weights")
@@ -172,10 +185,6 @@ vqvae.load_weights(SAVED_WEIGHTS_PATH + "trained_model_weights")
 
 def plot_results(epoch_results):
     """ Plots and saves all train/val losses"""
-    # Make folder to save plots
-    if not exists(RESULTS_PATH):
-        mkdir(RESULTS_PATH)
-
     # Total losses
     plt.figure()
     plt.plot(epoch_results['total_loss'], label='Total Loss (Training)')
@@ -216,57 +225,81 @@ def plot_results(epoch_results):
 training_results = pd.read_csv(SAVED_WEIGHTS_PATH + 'training.log', sep=',', engine='python')
 plot_results(training_results)
 
+
+def show_vqvae_results(images):
+    """
+    Plots and saves the input, codebook, and reconstructions made by the VQ-VAE, of the given 
+    images. Also calculates and saves the SSIM between each image and its reconstruction.
+    
+    Args:
+        images: images to pass through the VQ-VAE
+
+    Returns:
+        Saves VQ-VAE images and SSIM results
+    """
+
+    # Reconstruction
+    reconstructed = vqvae.predict(images)
+    
+    # Code (Flattened)
+    encoder_outputs = vqvae.get_encoder().predict(images)
+    encoder_outputs_flattened = encoder_outputs.reshape(-1, encoder_outputs.shape[-1])
+    codebook_indices = vqvae.get_vq().get_codebook_indices(encoder_outputs_flattened)
+    
+    # Code (reshaped)
+    codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
+    
+    # Unshift and reshape reconstructions and original images and print SSIM values
+    plt.figure()
+    for i in range(len(images)):
+        test_image = tf.reshape(images[i], (1, IMG_SHAPE, IMG_SHAPE, num_channels))\
+                         + PIXEL_SHIFT
+    
+        reconstructed_image = tf.reshape(reconstructed[i],
+                                         (1, IMG_SHAPE, IMG_SHAPE, num_channels)) + PIXEL_SHIFT
+    
+        codebook_image = codebook_indices[i]
+    
+        plt.subplot(1, 3, 1)
+        plt.imshow(tf.squeeze(test_image))
+        plt.title("Test Image")
+        plt.axis("off")
+    
+        plt.subplot(1, 3, 2)
+        plt.imshow(codebook_image)
+        plt.title("Codebook")
+        plt.axis("off")
+    
+        plt.subplot(1, 3, 3)
+        plt.imshow(tf.squeeze(reconstructed_image))
+        plt.title("Reconstruction")
+        plt.axis("off")
+    
+        plt.savefig(RESULTS_PATH + f'vq_vae_reconstructions_{i}.png')
+    
+        ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image, max_val=1.0)).numpy()
+    
+        main_stdout = sys.stdout
+        with open(RESULTS_PATH + 'main_results.txt', 'a') as f:
+            sys.stdout = f
+            print(f"SSIM between Test Image {i} and Reconstruction: ", ssim)
+            sys.stdout = main_stdout
+
+
 # Generate and plot 10 reconstructions from test set, along with their codes and inputs and SSIMs
 for sample_batch in test_data.take(1).as_numpy_iterator():
     sample_batch = sample_batch[:NUM_IMAGES_TO_SHOW]
+    show_vqvae_results(sample_batch)
 
-# Reconstruction
-reconstructed = vqvae.predict(sample_batch)
 
-# Code (Flattened)
-encoder_outputs = vqvae.get_encoder().predict(sample_batch)
-encoder_outputs_flattened = encoder_outputs.reshape(-1, encoder_outputs.shape[-1])
-codebook_indices = vqvae.get_vq().get_codebook_indices(encoder_outputs_flattened)
-
-# Code (reshaped)
-codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
-
-# Unshift and reshape reconstructions and original images and print SSIM values
-plt.figure()
-for i in range(len(sample_batch)):
-    test_image = tf.reshape(sample_batch[i], (1, IMG_DIMENSION, IMG_DIMENSION, num_channels))\
-                     + PIXEL_SHIFT
-
-    reconstructed_image = tf.reshape(reconstructed[i],
-                                     (1, IMG_DIMENSION, IMG_DIMENSION, num_channels)) + PIXEL_SHIFT
-
-    codebook_image = codebook_indices[i]
-
-    plt.subplot(1, 3, 1)
-    plt.imshow(tf.squeeze(test_image))
-    plt.title("Test Image")
-    plt.axis("off")
-
-    plt.subplot(1, 3, 2)
-    plt.imshow(codebook_image)
-    plt.title("Codebook")
-    plt.axis("off")
-
-    plt.subplot(1, 3, 3)
-    plt.imshow(tf.squeeze(reconstructed_image))
-    plt.title("Reconstruction")
-    plt.axis("off")
-
-    plt.show()
-    plt.savefig(RESULTS_PATH + f'vq_vae_reconstructions_{i}.png')
-
-    ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image, max_val=1.0)).numpy()
-    print("SSIM between Test Image and Reconstruction: ", ssim)
-
-# Print overall mean test SSIM for VQ-VAE:
+# Print overall mean test SSIM for VQ-VAE to file:
 with tf.device(device):
     test_mean_ssim_vqvae = mean_ssim(test_data, num_test_images, vqvae)
-    print("VQ-VAE Test Mean SSIM:", test_mean_ssim_vqvae)
+    main_stdout = sys.stdout
+    with open(RESULTS_PATH + 'main_results.txt', 'a') as f:
+        sys.stdout = f
+        print("VQ-VAE Test Mean SSIM:", test_mean_ssim_vqvae)
+        sys.stdout = main_stdout
 
 """ PixelCNN Model (Train/Val/Test/Save/Plot) """
 
