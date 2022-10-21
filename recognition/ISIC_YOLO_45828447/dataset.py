@@ -84,6 +84,7 @@ def plot_bounding_box(img_path, seg_path):
 def main():
     resize_images("D:\GitHub\COMP3710 DEMO 3\ISIC", IMAGE_DIM, verbose=True)
     create_yolo_label("D:\Dataset\ISIC_640\Train", "D:\Dataset\ISIC_640\Train\Train_Truth_gold.csv")
+    # Used to check if bounding boxes are places correctly
     plot_bounding_box("D:\Dataset\ISIC_640\Train\Train_data\images\ISIC_0000000_resized_640.jpg", "D:\Dataset\ISIC_640\Train\Train_Truth_PNG\ISIC-2017_Training_Part1_GroundTruth\ISIC_0000000_segmentation_resized_640.png")
 
 if __name__ == "__main__":
