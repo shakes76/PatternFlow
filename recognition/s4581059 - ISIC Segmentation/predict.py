@@ -1,5 +1,9 @@
-#Shows example of trained model
-#Prints out results and provides visualisations 
+"""
+Shows example of trained model
+Prints out results and provides visualisations 
+Written by Daniel Sayer 2022
+For 21/10/22
+"""
 
 import matplotlib.pyplot as plt
 import tensorflow as tf

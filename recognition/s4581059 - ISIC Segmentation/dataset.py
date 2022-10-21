@@ -1,10 +1,15 @@
+"""
+Contains the data loader for loading and preprocessing data
+Written by Daniel Sayer 2022
+For 21/10/22
+"""
+
 from sklearn.model_selection import train_test_split
 import os
 from glob import glob
 import cv2
 import numpy as np
 import tensorflow as tf
-#Contains the data loader for loading and preprocessing data
 
 
 def load_data(path):

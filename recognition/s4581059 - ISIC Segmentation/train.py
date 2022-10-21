@@ -1,4 +1,8 @@
-#Contains the source code for training, validating, testing and saving the model
+"""
+Contains the source code for training, validating, testing and saving the model
+Written by Daniel Sayer 2022
+For 21/10/22
+"""
 
 from modules import model
 from dataset import *

@@ -1,5 +1,9 @@
-#Contains the source code of the components of the model.
+"""
+Contains the source code of the components of the model.
 
+Written by Daniel Sayer 2022
+For 21/10/22
+"""
 import tensorflow as tf
 from keras.layers import Input, Conv2D, Dropout, UpSampling2D, Concatenate, Add
 from keras.models import Model
