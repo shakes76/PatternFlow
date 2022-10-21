@@ -48,21 +48,30 @@ The dataset was batched into groups of 5, while the original paper tried groups 
 
 In my implementation, the network can be extended however many levels with any suitable number of segmentation layers along the localization pathway. However, I used the same number of filters, levels, and segmentation layers as the researchers in [1].
 
+The metric I assign to the model is an implementation of [1]'s dice loss function. This is the main metric used to assess the performance of Improved UNet.
+
 ## Results
 
-After running model evaluation on the testing split of my dataset, I received the following outputs:
+### Training
+
+After training the model on the training and validation splits of my dataset, I receive the following outputs:
+
+<img src=images/model_dice_coefficient.png width=500, height=500>
+
+### Testing
+
+After evaluating the model on the testing split of my dataset, I received the following outputs:
 
 ```
 Model evaluation on test dataset: loss = 0.13993357121944427, dice_coef = 0.9171923398971558
 ```
-
 | Image | Predicted | Actual |
 | :-: | :-: | :-: |
-| <img src="images/ti0.png" width="128" height="96"> | <img src="images/pm0.png" width="128" height="96"> | <img src="images/am0.png" width="128" height="96"> |
-| <img src="images/ti1.png" width="128" height="96"> | <img src="images/pm1.png" width="128" height="96"> | <img src="images/am1.png" width="128" height="96"> |
-| <img src="images/ti2.png" width="128" height="96"> | <img src="images/pm2.png" width="128" height="96"> | <img src="images/am2.png" width="128" height="96"> |
-| <img src="images/ti3.png" width="128" height="96"> | <img src="images/pm3.png" width="128" height="96"> | <img src="images/am3.png" width="128" height="96"> |
-| <img src="images/ti4.png" width="128" height="96"> | <img src="images/pm4.png" width="128" height="96"> | <img src="images/am4.png" width="128" height="96"> |
+| <img src=images/ti0.png width=128 height=96> | <img src=images/pm0.png width=128 height=96> | <img src=images/am0.png width=128 height=96> |
+| <img src=images/ti1.png width=128 height=96> | <img src=images/pm1.png width=128 height=96> | <img src=images/am1.png width=128 height=96> |
+| <img src=images/ti2.png width="128" height=96> | <img src=images/pm2.png width=128 height=96> | <img src=images/am2.png width=128 height=96> |
+| <img src=images/ti3.png width="128" height=96> | <img src=images/pm3.png width=128 height=96> | <img src=images/am3.png width=128 height=96> |
+| <img src=images/ti4.png width="128" height=96> | <img src=images/pm4.png width=128 height=96> | <img src=images/am4.png width=128 height=96> |
 
 ## Running the Project
 
