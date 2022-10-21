@@ -17,22 +17,24 @@ from modules import Net, GNNLayer
 from train import test_gcn
 from dataset import preprocess
 
-PATH = "/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt"
+MODEL_PATH = "/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt"
 N_EPOCHS = 5
-NHID = 4
-NOUTPUT = 4
+N_HID = 4
+N_OUTPUT = 4
 
+# load in adjacency matrix, features, labels and indices
 adj_mtrx, node_features, labels, train_ids, val_ids, test_ids = preprocess()
-sample_adj = adj_mtrx[0]
+
+# sample a node 
+sample_adj = adj_mtrx[0, 0]
 sample_features = node_features[0]
-print(sample_features)
 
-# device_model = torch.device("cuda")
-model = m.Net(node_features.shape[1], NHID, NOUTPUT)
-model.load_state_dict(torch.load(PATH))
-# model.to(device_model)
-
-# print("saved", model)
+# construct model & evaluate
+model = Net(node_features.shape[1], N_HID, N_OUTPUT)
+model.load_state_dict(torch.load(MODEL_PATH))
 model.eval()
-gcn = model(torch.FloatTensor(np.asmatrix(sample_features)), torch.from_numpy(np.asmatrix(sample_adj)))
-test_gcn(gcn)
+
+# add node embeddings and 
+node_embeddings = model(torch.FloatTensor(np.asmatrix(sample_features)), 
+                        torch.from_numpy(np.asmatrix(sample_adj)))
+test_gcn(node_embeddings, test=False)
