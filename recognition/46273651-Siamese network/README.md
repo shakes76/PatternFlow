@@ -22,7 +22,7 @@ In addition, the second part of the Siamese network is the Differencing Layer. T
 
 ### 1. Data Preprocessing
 
-The ADNI brain dataset contains two classes, AD and NC, and the initial shape of each image is (240, 256, 1). After loading the dataset from the directory, all images will be normalized. Moreover, considering that high-resolution images may cause the model to learn too much noise during training, all images will be reshaped to (60, 64, 1).
+The ADNI brain dataset contains two classes, AD and NC, and the initial shape of each image is (240, 256, 1). After loading the dataset from the directory, all images will be normalized. Moreover, in order to increase the training speed, all images are resized to (120, 128, 1).
 
 The most important part of the data proprocessing is to compose the data into pairs and lebel them. In order to keep thenumber of pairs with the same class is the same as the number of pairs with different classes, I split the data into 4 different sets of pairs, which are 
 
@@ -30,7 +30,7 @@ The most important part of the data proprocessing is to compose the data into pa
 
 After pair the images, I combine all the pairs and shuffle them. Here is some figures shows the image pairs with their labels.
 
-![Untitled](Images/Untitled%202.png)
+![visualize](Images/visualize.png)
 
 In addition, the combined pairs will be batched with batch size 16, then it will be split into the training data and validation data with a ratio of around 8:2.
 
@@ -38,13 +38,13 @@ In addition, the combined pairs will be batched with batch size 16, then it will
 
 The Siamese model I constructed is consisted by two parts, the first is an embedding model and the second is a siminese network model, which contains a merge layer and output layer.
 
-![Untitled](Images/Untitled%203.png)
+![Untitled](Images/embedding.png)
 
 As the figure shows, the embedding model is a CNN that embeds an image into a feature vector, which contains 3 convolutional layers, 2 max-pooling layers and 1 dense layer with a sigmoid activation function. The reason for using the sigmoid as the activation function is we want the feature vector to be normalized. 
 
-![Untitled](Images/Untitled%204.png)
+![Untitled](Images/siamese.png)
 
-After calculating the feature vectors of two inputs, I use a merge layer to calculate the L1 distance between two vectors. And then, I addd a dense layer with a sigmoid activation function to predict the similarity of the inputs from 0 to 1. 
+After calculating the feature vectors of two inputs, I use a merge layer to calculate the L2 distance between two vectors. And then, I addd a dense layer with a sigmoid activation function to predict the similarity of the inputs from 0 to 1. 
 
 ### 3. Training and Validating
 
@@ -58,13 +58,13 @@ The optimizer I have chosen is the Adam with a learning rate of 0.00006.
 
 After 25 epochs training, the training accuracy, training loss, validation accuracy, validation loss are shows below:
 
-![output25.png](Images/output25.png)
+![final_output.png](Images/final_output.png)
 
-According to the graph above, it can be seen that the training accuracy is really high, which is about **99%** and the validation accuracy is also above **82%.** 
+According to the graph above, it can be seen that the training accuracy increases sharply in the first 8 epoches, and then stay at **99%** until the end of training. Despite some fluctuations, validation's accuracy has also been on the rise, the final accuacy of the validation is **93%.**. Moreover, the training loss and validation loss continuous decline during training, which means the model has great performance on distinguish the differences between images. 
 
 The figures below shows the predicted label and truth label of some sample of pairs
 
-![Untitled](Images/Untitled%205.png)
+![predict_train](Images/predict_train.png)
 
 ### 4. Testing
 
@@ -72,7 +72,7 @@ The dataset provides some images for testing. However, the Siamese network only 
 
 Through putting the test image pairs into the trained Siamese model, the test accuracy can be recieved, which is 
 
-![Untitled](Images/Untitled%206.png)
+![test_acc](Images/test_acc.png)
 
 ## 5. Prediction
 
@@ -81,10 +81,6 @@ Due to the Siamese model only predict the similary between two images, I constru
 ![Untitled](Images/Untitled%207.png)
 
 The classifier only contains a output layer, the acivation function is softmax, which can classify the image with the highest probability.
-
-The prediction accruacy of the test dataset is 
-
-![Untitled](Images/Untitled%208.png)
 
 ## Code discription
 
