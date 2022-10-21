@@ -32,10 +32,10 @@ This graph shows the loss and the validation loss over the 100 epoch running tim
 - predict.py
   This python file takes images from the test set and upscales them.
   
-  
+### Instructions:
 - Add dataset images to new folder named "datasets"
-- run train.py
-- run predict.py
+- run train.py to train the model
+- run predict.py to output the first 32 test images, low res versions, and upscaled versions
 
 ***
 References:
