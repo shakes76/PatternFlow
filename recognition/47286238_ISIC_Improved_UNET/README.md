@@ -12,7 +12,7 @@ Submission for the final report in the course COMP3710 (Pattern Recognition & An
 
 ## Algorithm Overview
 ![IUNET Architecture](static/IUNET.png)
-The Improved UNET network, as detailed in the paper by Isensee et al. (2018) [1], is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover features from previous context layers to be included in the final output mask. Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization.
+The Improved UNET network, as detailed in the paper by Isensee et al. (2018) [1], is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover features from previous context layers to be included in the final output mask. Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization. More information on how the model works can be found in `modules.py`.
 
 This algorithm aims to utilize the Improved UNET network to segment areas of lesions on skin. The network will take an RGB image of skin with lesions on it, and output a mask detailing what region the lesion occupies.
 
@@ -45,6 +45,29 @@ This algorithm operates on the ISIC Challenge 2017 Dataset. Each element of the 
 ### Train-Test-Validation Split
 When training the model, the algorithm loads 800 training elements (i.e. image-mask pairs) at a time, though it shuffles the loader per epoch, effectively covering the majority of if not entire training set (2000 elements) over a total of epochs. Due to time and resource constraints, only 100 of the 150 total elements of the validation set are used to measure the validation metrics during training. In measuring the model's performance against the test set, the entire test set of 600 image-mask pairs is used.
 
+## Running the Program
+### Dependencies
+```
+matplotlib == 3.6.1
+numpy == 1.23.4
+pandas == 1.5.1
+torch == 1.12.1
+torchvision == 0.13.1
+cudatoolkit == 11.3.1
+```
+### Training
+```
+python train.py
+```
+### Generate Training History Plots
+```
+python plot.py
+```
+### Measure Result Statistics and Generate Masks
+```
+python predict.py
+```
+
 ## Results
 ### Training
 After 15 epochs, the following plot of losses and dice similarity coefficients of both training and validation datasets were achieved:
@@ -67,17 +90,6 @@ Here, the first column represents the image which the network takes as its input
 ### Reproducibility of Results
 Due to the shuffling of the dataset during training, it cannot be guaranteed that the resulting model after training can be exactly reproduced over multiple training sessions. However, once the model is saved, it is trivial to reproduce the model predictions over the test set, as no shuffling is involved there.
 
-## Prerequisites
-
-### Dependencies
-```
-matplotlib == 3.6.1
-numpy == 1.23.4
-pandas == 1.5.1
-torch == 1.12.1
-torchvision == 0.13.1
-cudatoolkit == 11.3.1
-```
 
 
 ## Notes
