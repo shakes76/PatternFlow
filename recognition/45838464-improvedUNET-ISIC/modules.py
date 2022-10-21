@@ -41,7 +41,7 @@ def encoding_layer(input, depth, stride):
     """
     Building block for the encoder network as decribed in the paper.
     """
-    conv = Conv2D(depth, KERNEL_SIZE, padding = 'same',activation=activation_func)(input)
+    conv = Conv2D(depth, KERNEL_SIZE, padding = 'same',activation=activation_func, strides=stride)(input)
     contxt = context_module(conv, depth)
     add = Add()([conv, contxt])
 
@@ -58,12 +58,15 @@ def decoding_layer(input, add, depth):
     """
     block = UpSampling2D(size=(2, 2))(input)
     block = Conv2D(depth, KERNEL_SIZE, activation=activation_func, padding = 'same')(block)
+    print(block.shape)
+    print(add.shape)
+
     conc = concatenate([block, add])
     loc = localization_module(conc, depth)
 
     return loc
 
-def improved_uNET(input):
+def improved_uNET():
     """
     Improved UNet Architecture build from block defined above.
     """
@@ -95,19 +98,15 @@ def improved_uNET(input):
     lastup = Conv2D(FIRST_DEPTH, KERNEL_SIZE, padding = 'same', activation=activation_func)(lastup)
     lastconc = concatenate([lastup, sum1])
 
-    lastconv = Conv2D(FIRST_DEPTH*2, KERNEL_SIZE, stride = (1, 1), padding = 'same')(lastconc)
+    lastconv = Conv2D(FIRST_DEPTH*2, KERNEL_SIZE, strides = (1, 1), padding = 'same')(lastconc)
     seg3 = Conv2D(3, (1, 1), padding = 'same')(lastconv)
     
-    final_seg = Add([seg2, seg3])
+    final_seg = Add()([seg2, seg3])
 
     # softmax (one hot encoded)
     output_layer = Conv2D(3, (1, 1), activation='sigmoid')(final_seg)
     model = Model(name="Improved uNET", inputs=input_layer, outputs=output_layer)
     
     return model
-
-
-
-
-    
+ 
 
