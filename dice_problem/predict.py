@@ -2,6 +2,9 @@ from modules import *
 from dataset import *
 
 from keras import backend as k
+import tensorflow as tf
+
+unet = tf.keras.models.load_model('C:/TechnoCore/2022/COMP3710/project_upload/PatternFlow/dice_problem')
 
 def predict(model, image):
     """
@@ -28,6 +31,6 @@ def dice_coefficient(model, valid_x, valid_y):
     
     intersection1 = k.sum(true_y_f * pred_y_f)
 
-    dice = (2.0*intersection1)/(k.sum(k.square(true_y_f)) + k.sum(k.square(pred_y_f)))
+    dice = (2.0*intersection1) / (k.sum(true_y_f) + k.sum(pred_y_f))
 
     return dice  
