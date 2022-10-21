@@ -18,6 +18,7 @@ Here are the model results, high resolution images are taken from the test set a
 The prediction is definitely an improvement on the low resolution image, but is clearly not as detailed as the high resolution image.
 
 ![loss graph](images/Figure_6.png)
+
 This graph shows the loss and the validation loss over the 100 epoch running time, the graph has an overall downwards trend and has a huge decrease at the 40 epoch range
 ***
 ## Running the model
@@ -26,16 +27,18 @@ This graph shows the loss and the validation loss over the 100 epoch running tim
   This python file handles extracting the images from the dataset folder and creating dataset objects with batching and a 10% validation set
 - modules.py
   This python file handles creating the model
+- train.py
+  This python file handles training the model
+- predict.py
+  This python file takes images from the test set and upscales them.
   
   
 - Add dataset images to new folder named "datasets"
 - run train.py
 - run predict.py
 
-
-
 ***
 References:
 
-https://keras.io/examples/vision/super_resolution_sub_pixel/
-https://medium.com/@zhuocen93/an-overview-of-espcn-an-efficient-sub-pixel-convolutional-neural-network-b76d0a6c875e
+1. https://keras.io/examples/vision/super_resolution_sub_pixel/
+2. https://medium.com/@zhuocen93/an-overview-of-espcn-an-efficient-sub-pixel-convolutional-neural-network-b76d0a6c875e
