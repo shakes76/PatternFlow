@@ -30,6 +30,10 @@ After the data was resized, each image was normalised such that its values range
 
 Finally, one-hot encoding with 2 classes was mapped to the processed masks to formulate a mask shape of _(128, 128, 2)_ where the last 2 channels represented the Boolean segmentation of a lesion or non-lesion pixel.
 
+See below for an example processed image and mask plot.
+
+![Pre-processed Input](./figures/preprocessingExample.png)
+
 ### Dataset Splitting
 The ppre-processed dataset was then split into training, validation and testing subsets. This was done so in a _80/10/10_ breakdown to ensure adequate data to train the model with. Ideally, the split would be closer to _70/20/10_ however this could result in diminished training given the relatively small dataset of 2000 images.
 
