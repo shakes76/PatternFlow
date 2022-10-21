@@ -197,35 +197,6 @@ def buildUnet(latentSpaceSize) :
 
     return kr.Model([noisedImages, noiseIntensity], x)
 
-
-
-class DiffusionModel(kr.Model) :
-    def __init__(self, betaMin = 0.0001, betaMax = 0.02, timeSteps = 200):
-        super().__init__()
-        self.betaSchedule = tf.linspace(betaMin, betaMax, timeSteps)
-        self.timeSteps = timeSteps
-        self.alpha = 1- self.betaSchedule
-        self.alphaHat = tf.math.cumprod(self.alpha, 0)
-        self.alphaHat = tf.concat((tf.convert_to_tensor([1.]), self.alphaHat[:-1]), axis=0)
-        self.sqrtAlphaHat = tf.math.sqrt(self.alphaHat)
-        self.sqrtAlphaHatCompliment = tf.math.sqrt(1-self.alphaHat)
-
-
-    def addNoise(self, input, step) :
-        noise = tf.random.normal(shape=input.shape)
-        reshapedSAH = tf.reshape(self.sqrtAlphaHat[step], (-1, 1, 1, 1))
-        reshapedSAHC = tf.reshape(self.sqrtAlphaHatCompliment[step], (-1, 1, 1, 1))
-        noisedInput = reshapedSAH  * input + reshapedSAHC  * noise
-        
-        return noisedInput, noise
-
-    def generateTimeSteps(self, stepsGenerated):
-        return tf.random.uniform(shape=[stepsGenerated], minval=0, maxval=self.timeSteps, dtype=tf.int32)
-
-testModel = DiffusionModel()
-print(testModel.generateTimeSteps(100).shape)
-
-
 class StableDiffusionModel(kr.Model) :
     """
     Implementation of a Stable Diffusion Model. 
