@@ -4,9 +4,10 @@ from keras.layers import Input, Activation, SeparableConv2D, BatchNormalization,
 from keras.layers.core import Dropout, Lambda
 from keras.layers.convolutional import Conv2D, Conv2DTranspose
 from keras.layers.pooling import MaxPooling2D
+import tensorflow as tf
 
 
-def Unet():
+def unet():
     conv_args = {
     "activation": "relu",
     "kernel_initializer": "he_normal",

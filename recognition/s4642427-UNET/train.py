@@ -1,12 +1,8 @@
 from dataset import *
 from modules import *
-from predict import *
 import tensorflow.keras.backend as K
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Adam
-
-#dset_path = "/root/.keras/datasets/ISIC-2017_Training_Data"
-#mask_path = "/root/.keras/datasets/ISIC-2017_Training_Part1_GroundTruth"
 
 def diceCoefficient(y_true, y_pred):
         """   
@@ -33,7 +29,8 @@ def diceLoss(y_true, y_pred):
     """
     return 1 - diceCoefficient(y_true, y_pred)
 
-def train():
+#TODO need to graph the dice Loss and metric
+def train(dset_path, mask_path):
     DL = Dataloader(dset_path, mask_path)
     X_train, Y_train, X_test, Y_test = DL.get_XY_split()
 
@@ -43,9 +40,9 @@ def train():
         ModelCheckpoint('model-tgs-salt.h5', verbose=1, save_best_only=True, save_weights_only=True)
     ]
 
-    model = Unet()
+    model = unet()
     model.compile(optimizer=Adam(), loss=diceLoss, metrics=["accuracy", diceCoefficient])
 
     # We chose batch_size=16 because google collab screams at my for batch_size = 32
     results = model.fit(X_train, Y_train, batch_size=16, epochs=30,validation_data=(X_test, Y_test), callbacks=callbacks)
-    return results
+    return results, X_test, Y_test
