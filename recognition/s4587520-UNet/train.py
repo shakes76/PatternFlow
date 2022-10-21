@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 
 #Variables
 BATCH_SIZE = 2
-EPOCHS = 1
+EPOCHS = 100
 
 #Import GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -37,13 +37,12 @@ for epoch in range(EPOCHS):
     model.train()
 
     for i, (imgs, truths) in enumerate(trainloader):
-      print("Batch ", i)
+      print(f"Epoch {epoch}/{EPOCHS}, Batch {i}")
       imgs = imgs.to(device)
       truths = truths.to(device)
       
       #Zero the gradient
       optimizer.zero_grad()
-      
       
       #Forward Pass
       outputs = model(imgs)

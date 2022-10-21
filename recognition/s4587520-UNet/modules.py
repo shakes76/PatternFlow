@@ -6,8 +6,16 @@ from torch.autograd import Variable
 class UNet(nn.Module):
   def __init__(self):
     super().__init__()
-    self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding="same")
-    self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding="same")
+    self.conv16 = nn.Sequential(
+      nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding="same"),
+      nn.InstanceNorm2d(16),
+      nn.LeakyReLU(negative_slope=0.01),
+    )
+    self.conv32 = nn.Sequential(
+      nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding="same"),
+      nn.InstanceNorm2d(32),
+      nn.LeakyReLU(negative_slope=0.01),
+    )
     self.softmax = nn.Softmax2d()
     self.context16 = Context_Module(16)
     self.context32 = Context_Module(32)
@@ -90,7 +98,9 @@ class Upsampling_Module(nn.Module):
     super().__init__()
     self.stack = nn.Sequential(
       nn.UpsamplingNearest2d(scale_factor=2), #Padding value is applied in both directions on each dimensions
-      nn.Conv2d((2*output_filters), output_filters, kernel_size=3, padding="same")
+      nn.Conv2d((2*output_filters), output_filters, kernel_size=3, padding="same"),
+      nn.InstanceNorm2d(output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
     )
 
   def forward(self, main, cat):
@@ -104,7 +114,9 @@ class Stride2_Conv(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
-      nn.Conv2d(int(output_filters/2), output_filters, kernel_size=3, stride=2, padding=1)
+      nn.Conv2d(int(output_filters/2), output_filters, kernel_size=3, stride=2, padding=1),
+      nn.InstanceNorm2d(output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
     )
 
   def forward(self, x):
@@ -116,8 +128,12 @@ class Localisation_Module(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
-        nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding="same"),
-        nn.Conv2d(2*output_filters, output_filters, kernel_size=1)
+      nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding="same"),
+      nn.InstanceNorm2d(2*output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
+      nn.Conv2d(2*output_filters, output_filters, kernel_size=1),
+      nn.InstanceNorm2d(output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
     )
   def forward(self, x):
     return self.stack(x)
@@ -128,7 +144,9 @@ class Segmentation_Module(nn.Module):
   def __init__(self, input_filters):
     super().__init__()
     self.stack = nn.Sequential(
-        nn.Conv2d(input_filters, 2, kernel_size=3, padding="same"),
+      nn.Conv2d(input_filters, 2, kernel_size=3, padding="same"),
+      nn.InstanceNorm2d(2),
+      nn.LeakyReLU(negative_slope=0.01),
     )
   def forward(self, x):
     return self.stack(x)
@@ -149,8 +167,12 @@ def dice_similarity(prediction, truth):
   return similarity
 
 #Calculates DICE loss:
-def dice_loss(prediction, truth):
-  numerator = torch.sum(torch.mul(prediction[0, 0, :, :], truth[0,0,:,:])).item()
-  denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
-  loss = Variable(torch.as_tensor(1 + -2*numerator/denom), requires_grad=True)
+def dice_loss(predictions, truths):
+  batch_size = predictions.shape[0]
+  loss = 0
+  for idx in range(batch_size):
+    numerator = torch.sum(torch.mul(predictions[idx, 0, :, :], truths[idx,0,:,:])).item()
+    denom = torch.sum(predictions[idx, 0, :, :]).item() + torch.sum(truths[idx, 0, :, :]).item()
+    loss += 1 + -2*numerator/denom
+  loss = Variable(torch.as_tensor(loss/batch_size), requires_grad=True)
   return loss
