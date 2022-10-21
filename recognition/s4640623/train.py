@@ -19,9 +19,9 @@ import modules
 import dataset
 
 # Load and process data
-data = load_data()
-train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
-adj = adj_matrix(data)
+data = dataset.load_data()
+train_ds, valid_ds, test_ds, features, target, edges = dataset.process_data(data)
+adj = dataset.adj_matrix(data)
 
 """Calculates how accuracy of output compared to the target"""
 def accuracy(output, target):
@@ -59,14 +59,15 @@ def train(epoch):
 
 """Returns the GCN model"""
 def model_init(features, data):
-  model = GCN(features.size(dim = 1),
-              features.size(dim = 1),
-              data['target'].argmax())
+  model = modules.GCN(features.size(dim = 1),
+                      features.size(dim = 1),
+                      data['target'].argmax())
   return model
 
 model = model_init(features, data)
 optimizer = optim.Adam(model.parameters(),
                        lr=0.01, weight_decay=5e-4)
+
 # Run training loop
 epochs = 20
 for epoch in range(epochs):
