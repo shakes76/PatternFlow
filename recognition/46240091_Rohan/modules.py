@@ -1,13 +1,7 @@
-from glob import glob
 import numpy as np
 from tensorflow.keras.preprocessing import image_dataset_from_directory
-import pathlib
-import PIL
-import PIL.Image
 import tensorflow as tf
 from tensorflow import keras
-import os
-from typing import Tuple
 import keras.models
 import keras.preprocessing.image
 import matplotlib.pyplot as plt
@@ -82,33 +76,36 @@ class VectorQuantizer(layers.Layer):
     return encoding_indices
 
   def call(self, x):
-      #Input shape calculated and inputs reshaped (embedding dimesions not flattened as it is size of latent embeddings)
-      input_shape = tf.shape(x)
-      flattened = tf.reshape(x, [-1, self.embedding_dim])
-      
-      #Applying one-hot encoding to code with min distance from flattened inputs
-      encoding_indices = self.get_code_indices(flattened)
-      encodings = tf.one_hot(encoding_indices, self.num_embeddings)
-      quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
-      quantized = tf.reshape(quantized, input_shape)
+    #Input shape calculated and inputs reshaped (embedding dimensions not flattened as it is size of latent embeddings)
+    input_shape = tf.shape(x)
+    flattened = tf.reshape(x, [-1, self.embedding_dim])
 
-      commitment_loss = self.beta * tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2) 
-      codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
-      self.add_loss(commitment_loss + codebook_loss)
-      
-      #Straight through estimator between decoder and encoder.
-      quantized = x + tf.stop_gradient(quantized - x)
-      return quantized
+    #Applying one-hot encoding to code with min distance from flattened inputs
+    encoding_indices = self.get_code_indices(flattened)
+    encodings = tf.one_hot(encoding_indices, self.num_embeddings)
+    quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
+    quantized = tf.reshape(quantized, input_shape)
+
+    #Calculating losses
+    commitment_loss = self.beta * tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2) 
+    codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
+    self.add_loss(commitment_loss + codebook_loss)
+
+    #Straight through estimator between decoder and encoder.
+    quantized = x + tf.stop_gradient(quantized - x)
+    return quantized
 
 
 def vqvae_model(latent_dim=16, num_embeddings=64):
   """
   Vqvae model that combines the encoder, vq-layer, and decoder 
   """
+  #Getting the 3 models
   encoder_model = encoder(latent_dim)
   decoder_model = decoder(latent_dim)
-  encoder_inputs = keras.Input(shape=(64, 64, 1))
   vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+  #Giving the inputs to encoder and using it's output as input to vqlayer, vqlayers output used as input to decoder.
+  encoder_inputs = keras.Input(shape=(64, 64, 1))
   vq_layer_inputs = encoder_model(encoder_inputs)
   decoder_inputs = vq_layer(vq_layer_inputs)
   vqvae_output = decoder_model(decoder_inputs)
@@ -144,7 +141,7 @@ class VQVAETrainer(keras.models.Sequential):
       #Reconstructed images which are output from VQVAE.
       reconstructions = self.vqvae1(x)
 
-      # Calculate the losses.
+      # Calculating the losses.
       reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance)
       total_loss = reconstruction_loss + sum(self.vqvae1.losses)
 
@@ -166,48 +163,84 @@ class VQVAETrainer(keras.models.Sequential):
 
 #######PIXELCNN#######
 
-# PixelCNN model from keras tutorial: https://keras.io/examples/generative/pixelcnn/
-
-class PixelConvLayer(layers.Layer):
+class MaskedConv2D(keras.layers.Layer):
   """
-  This class creates a Conv2d layer with a mask applied, it uses a 3x3 convolution
-  with mask B
+  This class creates conv layer with mask type A and B for my
+  autoregressive model: pixelcnn
   """
-  def __init__(self, mask_type, **kwargs):
-      super(PixelConvLayer, self).__init__()
-      self.mask_type = mask_type
-      self.conv = layers.Conv2D(**kwargs)
+  def __init__(self,
+              mask_type,
+               **kwargs):
+    super(MaskedConv2D, self).__init__()
+    assert mask_type in {'A', 'B'}
+    self.mask_type = mask_type
+    self.conv = layers.Conv2D(**kwargs)
 
   def build(self, input_shape):
-      #Building Conv2d layer
-      self.conv.build(input_shape)
-      # Use the initialized kernel to create the mask
-      kernel_shape = self.conv.kernel.get_shape()
-      self.mask = np.zeros(shape=kernel_shape)
-      self.mask[: kernel_shape[0] // 2, ...] = 1.0
-      self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
-      if self.mask_type == "B":
-          self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+    #Initializing the kernel and using it to create masks
+    self.conv.build(input_shape)
+    kernel_shape = tf.shape(self.conv.kernel)
+    self.kernel_size = kernel_shape[0]
 
-  def call(self, inputs):
-      self.conv.kernel.assign(self.conv.kernel * self.mask)
-      return self.conv(inputs)
+    center = self.kernel_size // 2
+    mask = np.ones(kernel_shape, dtype=np.float32)
+    #Condition about mask_type = 'B' valid when its not the first layer of Pixelcnn
+    mask[center, center + (self.mask_type == 'B'):, :, :] = 0.
+    mask[center + 1:, :, :, :] = 0.
+    self.mask = tf.constant(mask, dtype=tf.float32, name='mask')
+
+  def call(self, input):
+    #Applying the mask to the kernel
+    self.conv.kernel.assign(self.conv.kernel * self.mask)
+    return self.conv(input)
 
 
 
-class ResidualBlock(keras.layers.Layer):
-  def __init__(self, filters, **kwargs):
+class ResidualBlock(keras.Model):
+  """
+  Layer blocks which have 3 convolutional layers with one residual connection. The 
+  masked conv layer has a standard conv layer before and after.
+  """
+
+  def __init__(self, num_filters):
+    super(ResidualBlock, self).__init__()
+
+    self.conv2a = keras.layers.Conv2D(filters=num_filters, kernel_size=1, strides=1, activation="relu", padding='same')
+    self.conv2b = MaskedConv2D(mask_type='B', filters=num_filters, kernel_size=3, strides=1, activation="relu", padding='same')
+    self.conv2c = keras.layers.Conv2D(filters=2 * num_filters, kernel_size=1, strides=1, activation="relu", padding='same')
+
+  def call(self, input_tensor):
+    a = self.conv2a(input_tensor)
+    a = self.conv2b(a)
+    a = self.conv2c(a)
+    return keras.layers.add([input_tensor, a])
+
+
+def pcnn_model_maker(input_shape, existing_vqvae):
     """
-    This class creates a residual with a standard convolutional layer, followed by a convolutional layer
-    with mask, followed by a standard convolutional layer.
-    """
-    super(ResidualBlock, self).__init__(**kwargs)
-    self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
-    self.pixel_conv = PixelConvLayer(mask_type="B",filters=filters // 2,kernel_size=3,activation="relu",padding="same")
-    self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+    Making the model as mentioned in the original Pixel Recurrent Neural Networks paper
+    The first layer is a masked convolution (type A) with 7x7 filters. Then, 15 residuals blocks were used.
+    Then a chain of Relu X Conv 
+    Then the output layer.
 
-  def call(self, inputs):
-    y = self.conv1(inputs)
-    y = self.pixel_conv(y)
-    y = self.conv2(y)
-    return keras.layers.add([inputs, y])
+    """
+
+    pixelcnn_inputs = keras.Input(shape=input_shape, dtype=tf.int32)
+    ohe = tf.one_hot(pixelcnn_inputs, existing_vqvae.num_embeddings)
+    #First layer (mask type A)
+    l = MaskedConv2D(
+        mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same")(ohe)
+
+    #15 residual blocks according to original pixelcnn paper (mask type B)
+    for i in range(15):
+        l = ResidualBlock(num_filters=64)(l)
+
+    
+    #Chain of Relu X Conv 
+    l = keras.layers.Activation(activation='relu')(l)
+    l = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(l)
+    l = keras.layers.Activation(activation='relu')(l)
+    l = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(l)
+    l = keras.layers.Conv2D(filters=existing_vqvae.num_embeddings, kernel_size=1, strides=1)(l)
+
+    return keras.Model(inputs=pixelcnn_inputs, outputs=l, name = 'pixelcnn')
