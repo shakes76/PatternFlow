@@ -3,7 +3,7 @@
 
 The task is "generative model of one of the OASIS brain, ADNI brain or the OAI AKOA knee data set using a variant of StyleGAN".
 
-## Other Results
+## Results
 
 ### Generated images of the three datasets
 <p align="center">
