@@ -172,6 +172,7 @@ for  idx, (data, _) in  enumerate(tqdm(test_dataloader)):
 ![Training Loss Vs Epochs](https://lh3.googleusercontent.com/pw/AL9nZEXH2I2U1lkr2GSYLzaDYCpROtEi_1OBWQLEEBIUu50t-2Rl5OBAeSYB05HEHLiOlItM_UJbGPEldyLEzeI_46pKSp8fuvKqYB1iA5NfXHwDZUqOyJlrYPMAtXYspKBMeeKLyjV9KHgCMXu5Rpgl3aCJ=w752-h452-no?authuser=0)
 #### Graph showing the running loss of the test set in the validation loop
 ![Testing Loss vs Epoch](https://lh3.googleusercontent.com/pw/AL9nZEUevH6b6bYM2b4t073QSLS3iTE9O2KyasB9qhwcNqdSRcER5fsRassBdCob0oDd1uuZ7WHMSpzEigIQY1Jd_HyiAT6pnKFMu_tLvZwFHt_XvkD1ZTRspbIA4_cU-ci_1FW0_52kIis50unYYOygVD8X=w751-h452-no?authuser=0)
+Showing only the first 30 Epochs as the loss flattens off and platues for the rest of the epochs.
 ### Training Your Own Model
 To train your own stable diffusion model. Ensure the hyperparameters meet your specification in `main()` in `train.py` (below is the default example one).
 ```python 
