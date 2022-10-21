@@ -50,50 +50,45 @@ def data_loader():
     """
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-    X_training = []
-    X_train_labels = []
+    X_data = []
+    X_data_labels = []
     for fname in os.listdir(os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/train/AD")):
         fpath = os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/train/AD", fname)
         im = Image.open(fpath)
-        X_training.append(np.array(im))
-        X_train_labels.append(1)
+        X_data.append(np.array(im))
+        X_data_labels.append(1)
+        im.close()
+
+    for fname in os.listdir(os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/AD")):
+        fpath = os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/AD", fname)
+        im = Image.open(fpath)
+        X_data.append(np.array(im))
+        X_data_labels.append(1)
         im.close()
 
     for fname in os.listdir(os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/train/NC")):
         fpath = os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/train/NC", fname)
         im = Image.open(fpath)
-        X_training.append(np.array(im))
-        X_train_labels.append(0)
-        im.close()
-
-    # Convert to numpy array
-    X_training = np.array(X_training)
-    X_train_labels = np.array(X_train_labels)
-    print(X_training.shape)
-
-    x_test = []
-    y_test = []
-    for fname in os.listdir(os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/AD")):
-        fpath = os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/AD", fname)
-        im = Image.open(fpath)
-        x_test.append(np.array(im))
-        y_test.append(1)
+        X_data.append(np.array(im))
+        X_data_labels.append(0)
         im.close()
 
     for fname in os.listdir(os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/NC")):
         fpath = os.path.join(__location__, "ADNI_AD_NC_2D/AD_NC/test/NC", fname)
         im = Image.open(fpath)
-        x_test.append(np.array(im))
-        y_test.append(0)
+        X_data.append(np.array(im))
+        X_data_labels.append(0)
         im.close()
-
-    # Convert to nparray
-    x_test = np.array(x_test)
-    y_test = np.array(y_test)
+    # Convert to numpy array
+    X_data = np.array(X_data)
+    X_data_labels = np.array(X_data_labels)
+    print(X_data.shape)
 
     # Make validation set
-    x_train, x_val, y_train, y_val = train_test_split(X_training, X_train_labels, test_size=0.2, random_state=8, shuffle=True)
-
+    # Make validation set
+    x_train, x_test, y_train, y_test = train_test_split(X_data, X_data_labels, test_size=0.2, random_state=8, shuffle=True)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.25, random_state=8, shuffle=True)
+    
     # Make train pairs
     pairs_train, labels_train = make_pairs(x_train, y_train)
 

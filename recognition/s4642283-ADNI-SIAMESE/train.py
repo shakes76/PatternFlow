@@ -17,8 +17,8 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 
-epochs = 10
-batch_size = 16
+epochs = 20
+batch_size = 32
 
 # Create siamese model
 siamese = siamese_model((240, 256, 1))
@@ -39,3 +39,7 @@ history = siamese.fit(
 
 # Save model once training completes
 siamese.save(os.path.join(__location__, "SiameseModel"))
+
+# Test Model
+print("Finished!\n")
+siamese.evaluate([x_test[0], x_test[1]], labels_test, batch_size=batch_size)
