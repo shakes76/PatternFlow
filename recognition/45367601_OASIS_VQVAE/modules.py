@@ -37,10 +37,7 @@ class VectorQuantizer(layers.Layer):
         # Reshape the quantized values back to the original input shape
         quantized = tf.reshape(quantized, input_shape)
 
-        # Calculate vector quantization loss and add that to the layer. You can learn more
-        # about adding losses to different layers here:
-        # https://keras.io/guides/making_new_layers_and_models_via_subclassing/. Check
-        # the original paper to get a handle on the formulation of the loss function.
+        # Calculate vector quantization loss and add that to the layer.
         commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
         self.add_loss(self.beta * commitment_loss + codebook_loss)
