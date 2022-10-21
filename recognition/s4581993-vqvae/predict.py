@@ -178,4 +178,5 @@ if __name__ == "__main__":
             plt.subplot(num_generations, 2, i * 2 + 2)
             plt.imshow(generated_samples[i].squeeze() + 0.5, cmap='gray')
             plt.axis("off")
+        plt.tight_layout()
         plt.show()
