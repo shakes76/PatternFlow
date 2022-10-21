@@ -1,5 +1,4 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
 import glob
 from tensorflow.keras.utils import to_categorical
@@ -18,6 +17,10 @@ class ISIC_Dataset():
 
     def __init__(self, data_path, mask_path,
                  image_height=IMAGE_HEIGHT, image_width=IMAGE_WIDTH):
+        """Specify filepaths to load data from.
+        
+        Establish image height and width for resizing.
+        """
         # Store all image and mask paths in lists
         self.data_files = sorted(glob.glob(data_path))
         self.mask_files = sorted(glob.glob(mask_path))
@@ -26,14 +29,22 @@ class ISIC_Dataset():
         self.image_width = image_width
 
     def get_data_splits(self, train_split, val_split, test_split):
+        """
+        Preprocess images and masks and return splits.
+        
+        Specify breakdown of training, validation and testing split size,
+        function creates stacked tensors of data and applies processing
+        as a mapping.
+        """
         # Convert path lists to tensors.
         data_tensor = tf.convert_to_tensor(self.data_files)
+        masks_tensor = tf.convert_to_tensor(self.mask_files)
+        # Map image processing function to list of images/masks
         data_tensor = tf.map_fn(self.retrieve_processed_image, data_tensor,
                                 dtype=tf.float32)
-
-        masks_tensor = tf.convert_to_tensor(self.mask_files)
         masks_tensor = tf.map_fn(self.retrieve_processed_mask,
                                  masks_tensor, dtype=tf.float32)
+        
         # One-hot encode mask details with 2 clases
         # Class 1 -> no lesion
         # Class 2 -> lesion
@@ -58,6 +69,7 @@ class ISIC_Dataset():
                 (self.test_x, self.test_y))
 
     def retrieve_processed_image(self, filepath):
+        """Retrieve pre-processed image from filepath."""
         data_image = tf.io.read_file(filepath)
         data_image = tf.io.decode_jpeg(data_image, channels=3)
 
@@ -70,6 +82,7 @@ class ISIC_Dataset():
         return data_image
 
     def retrieve_processed_mask(self, filepath):
+        """Retrieve pre-processed mask details from filepath."""
         mask_detail = tf.io.read_file(filepath)
         mask_detail = tf.io.decode_png(mask_detail, channels=1)
 
