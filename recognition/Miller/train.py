@@ -3,13 +3,16 @@
 should be imported from “modules.py” and the data loader should be imported from “dataset.py”. Make
 sure to plot the losses and metrics during training
 """
+# %%
 import dataset as data
 import modules as mod
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
 # Download Data and then unzip
 #download_oasis()
+# %%
 
 """ PROCESS TRAINING DATA"""
 # Load the training data from the Oasis Data set
@@ -52,19 +55,53 @@ test_Y = data.process_labels(test_Y)
 
 """ MODEL AND TRAIN VQ-VAE """
 # Create a instance of the VQ-VAE model
-latent_dimensions = 16 #dimensionality if each latent embedding vector
+latent_dimensions = 32 #dimensionality if each latent embedding vector
 embeddings_number = 128 #number of embeddings in the codebook
-variance = np.var(train_X / 255.0)
-model = mod.vqvae_model(variance, latent_dimensions, embeddings_number)
-model.model.summary()
+#variance = np.var(train_X / 255.0)
+model = mod.VQVAETRAINER(1, latent_dimensions, embeddings_number)
 
-model.compile (optimizer="Adam")
-history = model.fit(train_X, epochs=5, batch_size=128)
+"""
+Optimiser -> learning rate
+'adam' adjusts learning rate whilst training; learning rate deterines how fast optimal weights are calculated. Smaller
+Learning rate = more wights but takes longer to compute
+"""
+# Create Model
+model.compile (optimizer='adam')
+
+# Train model
+history = model.fit(train_X, epochs=2, validation_data=(test_X), batch_size=128)
 print("disaster!!!!")
+
+
+# Plot Accuracy
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5,1])
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
+
+# Plot Loss
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
+
 # evaluate against testing data 
-#model.evaluate(test_X,test_Y)
+test_loss, test_acc = model.evaluate(test_X, test_Y, verbose=2)
+
+print("Accuracy test is: ", test_acc)
 
 
+
+""" MODEL AND TRAIN VQ-VAE """
+
+""" RECONSTRUCTION RESULTS"""
 # Plots the original image against the reconstructed one
 def plot_comparision_original_to_reconstructed(original, reconstructed):
     plt.figure(figsize = (10,12))
@@ -80,15 +117,13 @@ def plot_comparision_original_to_reconstructed(original, reconstructed):
 
     plt.show()
 
-trained_model = model.model
+trained_model = mod.model.model
 idx = np.random.choice(len(test_X), 10)
 test_images = test_X[idx]
 reconstructions_test = trained_model.predict(test_images)
 
 for test_image, reconstructed_image in zip(test_images, reconstructions_test):
     plot_comparision_original_to_reconstructed(test_image, reconstructed_image)
-
-
 
 # Return the average pixel value for the image and the reconstruction
 def calculate_mean(image, reconstructed_image):
@@ -165,3 +200,4 @@ def structural_similarity_mean(test_X, model):
     return structured_similarity_coef / len(test_X)
 
 print(structural_similarity_mean(test_X, trained_model))
+# %%

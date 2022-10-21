@@ -20,7 +20,7 @@ Structure is:
     5. Reshape into original shape (n, h, w, d)
     6. Copy gradients from q -> x
 """
-class VQ_layer(tf.keras.layers.Layer):
+class VectorQ_layer(tf.keras.layers.Layer):
     def __init__(self, embedding_num, latent_dimension, beta=0.25, **kwargs):
         super().__init__(**kwargs)
         self.embedding_num = embedding_num
@@ -77,95 +77,119 @@ class VQ_layer(tf.keras.layers.Layer):
         
         return quantized
 
-"""
-Returns layered model for encoder architecture built from convolutional layers. 
+# Represents the VAE Structure
+class VAE:
+    def __init__(self, embedding_num, latent_dimension, beta=0.25):
+        self.embedding_num = embedding_num    
+        self.latent_dimension = latent_dimension
+        self.beta=beta
+    """
+    Returns layered model for encoder architecture built from convolutional layers. 
 
-activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
-e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
-"""
-# Encoder Component
-def encoder_component(latent_dimension):
-    #2D Convolutional Layers
-    # filters -> dimesion of output space
-    # kernal_size -> convolution window size
-    # activation -> activation func used
-        # relu ->
-    # strides -> spaces convolution window moves vertically and horizontally 
-    # padding -> "same" pads with zeros to maintain output size same as input size
-    inputs = tf.keras.Input(shape=(256, 256, 1))
+    activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
+    e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
+    """
+    # Encoder Component
+    def encoder_component(self):
+        #2D Convolutional Layers
+        # filters -> dimesion of output space
+        # kernal_size -> convolution window size
+        # activation -> activation func used
+            # relu ->
+        # strides -> spaces convolution window moves vertically and horizontally 
+        # padding -> "same" pads with zeros to maintain output size same as input size
+        inputs = tf.keras.Input(shape=(256, 256, 1))
 
-    layer = tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(inputs)
-    layer = tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(layer)
-    
-    outputs = tf.keras.layers.Conv2D(latent_dimension, 1, padding="same")(layer)
-    return tf.keras.Model(inputs, outputs, name="encoder")
+        layer = tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(inputs)
+        layer = tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(layer)
+        
+        outputs = tf.keras.layers.Conv2D(self.latent_dimension, 1, padding="same")(layer)
+        return tf.keras.Model(inputs, outputs, name="encoder")
 
-"""
-Returns the model for decoder architecture built from  tranposed convolutional layers. 
+    # Returns the vq Layer
+    def vq_layer(self):
+        return VectorQ_layer(self.embedding_num, self.latent_dimension, self.beta, name="vector_quantizer")
 
-activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
-e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
-"""
-# Decoder Component
-def decoder_component(latent_dimension):
-    inputs = tf.keras.Input(shape=encoder_component(latent_dimension).output.shape[1:])
-    layer = tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(inputs)
-    layer = tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(layer)
-    outputs = tf.keras.layers.Conv2DTranspose(1, 3, padding="same")(layer)
-    return tf.keras.Model(inputs, outputs, name="decoder")
+    """
+    Returns the model for decoder architecture built from  tranposed convolutional layers. 
 
-# Build Model
-def build_model(embeddings_num, latent_dimension):
-    vq_layer = VQ_layer(embeddings_num, latent_dimension, name="vector_quantizer")
-    encoder = encoder_component(latent_dimension)
-    decoder = decoder_component(latent_dimension)
-    inputs = tf.keras.Input(shape=(256, 256, 1))
-    encoder_outputs = encoder(inputs)
-    quantized_latents = vq_layer(encoder_outputs)
-    reconstructions = decoder(quantized_latents)
-    return tf.keras.Model(inputs, reconstructions, name="vq_vae")
+    activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
+    e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
+    """
+    # Decoder Component
+    def decoder_component(self):
+        inputs = tf.keras.Input(shape=self.encoder_component().output.shape[1:])
+        #2D Convolutional Transpose Layers
+        # filters -> dimesion of output space
+        # kernal_size -> convolution window size
+        # activation -> activation func used
+            # relu ->
+        # strides -> spaces convolution window moves vertically and horizontally 
+        # padding -> "same" pads with zeros to maintain output size same as input size
+        layer = tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(inputs)
+        layer = tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(layer)
+        outputs = tf.keras.layers.Conv2DTranspose(1, 3, padding="same")(layer)
+        return tf.keras.Model(inputs, outputs, name="decoder")
+
+    # Build Model
+    def build_model(self):
+        vq_layer = self.vq_layer()
+        encoder = self.encoder_component()
+        decoder = self.decoder_component()
+
+        inputs = tf.keras.Input(shape=(256, 256, 1))
+        encoder_outputs = encoder(inputs)
+        quantized_latents = vq_layer(encoder_outputs)
+        reconstructions = decoder(quantized_latents)
+        model = tf.keras.Model(inputs, reconstructions, name="vq_vae")
+        model.summary()
+        return model
 
 # Create a model instance and sets training paramters 
-class vqvae_model(tf.keras.models.Model):
-    def __init__(self, variance, latent_dimension, embeddings_num, **kwargs):
+class VQVAETRAINER(tf.keras.models.Model):
+    def __init__(self, variance, latent_dimension=32, embeddings_num=128, **kwargs):
         
-        super(vqvae_model, self).__init__(**kwargs)
+        super(VQVAETRAINER, self).__init__(**kwargs)
         self.latent_dimension = latent_dimension
         self.embeddings_num = embeddings_num
         self.variance = variance
         
-        self.model = build_model(embeddings_num, latent_dimension)
+        VAE_model = VAE(self.embeddings_num, self.latent_dimension)
+        self.vqvae_model = VAE_model.build_model()
+        
 
-        self.total_loss = tf.keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss = tf.keras.metrics.Mean(name="reconstruction_loss")
-        self.vq_loss = tf.keras.metrics.Mean(name="vq_loss")
+        self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
+        self.vq_loss_tracker = tf.keras.metrics.Mean(name="vq_loss")
 
     @property
     def metrics(self):
         # Model metrics -> returns losses (total loss, reconstruction loss and the vq_loss)
-        return [self.total_loss, self.reconstruction_loss, self.vq_loss]
+        return [self.total_loss_tracker, self.reconstruction_loss_tracker, self.vq_loss_tracker]
 
     def train_step(self, x):
         with tf.GradientTape() as tape:
             # Outputs from the VQ-VAE.
-            reconstructions = self.model(x)
+            reconstructions = self.vqvae_model(x)
 
             # Calculate the losses.
             reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.variance)
-            total_loss = reconstruction_loss + sum(self.model.losses)
+            total_loss = reconstruction_loss + sum(self.vqvae_model.losses)
 
         # Backpropagation.
-        grads = tape.gradient(total_loss, self.model.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
+        grads = tape.gradient(total_loss, self.vqvae_model.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.vqvae_model.trainable_variables))
 
         # Loss tracking.
-        self.total_loss.update_state(total_loss)
-        self.reconstruction_loss.update_state(reconstruction_loss)
-        self.vq_loss.update_state(sum(self.model.losses))
+        """CODEBOOK LOSS + COMMITMENT LOSS -> euclidean loss + encoder loss"""
+        self.total_loss_tracker.update_state(total_loss)
+        """RECONSTRUCTION ERROR (MSE) -> between input and reconstruction"""
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.vq_loss_tracker.update_state(sum(self.vqvae_model.losses))
 
         # Log results.
         return {
-            "loss": self.total_loss.result(),
-            "reconstruction_loss": self.reconstruction_loss.result(),
-            "vqvae_loss": self.vq_loss.result(),
+            "loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "vqvae_loss": self.vq_loss_tracker.result(),
         }
