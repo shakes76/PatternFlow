@@ -21,21 +21,19 @@ from tensorflow.keras import layers
 import tensorflow as tf
 from config import *
 
-from config import *
-
 ##############################  INPUT DATA AUGMENTATION  ###################################
 
-def data_augmentation(mean, variance):
-    """ data augmentation for input data based on calculated mean and variance of training data """
-
-    data_augmentation = keras.Sequential(
-        [
-            layers.Normalization(mean=mean, variance=variance),
-        ],
-        name="data_augmentation",
-    )
-
-    return data_augmentation
+data_augmentation = keras.Sequential(
+    [
+        layers.Rescaling(scale=1./255),
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(factor=(-0.15, 0.15)),
+        layers.RandomTranslation(height_factor=(-0.1, 0.1), width_factor=(-0.1, 0.1)),
+        layers.RandomBrightness(factor=(0.6), value_range=(0., 1.)),
+        layers.GaussianNoise(stddev=0.5)
+    ],
+    name="data_augmentation",
+)
 
 
 ###################################  CREATE PATCHES  #######################################
@@ -59,9 +57,7 @@ class Patches(layers.Layer):
         )
         patch_dims = patches.shape[-1]
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-        return patches
-
-###################################  EMBED PATCHES  #######################################
+        return patches#
 
 ###################################  EMBED PATCHES  #######################################
 
@@ -162,7 +158,7 @@ def vit_classifier():
     inputs = layers.Input(shape=INPUT_SHAPE)
     
     # Augment data.
-    augmented = data_augmentation(mean=MU, variance=VARIANCE)(inputs)
+    augmented = data_augmentation(inputs)
     
     # Create patches.
     patches = Patches(PATCH_SIZE)(augmented)
