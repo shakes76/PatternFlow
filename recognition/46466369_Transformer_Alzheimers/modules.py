@@ -68,7 +68,7 @@ class PatchEmbed(layers.Layer):
     encoded = self.projection(patch) + self.position_embedding(positions)
     return encoded
 
-def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes, num_heads, mlp_layer_counts):
+def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes, num_heads, transformer_layers, mlp_layer_counts):
     inputs = layers.Input(shape=input_shape)
     # Create patches.
     patches = Patches(patch_size)(inputs)
@@ -81,13 +81,16 @@ def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, 
     Classify with softmax:
     mlp --(+ norm2)--> output(softmax)
     """
-    norm1 = layers.LayerNormalization(epsilon=0.001)(embedded)
-    # multi_attention needs 2D input since we are applying it to 2D data.
-    multi_attention = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim, dropout=0.1)(norm1, norm1)
-    addembed = layers.Add()([multi_attention, embedded])
-    norm2 = layers.LayerNormalization(epsilon=0.001)(addembed)
-    mlp = MLP(norm2, mlp_layer_counts, dropout=0.5)
-    addnorm = layers.Add()([mlp, norm2])
+    for _ in range(transformer_layers):
+        norm1 = layers.LayerNormalization(epsilon=0.001)(embedded)
+        # multi_attention needs 2D input since we are applying it to 2D data.
+        multi_attention = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim, dropout=0.1)(norm1, norm1)
+        addembed = layers.Add()([multi_attention, embedded])
+        norm2 = layers.LayerNormalization(epsilon=0.001)(addembed)
+        mlp = MLP(norm2, mlp_layer_counts, dropout=0.5)
+        addnorm = layers.Add()([mlp, norm2])
+
     output = layers.Dense(num_classes, activation="softmax")(addnorm)
     model = keras.Model(inputs=inputs, outputs=output)
+
     return model

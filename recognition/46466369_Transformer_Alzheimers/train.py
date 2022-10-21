@@ -19,14 +19,16 @@ TRANSFORMER_UNITS = [
     PROJECTION_DIM * 2,
     PROJECTION_DIM
 ]
-MLP_HEAD_UNITS = [2048, 1024]
+TRANSFORMER_LAYERS = 6
+MLP_LAYER_COUNTS = [2048, 1024]
 
 train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
 
 model = modules.create_vit_classifier(PATCH_SIZE,
                                 NUM_PATCHES,
                                 PROJECTION_DIM,
-                                MLP_HEAD_UNITS)
+                                TRANSFORMER_LAYERS,
+                                MLP_LAYER_COUNTS)
 
 
 plt.imshow(train[1])
