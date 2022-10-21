@@ -1,3 +1,7 @@
+"""
+Build and train a VQVAE and PCNN
+"""
+
 from dataset			import get_ttv, normalise
 from modules			import *
 
@@ -45,6 +49,13 @@ def train_vqvae(train_set, train_vnce):
 	return vqvae, trainer
 
 def pcnn_graph(first, second, metric):
+	"""Display a generic graph about the PCNN
+
+	first	- first of two metrics to be graphed on the same plot
+	second	- second of two metrics to be graphed on the same plot
+	metric	- the Y axis of the plot
+	"""
+
 	plot(first)
 	plot(second)
 	title(f"PCNN {metric} per Epoch")
@@ -54,12 +65,18 @@ def pcnn_graph(first, second, metric):
 	show()
 
 def pcnn_metrics(metrics):
+	"""Display the losses and accuracy of the PCNN model
+
+	metrics	- training metrics obtained from the PCNN
+	"""
+
 	tloss,	vloss	= metrics["loss"],		metrics["val_loss"]
 	tacc,	vacc	= metrics["accuracy"],	metrics["val_accuracy"]
 	pcnn_graph(tloss, vloss, "Loss")
 	pcnn_graph(tacc, vacc, "Accuracy")
 
 def main():
+	"""Train and save a VQVAE and a PCNN, and view their training metrics"""
 	tr, te, va		= get_ttv()
 	vnce			= var(tr)
 	train			= normalise(tr)

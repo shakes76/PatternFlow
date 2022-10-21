@@ -1,3 +1,7 @@
+"""
+Load VQVAE & PCNN models and evaluate performance
+"""
+
 import	tensorflow				as		tf
 import	tensorflow_probability	as		tfp
 from	numpy.random			import	choice
@@ -17,6 +21,14 @@ GREY			= cm.gray
 BATCH			= 10
 
 def compare(originals, recons):
+	"""Compare original test brains to encoded/decoded reconstruction images
+
+	originals	- the original brain images
+	recons		- original images after encoding and decoding
+
+	return		- average SSIM between the original images and their reconstructions
+	"""
+
 	ssims	= 0
 	pairs	= zip(originals, recons)
 	for i, pair in enumerate(pairs):
@@ -38,7 +50,13 @@ def compare(originals, recons):
 
 	return ssims
 
-def validate_vqvae(vqvae, test):
+def validate_vqvae(vqvae, test)
+	"""Evaluate how well the VQVAE performed using a test set
+
+	vqvae	- the trained VQVAE
+	test	- set of test images for evaluating the VQVAE
+	"""
+
 	image_inds	= choice(len(test), VISUALISATIONS)
 	images		= test[image_inds]
 	recons		= vqvae.predict(images)
@@ -47,6 +65,12 @@ def validate_vqvae(vqvae, test):
 	print(f"Average SSIM: {avg_ssim}")
 
 def show_new_brains(priors, samples):
+	"""Display encoded priors to their respective decoded images
+
+	priors	- set of encodings from the PCNN
+	samples	- images obtained by decoding priors with the VQVAE's decoder
+	"""
+
 	for i in range(VISUALISATIONS):
 		subplot(VISUALISATIONS, COLS, COLS * i + 1)
 		imshow(priors[i], cmap = GREY)
@@ -59,6 +83,13 @@ def show_new_brains(priors, samples):
 	show()
 
 def show_quantisations(test, encodings, quantiser):
+	"""Display original images to their respective encodings
+
+	test		- images to be encoded
+	encodings	- encodings obtained from the PCNN
+	quantiser	- vector quantiser from VQVAE
+	"""
+
 	encodings	= encodings[:len(encodings) // 2] # Throw out half the encodings because I have no memory
 	flat		= encodings.reshape(FLAT, encodings.shape[FLAT])
 	codebooks	= quantiser.code_indices(flat).numpy().reshape(encodings.shape[:FLAT])
@@ -75,6 +106,13 @@ def show_quantisations(test, encodings, quantiser):
 	show()
 
 def validate_pcnn(vqvae, train_vnce, test):
+	"""Evaluate the performance of the PCNN
+
+	vqvae		- VQVAE model
+	train_vnce	- variance of the training set post-normalisation
+	test		- set of images used to evaluate the PCNN
+	"""
+
 	pcnn	= load_model(PCNN_PATH, custom_objects = {"PixelConvolution": PixelConvolution, "ResidualBlock": ResidualBlock})
 	priors	= zeros(shape = (BATCH,) + (pcnn.input_shape)[1:])
 	batch, rows, columns = priors.shape
@@ -100,6 +138,7 @@ def validate_pcnn(vqvae, train_vnce, test):
 	show_new_brains(priors, samples)
 
 def main():
+	"""Evaluate the saved models and visualise some outputs"""
 	tr, te, val	= get_ttv()
 	test		= normalise(te)
 	train		= normalise(tr)

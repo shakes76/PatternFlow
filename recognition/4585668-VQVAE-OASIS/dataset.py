@@ -47,6 +47,7 @@ def get_ttv():
 	return (train_dset, test_dset, val_dset)
 
 def normalise(dset):
+	"""Scale and centre a dataset to have all values within [-0.5, 5]"""
 	return dset / NMALISE - CENTRE
 
 def preview(dataset, n):

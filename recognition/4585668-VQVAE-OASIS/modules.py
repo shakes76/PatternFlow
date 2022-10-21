@@ -46,6 +46,13 @@ class VectorQuantiser(layers.Layer):
 			), trainable = True, name = "embeddings_vqvae")
 
 	def code_indices(self, flat):
+		"""Obtain codebook indices from a flattened input
+
+		flat	- the flattened input whose codebook index to look up
+
+		return	- the codebook index of the flattened input
+		"""
+
 		sim		= tf.matmul(flat, self.embeddings)
 		dists	= tf.reduce_sum(flat ** 2, axis = 1, keepdims = True) + tf.reduce_sum(self.embeddings ** 2, axis = 0) - 2 * sim
 		encodes	= tf.argmin(dists, axis = 1)
@@ -74,7 +81,7 @@ class VectorQuantiser(layers.Layer):
 		return qtised
 
 	def get_config(self):
-		"""So that saving actually works"""
+		"""To allow for .h5 serialisation"""
 		config = super().get_config()
 		config.update({
 			"n_embeds"	: self.n_embeds,
@@ -114,7 +121,6 @@ def decoder(lat_dim):
 	lat_in	= keras.Input(shape = encoder(lat_dim).output.shape[1:])
 	convos	= layers.Conv2DTranspose(4 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
 	convos2	= layers.Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
-	#convos3	= layers.Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos2)
 	dec_out	= layers.Conv2DTranspose(1, KERN_SIZE, padding = "same")(convos2)
 
 
@@ -204,6 +210,7 @@ class PixelConvolution(layers.Layer):
 		return self.conv(inputs)
 
 	def get_config(self):
+		"""To allow for .h5 serialisation"""
 		config = super().get_config()
 		config.update({"mask_type": self.mask_type})
 		return config
@@ -234,6 +241,7 @@ class ResidualBlock(layers.Layer):
 		return layers.add([inputs, layer])
 
 	def get_config(self):
+		"""To allow for .h5 serialisation"""
 		config = super().get_config()
 		config.update({"filters": self.filters})
 		return config
