@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
-from modules import VQVAE, get_pixelcnn
+from modules import get_vqvae, get_pixelcnn
 from tqdm import tqdm
 
 
@@ -12,7 +12,7 @@ class VQVAETrainer (tf.keras.models.Model):
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
 
-        self.model = VQVAE(self.latent_dim, self.num_embeddings, (256, 256, 1), residual_hiddens=residual_hiddens)
+        self.model = get_vqvae(self.latent_dim, self.num_embeddings, (256, 256, 1), residual_hiddens=residual_hiddens)
         self.total_loss_tracker = tf.keras.metrics.Mean(name='total_loss')
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name='reconstruction_loss')
         self.vq_loss_tracker = tf.keras.metrics.Mean(name='vq_loss')
@@ -31,7 +31,7 @@ class VQVAETrainer (tf.keras.models.Model):
         with tf.GradientTape() as tape:
             reconstructions = self.model(x)
 
-            reconstruction_loss = (tf.reduce_mean((x - reconstructions)**2)/self.train_variance)
+            reconstruction_loss = tf.reduce_mean((x - reconstructions)**2)/self.train_variance
             total_loss = reconstruction_loss + sum(self.model.losses)
 
         grads = tape.gradient(total_loss, self.model.trainable_variables)
@@ -41,7 +41,7 @@ class VQVAETrainer (tf.keras.models.Model):
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.vq_loss_tracker.update_state(sum(self.model.losses))
 
-        ssim = tf.image.ssim(x, reconstructions, max_val=2.0)
+        ssim = tf.image.ssim(x, reconstructions, max_val=1.0)
         self.ssim_tracker.update_state(tf.reduce_mean(ssim))
 
         return {
@@ -54,7 +54,7 @@ class VQVAETrainer (tf.keras.models.Model):
     def test_step(self, x):
         x, _ = x
         reconstructions = self.model(x, training=False)
-        ssim = tf.image.ssim(x, reconstructions, max_val=2.0)
+        ssim = tf.image.ssim(x, reconstructions, max_val=1.0)
         self.ssim_tracker.update_state(tf.reduce_mean(ssim))
         return {
             "ssim": self.ssim_tracker.result()
@@ -63,10 +63,10 @@ class VQVAETrainer (tf.keras.models.Model):
 
 
 def train(x_train, x_test, x_validate, epochs=30, batch_size=16, out_dir='vqvae', **kwargs):
-    data_variance = np.var(x_train)
+    data_variance = np.var(x_train+0.5)
 
     vqvae_trainer = VQVAETrainer(data_variance, **kwargs)
-    vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam(3e-4))
+    vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     history = vqvae_trainer.fit(
         x=x_train, 
         epochs=epochs, 
@@ -87,7 +87,7 @@ def train(x_train, x_test, x_validate, epochs=30, batch_size=16, out_dir='vqvae'
     plt.title('Model Loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
-    plt.ylim((0, 2))
+    plt.ylim((0, 400))
     plt.legend(['total loss', 'reconstruction loss',  'vqvae loss'])
     plt.savefig('losses')
     plt.close()
@@ -114,12 +114,15 @@ def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30, batch_size=16,
 
     codebook_indices_training = []
     codebook_indices_validation = []
-    for i in tqdm(range(x_train.shape[0]//batch_size)):
+
+    # create training data for pixelcnn model using trained vqvae
+    # use a loop to reduce memory load
+    for i in range(x_train.shape[0]//batch_size):
         encoded_training = encoder.predict(x_train[i*batch_size : (i+1)*batch_size], verbose=0)
         x = encoded_training.reshape(-1, encoded_training.shape[-1])
         x = quantizer.get_code_indices(x)
         codebook_indices_training.extend(x.numpy().reshape(encoded_training.shape[:-1]))
-    for j in tqdm(range(x_validate.shape[0]//batch_size)):
+    for j in range(x_validate.shape[0]//batch_size):
         encoded_validation = encoder.predict(x_validate[j*batch_size : (j+1)*batch_size], verbose=0)
         x = encoded_validation.reshape(-1, encoded_validation.shape[-1])
         x = quantizer.get_code_indices(x)
@@ -130,14 +133,16 @@ def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30, batch_size=16,
 
 
     pixelcnn = get_pixelcnn(encoded_training.shape[1:-1], **kwargs)
-    pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+    pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(3e-4), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
     history = pixelcnn.fit(
         x=codebook_indices_training, 
         y=codebook_indices_training, 
-        batch_size=batch_size, 
+        batch_size=batch_size*4, 
         epochs=epochs,
         validation_data=(codebook_indices_validation, codebook_indices_validation)
     )
+
+    pixelcnn.summary()
 
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
