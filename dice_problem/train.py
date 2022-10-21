@@ -20,14 +20,17 @@ def train_unet(train_x, train_y, valid_x, valid_y):
     unet = unet_full(input_size=(128,128,3), n_filters=32)
     unet.summary()
     unet.compile(optimizer=tf.keras.optimizers.Adam(), 
-                 #loss=tf.keras.losses.BinaryCrossentropy(),
-                 loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                 loss=tf.keras.losses.BinaryCrossentropy(),
+                 #loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                  metrics=['accuracy'])
 
     results = unet.fit(train_x, train_y, batch_size=32, epochs=20, validation_data=(valid_x, valid_y))
     return unet, results
 
 # %%
+# train the model
 (unet, results) = train_unet(train_x, train_y, valid_x, valid_y)
-unet.save_model('C:/TechnoCore/2022/COMP3710/project_upload/PatternFlow/dice_problem')
+
 # %%
+# saves the model for future use
+tf.keras.models.save_model(unet, 'C:/TechnoCore/2022/COMP3710/project_upload/PatternFlow/dice_problem')
