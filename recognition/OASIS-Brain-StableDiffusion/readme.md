@@ -128,3 +128,302 @@ out  =  self.out_layer(x) 			#nn.Conv2d()		# 64 --> 3
 
 return  out
 ```
+
+## Training `train.py`
+The training loop for this network is a standard pytorch training loop consisting of the main model, optimizer, and loss function.
+### Main Model
+The main model for this training loop is the U-Net outlined above in the modules section.
+### Optimizer
+The optimizer chosen for this training loop was the same one mentioned in the paper due to its generalize well. This optimizer is Adam from `torch.optim.adam`.
+### Loss Function
+The loss function chosen for this training loop is Mean Squared Error (squared L2 norm). This loss function was chosen since the network is extremely connected and noisy, it provides some generalization and smoothing. The loss function can be found at `torch.nn.MSELoss`.
+### Training Loop
+```python
+for  epoch  in  range(epochs):
+	epoch_loss  =  0
+	for  idx, (data, _) in  enumerate(tqdm(train_dataloader)):
+		data  =  data.to(device)
+		position  =  get_sample_pos(data.shape[0]).to(device)
+		noisy_x, noise  =  add_noise(data, position)
+		predicted_noise  =  model(noisy_x, position)
+		loss  =  loss_fn(noise, predicted_noise)
+		optimizer.zero_grad()
+		loss.backward()
+		epoch_loss  +=  loss.item()
+		optimizer.step()
+	tracked_loss.append([epoch_loss  /  dataloader_length])
+	print("Current Loss ==> {}".format(epoch_loss/dataloader_length))
+	test_loss.append(test_model(model, test_path, batch_size, device))
+```
+The last line of the training loop calls the validation loop for that epoch to gather data on the test data to ensure the mode is not over-fitting. This is then saved to a csv and analyzed with Microsoft Excel.
+
+### Validation Loop
+```python
+for  idx, (data, _) in  enumerate(tqdm(test_dataloader)):
+	data  =  data.to(device)
+	position  =  get_sample_pos(data.shape[0]).to(device)
+	noisy_x, noise  =  add_noise(data, position)
+	predicted_noise  =  model(noisy_x, position)
+	loss  =  loss_fn(noise, predicted_noise)
+	running_loss  +=  loss.item()
+```
+### Training Results
+#### Graph showing the running loss of the training set in the training loop
+![Training Loss Vs Epochs](https://lh3.googleusercontent.com/pw/AL9nZEXH2I2U1lkr2GSYLzaDYCpROtEi_1OBWQLEEBIUu50t-2Rl5OBAeSYB05HEHLiOlItM_UJbGPEldyLEzeI_46pKSp8fuvKqYB1iA5NfXHwDZUqOyJlrYPMAtXYspKBMeeKLyjV9KHgCMXu5Rpgl3aCJ=w752-h452-no?authuser=0)
+#### Graph showing the running loss of the test set in the validation loop
+![Testing Loss vs Epoch](https://lh3.googleusercontent.com/pw/AL9nZEUevH6b6bYM2b4t073QSLS3iTE9O2KyasB9qhwcNqdSRcER5fsRassBdCob0oDd1uuZ7WHMSpzEigIQY1Jd_HyiAT6pnKFMu_tLvZwFHt_XvkD1ZTRspbIA4_cU-ci_1FW0_52kIis50unYYOygVD8X=w751-h452-no?authuser=0)
+### Training Your Own Model
+To train your own stable diffusion model. Ensure the hyperparameters meet your specification in `main()` in `train.py` (below is the default example one).
+```python 
+def  main():
+	#hyperparameters
+	device  =  "cuda"
+	lr  =  3e-4
+	train_path  =  r".\OASIS-Brain-Data\training_data"
+	test_path  =  r".\OASIS-Brain-Data\test_data"
+	model  =  UNet().to(device)
+	batch_size  =  12
+	epochs  =  200
+```
+Then run `train.py` in the terminal with the command `python train.py`.
+
+## Results `predict.py`
+Once a model is trained, `predict.py` can be used to load that model using `load_model()`.
+After the model is loaded, it can be used to generate images from noise using the functions `show_single_image()` and `show_x_images()`. The path to that model must be specified in the `main` method. By default `predict.py` generates 6 images in a row and saves it.
+
+### Images Generated From Stable Diffusion Model
+Here are six Brain MRIs generated from this stable diffusion model
+
+![Generated Brain Images](https://lh3.googleusercontent.com/pw/AL9nZEWOVw8GZ23W_Nn1bzlelZnFbdSNY1OtXRLf2EWPLUAf0EIg8Naw0rXTSUadluIzml-r91DJxK2BNYnNodYBzRSVtL9RLReduJayQ2dP9kGNSFuXGuFsG1LBycxD38to4LS8jNWgJiY5FmKTNbk08SpY=w398-h68-no?authuser=0 =796x136)
+To generate your own images, just run `python predict.py`in the terminal. Remember a model has to be trained, saved, and then its path has to be referenced appropriately in `predict.py`.
+
+## Dependencies
+```
+# Name                    Version                   Build  Channel
+absl-py                   1.2.0              pyhd8ed1ab_0    conda-forge
+aiohttp                   3.8.1           py310he2412df_1    conda-forge
+aiosignal                 1.2.0              pyhd8ed1ab_0    conda-forge
+argon2-cffi               21.3.0             pyhd8ed1ab_0    conda-forge
+argon2-cffi-bindings      21.2.0          py310he2412df_2    conda-forge
+asttokens                 2.0.8              pyhd8ed1ab_0    conda-forge
+async-timeout             4.0.2              pyhd8ed1ab_0    conda-forge
+attrs                     22.1.0             pyh71513ae_1    conda-forge
+backcall                  0.2.0              pyh9f0ad1d_0    conda-forge
+backports                 1.0                        py_2    conda-forge
+backports.functools_lru_cache 1.6.4              pyhd8ed1ab_0    conda-forge
+beautifulsoup4            4.11.1             pyha770c72_0    conda-forge
+blas                      2.116                       mkl    conda-forge
+blas-devel                3.9.0              16_win64_mkl    conda-forge
+bleach                    5.0.1              pyhd8ed1ab_0    conda-forge
+blinker                   1.4                        py_1    conda-forge
+brotli                    1.0.9                h8ffe710_7    conda-forge
+brotli-bin                1.0.9                h8ffe710_7    conda-forge
+brotlipy                  0.7.0           py310he2412df_1004    conda-forge
+bzip2                     1.0.8                h8ffe710_4    conda-forge
+c-ares                    1.18.1               h8ffe710_0    conda-forge
+ca-certificates           2022.9.24            h5b45459_0    conda-forge
+cachetools                5.2.0              pyhd8ed1ab_0    conda-forge
+certifi                   2022.9.24          pyhd8ed1ab_0    conda-forge
+cffi                      1.15.1          py310hcbf9ad4_0    conda-forge
+charset-normalizer        2.1.1              pyhd8ed1ab_0    conda-forge
+click                     8.1.3           py310h5588dad_0    conda-forge
+colorama                  0.4.5              pyhd8ed1ab_0    conda-forge
+cryptography              37.0.1          py310h21b164f_0
+cudatoolkit               11.6.0              hc0ea762_10    conda-forge
+cycler                    0.11.0             pyhd8ed1ab_0    conda-forge
+debugpy                   1.6.3           py310h8a704f9_0    conda-forge
+decorator                 5.1.1              pyhd8ed1ab_0    conda-forge
+defusedxml                0.7.1              pyhd8ed1ab_0    conda-forge
+entrypoints               0.4                pyhd8ed1ab_0    conda-forge
+executing                 1.0.0              pyhd8ed1ab_0    conda-forge
+flit-core                 3.7.1              pyhd8ed1ab_0    conda-forge
+fonttools                 4.37.1          py310he2412df_0    conda-forge
+freetype                  2.12.1               h546665d_0    conda-forge
+frozenlist                1.3.1           py310he2412df_0    conda-forge
+gettext                   0.19.8.1          ha2e2712_1008    conda-forge
+glib                      2.72.1               h7755175_0    conda-forge
+glib-tools                2.72.1               h7755175_0    conda-forge
+google-auth               2.11.0             pyh6c4a22f_0    conda-forge
+google-auth-oauthlib      0.4.6              pyhd8ed1ab_0    conda-forge
+grpc-cpp                  1.48.1               h535cfc9_1    conda-forge
+grpcio                    1.48.1          py310hd8b4215_1    conda-forge
+gst-plugins-base          1.20.3               h001b923_1    conda-forge
+gstreamer                 1.20.3               h6b5321d_1    conda-forge
+icu                       70.1                 h0e60522_0    conda-forge
+idna                      3.3                pyhd8ed1ab_0    conda-forge
+importlib-metadata        4.11.4          py310h5588dad_0    conda-forge
+importlib_resources       5.9.0              pyhd8ed1ab_0    conda-forge
+intel-openmp              2022.1.0          h57928b3_3787    conda-forge
+ipykernel                 6.15.2             pyh025b116_0    conda-forge
+ipython                   8.5.0              pyh08f2357_1    conda-forge
+ipython_genutils          0.2.0                      py_1    conda-forge
+jedi                      0.18.1             pyhd8ed1ab_2    conda-forge
+jinja2                    3.1.2              pyhd8ed1ab_1    conda-forge
+joblib                    1.1.0              pyhd8ed1ab_0    conda-forge
+jpeg                      9e                   h8ffe710_2    conda-forge
+jsonschema                4.15.0             pyhd8ed1ab_0    conda-forge
+jupyter_client            7.3.5              pyhd8ed1ab_0    conda-forge
+jupyter_contrib_core      0.4.0              pyhd8ed1ab_0    conda-forge
+jupyter_contrib_nbextensions 0.5.1              pyhd8ed1ab_2    conda-forge
+jupyter_core              4.11.1          py310h5588dad_0    conda-forge
+jupyter_highlight_selected_word 0.2.0           py310h5588dad_1005    conda-forge
+jupyter_latex_envs        1.4.6           pyhd8ed1ab_1002    conda-forge
+jupyter_nbextensions_configurator 0.4.1              pyhd8ed1ab_2    conda-forge
+jupyterlab_pygments       0.2.2              pyhd8ed1ab_0    conda-forge
+kiwisolver                1.4.4           py310h476a331_0    conda-forge
+krb5                      1.19.3               h1176d77_0    conda-forge
+lcms2                     2.12                 h2a16943_0    conda-forge
+lerc                      4.0.0                h63175ca_0    conda-forge
+libabseil                 20220623.0      cxx17_h1a56200_4    conda-forge
+libblas                   3.9.0              16_win64_mkl    conda-forge
+libbrotlicommon           1.0.9                h8ffe710_7    conda-forge
+libbrotlidec              1.0.9                h8ffe710_7    conda-forge
+libbrotlienc              1.0.9                h8ffe710_7    conda-forge
+libcblas                  3.9.0              16_win64_mkl    conda-forge
+libclang                  14.0.6          default_h77d9078_0    conda-forge
+libclang13                14.0.6          default_h77d9078_0    conda-forge
+libdeflate                1.13                 h8ffe710_0    conda-forge
+libffi                    3.4.2                h8ffe710_5    conda-forge
+libglib                   2.72.1               h3be07f2_0    conda-forge
+libiconv                  1.16                 he774522_0    conda-forge
+liblapack                 3.9.0              16_win64_mkl    conda-forge
+liblapacke                3.9.0              16_win64_mkl    conda-forge
+libogg                    1.3.4                h8ffe710_1    conda-forge
+libpng                    1.6.37               h1d00b33_4    conda-forge
+libprotobuf               3.21.5               h12be248_3    conda-forge
+libsodium                 1.0.18               h8d14728_1    conda-forge
+libsqlite                 3.39.3               hcfcfb64_0    conda-forge
+libtiff                   4.4.0                h92677e6_3    conda-forge
+libuv                     1.44.2               h8ffe710_0    conda-forge
+libvorbis                 1.3.7                h0e60522_0    conda-forge
+libwebp-base              1.2.4                h8ffe710_0    conda-forge
+libxcb                    1.13              hcd874cb_1004    conda-forge
+libxml2                   2.9.14               hf5bbc77_4    conda-forge
+libxslt                   1.1.35               h34f844d_0    conda-forge
+libzlib                   1.2.12               h8ffe710_2    conda-forge
+lxml                      4.9.1           py310he2412df_0    conda-forge
+m2w64-gcc-libgfortran     5.3.0                         6    conda-forge
+m2w64-gcc-libs            5.3.0                         7    conda-forge
+m2w64-gcc-libs-core       5.3.0                         7    conda-forge
+m2w64-gmp                 6.1.0                         2    conda-forge
+m2w64-libwinpthread-git   5.0.0.4634.697f757               2    conda-forge
+markdown                  3.4.1              pyhd8ed1ab_0    conda-forge
+markupsafe                2.1.1           py310he2412df_1    conda-forge
+matplotlib                3.5.3           py310h5588dad_2    conda-forge
+matplotlib-base           3.5.3           py310h7329aa0_2    conda-forge
+matplotlib-inline         0.1.6              pyhd8ed1ab_0    conda-forge
+mistune                   2.0.4              pyhd8ed1ab_0    conda-forge
+mkl                       2022.1.0           h6a75c08_874    conda-forge
+mkl-devel                 2022.1.0           h57928b3_875    conda-forge
+mkl-include               2022.1.0           h6a75c08_874    conda-forge
+msys2-conda-epoch         20160418                      1    conda-forge
+multidict                 6.0.2           py310he2412df_1    conda-forge
+munkres                   1.1.4              pyh9f0ad1d_0    conda-forge
+nb_conda_kernels          2.3.1           py310h5588dad_1    conda-forge
+nbclient                  0.6.7              pyhd8ed1ab_0    conda-forge
+nbconvert                 7.0.0              pyhd8ed1ab_0    conda-forge
+nbconvert-core            7.0.0              pyhd8ed1ab_0    conda-forge
+nbconvert-pandoc          7.0.0              pyhd8ed1ab_0    conda-forge
+nbformat                  5.4.0              pyhd8ed1ab_0    conda-forge
+nest-asyncio              1.5.5              pyhd8ed1ab_0    conda-forge
+notebook                  6.4.12             pyha770c72_0    conda-forge
+numpy                     1.23.2          py310h8a5b91a_0    conda-forge
+oauthlib                  3.2.1              pyhd8ed1ab_0    conda-forge
+openjpeg                  2.5.0                hc9384bd_1    conda-forge
+openssl                   1.1.1q               h8ffe710_0    conda-forge
+packaging                 21.3               pyhd8ed1ab_0    conda-forge
+pandas                    1.4.4                    pypi_0    pypi
+pandoc                    2.19.2               h57928b3_0    conda-forge
+pandocfilters             1.5.0              pyhd8ed1ab_0    conda-forge
+parso                     0.8.3              pyhd8ed1ab_0    conda-forge
+pathlib                   1.0.1           py310h5588dad_6    conda-forge
+pcre                      8.45                 h0e60522_0    conda-forge
+pickleshare               0.7.5                   py_1003    conda-forge
+pillow                    9.2.0           py310h52929f7_2    conda-forge
+pip                       22.2.2             pyhd8ed1ab_0    conda-forge
+pkgutil-resolve-name      1.3.10             pyhd8ed1ab_0    conda-forge
+ply                       3.11                       py_1    conda-forge
+prometheus_client         0.14.1             pyhd8ed1ab_0    conda-forge
+prompt-toolkit            3.0.31             pyha770c72_0    conda-forge
+protobuf                  3.19.5                   pypi_0    pypi
+psutil                    5.9.2           py310h8d17308_0    conda-forge
+pthread-stubs             0.4               hcd874cb_1001    conda-forge
+pure_eval                 0.2.2              pyhd8ed1ab_0    conda-forge
+pyasn1                    0.4.8                      py_0    conda-forge
+pyasn1-modules            0.2.8                    pypi_0    pypi
+pycparser                 2.21               pyhd8ed1ab_0    conda-forge
+pygments                  2.13.0             pyhd8ed1ab_0    conda-forge
+pyjwt                     2.4.0              pyhd8ed1ab_0    conda-forge
+pyopenssl                 22.0.0             pyhd8ed1ab_0    conda-forge
+pyparsing                 3.0.9              pyhd8ed1ab_0    conda-forge
+pyqt                      5.15.7          py310hbabf5d4_0    conda-forge
+pyqt5-sip                 12.11.0         py310h8a704f9_0    conda-forge
+pyrsistent                0.18.1          py310he2412df_1    conda-forge
+pysocks                   1.7.1              pyh0701188_6    conda-forge
+python                    3.10.6          h9a09f29_0_cpython    conda-forge
+python-dateutil           2.8.2              pyhd8ed1ab_0    conda-forge
+python-fastjsonschema     2.16.1             pyhd8ed1ab_0    conda-forge
+python_abi                3.10                    2_cp310    conda-forge
+pytorch                   1.12.1          py3.10_cuda11.6_cudnn8_0    pytorch
+pytorch-model-summary     0.1.1                      py_0    conda-forge
+pytorch-mutex             1.0                        cuda    pytorch
+pytz                      2022.2.1                 pypi_0    pypi
+pyu2f                     0.1.5              pyhd8ed1ab_0    conda-forge
+pywin32                   303             py310he2412df_0    conda-forge
+pywinpty                  2.0.7           py310h00ffb61_0    conda-forge
+pyyaml                    6.0             py310he2412df_4    conda-forge
+pyzmq                     23.2.1          py310h73ada01_0    conda-forge
+qt-main                   5.15.4               h467ea89_2    conda-forge
+re2                       2022.06.01           h0e60522_0    conda-forge
+requests                  2.28.1             pyhd8ed1ab_1    conda-forge
+requests-oauthlib         1.3.1              pyhd8ed1ab_0    conda-forge
+rsa                       4.9                pyhd8ed1ab_0    conda-forge
+scikit-learn              1.1.2           py310h3a564e9_0    conda-forge
+scipy                     1.9.1           py310h578b7cb_0    conda-forge
+send2trash                1.8.0              pyhd8ed1ab_0    conda-forge
+setuptools                65.3.0             pyhd8ed1ab_1    conda-forge
+sip                       6.6.2           py310h8a704f9_0    conda-forge
+six                       1.16.0             pyh6c4a22f_0    conda-forge
+soupsieve                 2.3.2.post1        pyhd8ed1ab_0    conda-forge
+sqlite                    3.39.3               hcfcfb64_0    conda-forge
+stack_data                0.5.0              pyhd8ed1ab_0    conda-forge
+tbb                       2021.5.0             h91493d7_2    conda-forge
+tensorboard               2.10.1             pyhd8ed1ab_0    conda-forge
+tensorboard-data-server   0.6.1                    pypi_0    pypi
+tensorboard-plugin-wit    1.8.1              pyhd8ed1ab_0    conda-forge
+terminado                 0.15.0          py310h5588dad_0    conda-forge
+threadpoolctl             3.1.0              pyh8a188c0_0    conda-forge
+tinycss2                  1.1.1              pyhd8ed1ab_0    conda-forge
+tk                        8.6.12               h8ffe710_0    conda-forge
+toml                      0.10.2             pyhd8ed1ab_0    conda-forge
+torch-summary             1.4.5                    pypi_0    pypi
+torch-tb-profiler         0.4.0                    pypi_0    pypi
+torchaudio                0.12.1              py310_cu116    pytorch
+torchvision               0.13.1              py310_cu116    pytorch
+tornado                   6.2             py310he2412df_0    conda-forge
+tqdm                      4.64.1             pyhd8ed1ab_0    conda-forge
+traitlets                 5.3.0              pyhd8ed1ab_0    conda-forge
+typing-extensions         4.3.0                hd8ed1ab_0    conda-forge
+typing_extensions         4.3.0              pyha770c72_0    conda-forge
+tzdata                    2022c                h191b570_0    conda-forge
+ucrt                      10.0.20348.0         h57928b3_0    conda-forge
+unicodedata2              14.0.0          py310he2412df_1    conda-forge
+urllib3                   1.26.11            pyhd8ed1ab_0    conda-forge
+vc                        14.2                 hb210afc_7    conda-forge
+vs2015_runtime            14.29.30139          h890b9b1_7    conda-forge
+wcwidth                   0.2.5              pyh9f0ad1d_2    conda-forge
+webencodings              0.5.1                      py_1    conda-forge
+werkzeug                  2.2.2              pyhd8ed1ab_0    conda-forge
+wheel                     0.37.1             pyhd8ed1ab_0    conda-forge
+win_inet_pton             1.1.0           py310h5588dad_4    conda-forge
+winpty                    0.4.3                         4    conda-forge
+xorg-libxau               1.0.9                hcd874cb_0    conda-forge
+xorg-libxdmcp             1.1.3                hcd874cb_0    conda-forge
+xz                        5.2.6                h8d14728_0    conda-forge
+yaml                      0.2.5                h8ffe710_2    conda-forge
+yarl                      1.7.2           py310he2412df_2    conda-forge
+zeromq                    4.3.4                h0e60522_1    conda-forge
+zipp                      3.8.1              pyhd8ed1ab_0    conda-forge
+zlib                      1.2.12               h8ffe710_2    conda-forge
+zstd                      1.5.2                h7755175_4    conda-forge
+```
