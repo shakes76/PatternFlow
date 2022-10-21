@@ -92,7 +92,13 @@ When using this data for the first time, you need to use dataset.load_dataset(da
 
 !!! Always remember to use (data_reshape = False) if reshaped data already exists
 
-run predict.py to run the model:
+run train.py to training and save the model (model save in the current folder):
+(The specific code needs to be changed according to the specific device environment)
+```
+python3.9 train.py
+```
+
+run predict.py to load the model and predict mask with validation data:
 (The specific code needs to be changed according to the specific device environment)
 ```
 python3.9 predict.py
