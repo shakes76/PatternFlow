@@ -137,6 +137,12 @@ the constant `FILE_PATH`, located in `train.py`. Using `tf.Dataset` functions, t
 automatically ignore all labels for Alzheimer's vs non-Alzheimer's. Hence, all that is required 
 is to ensure there exist separate folders already for training and testing data.
 
+Then, for any hyperparameter tuning or model selection, simply modify any of the constants at 
+the top of the `train.py` file.
+
+To use the models pre-trained, simply refer to `predict.py`. All reconstructions and generations 
+of images is conducted here.
+
 ### Dependencies
 
 - `tensorflow >= 2.10.0`
