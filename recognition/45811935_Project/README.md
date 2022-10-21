@@ -29,7 +29,7 @@ From [[1](#references)]
 This embedding space is initialised via a uniform distribution, and is learned during training 
 via the following loss function (defined in [[1](#references)]):
 
-$L = \log p(x|z_q(x)) + \|sg[z_e(x)] - e\|_2^2+\beta\|z_e(x)-sg[e]\|_2^2$, where:
+$L = \log p(x|z_q(x)) + \||sg[z_e(x)] - e\||_2^2+\beta\||z_e(x)-sg[e]\||_2^2$, where:
 
 - $sg$ refers to the stop-gradient operator, which treats its input as a constant during forward 
   computation, (i.e. stopping the computation of its gradient, as it would effectively be 0), 
