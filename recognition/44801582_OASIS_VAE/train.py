@@ -1,3 +1,4 @@
+import os
 import dataset
 import modules
 from datetime import datetime
@@ -111,45 +112,57 @@ def get_structural_similarity(model, dataset):
     return average_similarity
 
 
-def main():
-    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(500)
-    time = datetime.now().strftime('%H:%M:%S')
+def train_vq(time, num_embeddings, latent_dim, batch_size):
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(200)
 
-    num_embeddings = 128
-    latent_dim = 16
-    batch_size = 4
-
-    # VQ VAE
     vqvae_trainer = Trainer(data_variance, latent_dim=latent_dim, num_embeddings=num_embeddings)
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
-    vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
 
     history = vqvae_trainer.fit(train_data, epochs=10, batch_size=batch_size)
+
+    vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
+    vqvae_trainer.vqvae.save_weights(f"out/{time}/vqvae_model_weights.h5")
 
     print(f"#################\n\rSSIM:{get_structural_similarity(vqvae_trainer.vqvae, test_data)}\n\r#################")
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time, "vq_vae")
 
-    # PIXELCNN
-    encoder = vqvae_trainer.vqvae.get_layer("encoder")
-    quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
 
-    encoded_outputs = encoder.predict(test_data)
+def train_pixel(time, num_embeddings, latent_dim, batch_size, vqvae_train_path):
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(200)
+    vqvae = tf.keras.models.load_model(vqvae_train_path)
+    embeddings = vqvae.get_layer("vector_quantizer").embeddings
+
+    encoded_outputs = vqvae.get_layer("encoder").predict(test_data)
     flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-    codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
-    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
-    pixel_cnn = modules.PixelCNN(latent_dim, num_embeddings, 2, 2)
+    codebook_indices = tf.argmin((tf.reduce_sum(flat_enc_outputs ** 2, axis=1, keepdims=True)
+                                  + tf.reduce_sum(embeddings ** 2, axis=0) - 2
+                                  * tf.matmul(flat_enc_outputs, embeddings)), axis=1).numpy().reshape(encoded_outputs.shape[:-1])
+
+    pixel_cnn = modules.PixelCNN(latent_dim, (64, 64), num_embeddings, 2, 2)
     pixel_cnn.compile(optimizer=tf.keras.optimizers.Adam(3e-4),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=["accuracy"])
     history = pixel_cnn.fit(x=codebook_indices, y=codebook_indices, batch_size=batch_size,
-                            epochs=10, validation_split=0.2)
-    plot_losses(history, time, "pixelcnn")
+                            epochs=30, validation_split=0.2)
 
-    trained_pixelcnn_model = pixel_cnn
-    trained_pixelcnn_model.save(f"out/{time}/pixelcnn_model")
+    plot_losses(history, time, "pixelcnn")
+    pixel_cnn.save(f"out/{time}/pixelcnn_model")
+    pixel_cnn.save_weights(f"out/{time}/pixelcnn_model_weights.h5")
+
+
+def main():
+    time = datetime.now().strftime('%H:%M:%S')
+    os.mkdir(f"out/{time}")
+
+    num_embeddings = 128
+    latent_dim = 16
+    batch_size = 4
+
+    train_vq(time, num_embeddings, latent_dim, batch_size)
+    train_pixel(time, num_embeddings, latent_dim, batch_size, "samples/vqvae_model")
 
 
 if __name__ == "__main__":
