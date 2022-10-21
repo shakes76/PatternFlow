@@ -41,12 +41,12 @@ The `predict.py` will take a file path from the directory `predict.py` is in as 
 
 ## Results
 
-Although several attempts and different architectures were created, the most successful one achieved a test accuracy of 85.35% for the SNN while the classifier achieved an accuracy over the entire dataset of 60.75%. The architecture that achieved this is given in the `modules.py` file. The training and validation accuracies and losses can be seen below (note that validation was named 'test' on accident, sorry for the confusion).
+Although several attempts and different architectures were created, the most successful one achieved a test accuracy of 86.12% for the SNN while the classifier achieved an accuracy over the entire dataset of 88.79%. The architecture that achieved this is given in the `modules.py` file. The training and validation accuracies and losses can be seen below.
 
 ![Screenshot](images/acc.png)
 ![Screenshot](images/loss.png)
 
-Evidently, although it trained for 50 epochs, the architecture seems to reach around a 80% accuracy on the validation within 25 epochs, and doesn't increase much higher than that. We can also see that the validation loss doesn't really decrease after 22 epochs, and the model is clearly overfitting after ~25 epochs. Using the embedding layer from this architecture, the classification model achieved a 60.75% accuracy on the entire dataset. I have tried a lot to improve this, but I just can't seem to get it going better, although I think the most obvious route to improve it would be to battle overfitting better. A screenshot of the classifier's accuracy output can be seen below:
+Evidently, although it trained for 40 epochs, the architecture seems to reach around a 80% accuracy on the validation within 20 epochs, and doesn't increase much higher than that. We can also see that the validation loss doesn't really decrease after 22 epochs, and the model is clearly overfitting after ~22 epochs. Using the embedding layer from this architecture, the classification model achieved a 88.79% accuracy on the entire dataset. I have tried a lot to improve this, but I just can't seem to get it going better, although I think the most obvious route to improve it would be to battle overfitting better. A screenshot of the classifier's accuracy output can be seen below:
 
 ![Screenshot](images/classifier_acc.png)
 
@@ -54,7 +54,7 @@ In addition to this, I've provided an example of the training output (note that 
 
 ![Screenshot](images/example_training.png)
 
-Hence, although the SNN does well at comparing a pair of brain scans and determining whether they both of Alzheimer's, both are Alzheimer-free or they are not similar, the classifier based on the SNN does not seem to perform as well.
+I'd also like to quickly mention (which is also slightly touched on in the reproducability section) that these results fluctuate quite a bit. I'm not certain why the model's loss and accuracy very so significantly, but over the several runs I've done with this architecture, the model will very regularly achieve a high training, validation and testing accuracies, with a classifier accuracy ranging from ~71% to ~88%.
 
 ## Dependencies
 
@@ -70,11 +70,11 @@ This project has the following dependencies:
 
 ## Note on Hardware
 
-I should note that the code (and the results above) come from me executing this code in a google colab environment.
+I should note that the code (and the results above) come from me executing this code in a google colab environment. I've tried running this code a number of different ways, but I find that there can be memory issues (but its hard to tell if it's just my machine, since I have very little free memory). Hence, if you attempt to run `train.py` but encounter memory issues, I highly encourage you to try training in google colab. Alternatively, I think you can decrease the batch size (which is quite high since I was, again, running in google colab) and increase epochs to try and get the same results but without having spatially-complex matrices during each iteration (and hence avoiding the memory issue), but I have not tried this.
 
 ## Note on Reproducability
 
-It should be noted tht reproducing the results above might be a little difficult, since the data is randomly split, and so you each run might take less (or more) epochs to reach the ~80% validation accuracy. However, from repeated runs, I've found that it will almost always reach ~80% accuracy with 30-45 epochs.
+It should be noted that reproducing the results above might be a little difficult, since the data is randomly split, and so you each run might take less (or more) epochs to reach the ~80% validation accuracy. However, from repeated runs, I've found that it will almost always reach ~80% accuracy with 25-40 epochs, and the results should be reproducable.
 
 ## References
 [1] https://keras.io/examples/vision/siamese_contrastive/ 

@@ -21,7 +21,7 @@ def siamese_model(input_shape):
     x = layers.Conv2D(128, (4, 4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
     x = layers.Flatten()(x)
 
-    # Produce 10 dimensional vector
+    # Produce 50 dimensional vector
     x = tf.keras.layers.BatchNormalization()(x)
     x = layers.Dense(50, activation="relu")(x)
     embedding_network = keras.Model(input, x)
