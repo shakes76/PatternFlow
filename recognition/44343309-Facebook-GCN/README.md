@@ -1,7 +1,7 @@
 # Graph Convolutional Network (GCN) for  classifying the Facebook Large Page-Page Network Dataset
 
-Author: Remington Greenhill-Brown
-\ SN: 44343309
+**Author**: Remington Greenhill-Brown  
+**SN**: 44343309
 ## What is a GCN and why use it here?
 A Graph Convolutional Network, or GCN, is a form of semi-supervised convolutional neural network designed to operate specifically on data stored in a graph structure (Thomas, K, et. al., 2016). GCNs are used in the same way as a relatively standard Convolutional Neural Network (CNN), where features are pulled from data and classified. What differentiates GCNs, is that they are are able to operate in non-Euclidean space. Operating in non-Euclidean space is essential to GCN functionality as graphs are typically characterised by somewhat arbitrary connections between nodes (Lin, et. al., 2021). This particular implementation of GCN is used to classify website data from a series of verified Facebook sites. The model created here can then be used to classify more Facebook sites. 
 
