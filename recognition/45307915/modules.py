@@ -105,7 +105,7 @@ class ImprovedUNETModel():
     def segmentationLayer(self, inputs, n_filters):
         """ Improved UNET Segmentation Layer
         
-        ""
+        1x1 Convolution layer
 
         Parameters:
             inputs (tf.Tensor): Tensor inputted into the layer 
