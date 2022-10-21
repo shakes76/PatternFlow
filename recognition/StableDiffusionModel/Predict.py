@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-@author: Daniel Ju Lian Wong
-"""
-from tqdm import tqdm
-import tensorflow.keras as kr
-import matplotlib.pyplt as plt
+
 from modules import *
+
 
 TIME_STEPS = 200
 BETA = np.linspace(0.0001, 0.02, TIME_STEPS)
@@ -30,7 +25,7 @@ def denoise(input, predictedNoise, t):
     return mean + (var ** .5) * z
 
 
-if True:
+if __name__ ==  "__main__":
     """ Main function """
     
     # Loading the AutoEncoder
@@ -38,8 +33,8 @@ if True:
     autoEnc.load_weights("FinalModel")
     
     # Loading the diffusion Model
-    #unet = Unet()
-    #unet.load_weights("./checkpoints/ckpt-53")
+    unet = Unet()
+    unet.load_weights("./checkpoints/ckpt-53")
 
     # Sampling pure noise from the latent space
     x = tf.random.normal((1,32,32,1))
@@ -58,25 +53,22 @@ if True:
         x = denoise(x, predictedNoise, t)
         imageList.append(np.squeeze(np.squeeze(x, 0),-1))
 
-        if i % 25==0:
-
-            
+        if (i+1) % 50==0:
             
             nextImage = np.array(np.clip((x[0] + 1) * 127.5, 0, 255), np.uint8)
-            
 
             axs[0,col].imshow(tf.squeeze(nextImage), cmap="Greys")
-            axs[0,col].set_title("Timestep {i} Latent Representation")
+            axs[0,col].set_title("Timestep {i} Latent Representation".format(i=i))
             axs[1,col].imshow(tf.squeeze(decoder(nextImage)), cmap="Greys")
-            axs[1,col].set_title("Timestep {i} Decoded")
+            axs[1,col].set_title("Timestep {i} Decoded".format(i=i))
             col += 1
 
     
 
     nextImage = np.array(np.clip((x[0] + 1) * 127.5, 0, 255), np.uint8)
     axs[0,col].imshow(tf.squeeze(nextImage), cmap="Greys")
-    axs[0,col].title("Timestep {i} Latent Representation".format(i=i))
+    axs[0,col].set_title("Timestep {i} Latent Representation".format(i=i))
     axs[1,col].imshow(tf.squeeze(decoder(nextImage)), cmap="Greys")
-    axs[1,col].title("Timestep {i} Decoded".format(i=i))
+    axs[1,col].set_title("Timestep {i} Decoded".format(i=i))
     plt.show()
     
