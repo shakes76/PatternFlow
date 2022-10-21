@@ -13,6 +13,8 @@ The U-Net is composed of two near symmetrical parts. The encoder and the decoder
 ## Results
 !! The model was developed in google collab, a notebook to run it in is the recommended method and has been provided !!
 
+Average dice coefficient for the test set is: Dice 0.7014097571372986
+
 ---
 
 ![loss](images/loss.png)
