@@ -4,13 +4,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from dataset import import_dataset
 from modules import Model
-upsample_factor = 4
-batch_size = 8
-read_image_size = (256, 240)
-target_image_width = 256
-epochs = 20
-do_training = True
-checkpoint_loc = 'model/checkpoint'
+from constants import epochs, checkpoint_loc, batch_size, read_image_size, target_image_width, upsample_factor
+
 
 def plot_training_statistics(history, epochs):
   '''
@@ -27,10 +22,13 @@ def plot_training_statistics(history, epochs):
   plt.plot(x, loss, label='loss')
   plt.plot(x, val_loss, label='val_loss')
   plt.legend()
+  plt.savefig('training_statistics_loss.png')
   plt.show()
   plt.plot(x, psnr, label='psnr')
-  plt.ylim(0, 35)
   plt.legend()
+  plt.savefig('training_statistics_psnr.png')
+  plt.ylim(0, 35)
+  plt.savefig('training_statistics_psnr_range.png')
   plt.show()
 
 
