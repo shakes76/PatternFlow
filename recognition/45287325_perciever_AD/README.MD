@@ -5,6 +5,7 @@ The task at hand was to classify images of brain scans as either Alzheimer's Dis
 
 The Perciever uses a technique surrounding the use of a latent array to reduce the time complexity of attention operations. Traditionally, the attention operations done on flattened images with size (M x C) are O(M^2), where M = height x width. The perciever utilises a latent array with dimension (N x D), where N << M. This reduces the complexity of attention operations to O(M^2). This allows for significantly deeper transformers to be built that still have a manageable time complexity for training. 
 
+### Perceiver Architecture
 ![Perceiver Architecture](https://user-images.githubusercontent.com/88659407/197125075-35594818-5ec6-4eef-833a-69ee1a3401ba.JPG)
 [[1]](#1)
 
@@ -15,8 +16,19 @@ The data was trained using Cross Entropy Loss and the Adam optimizer. Note that 
 
 Using a batch size of 5, a learning rate of 0.005 and 10 epochs, the following results were obtained. 
 
-## Project Structure
-The code for loading the data is contained in **`dataset.py`**. The methods ``` train_data_loader``` and ``` test_data_loader`` both take a directory and a batch size as arguments. The directory must contain two folders, one names train and one named test. Within both of these, there needs to be two folders, one named AD and one named MC. These contain the respective images for both classes of brain scans. 
+### Loss Curve during Training
+![loss3](https://user-images.githubusercontent.com/88659407/197135872-88369535-64e2-4663-9776-1634490309d1.png)
+
+### Training Accuracy
+![train_acc3](https://user-images.githubusercontent.com/88659407/197135880-69704543-ba76-4a0d-9721-462740643834.png)
+
+
+There were issues that arose related to the training of the model. Although the model trained, the loss did not really ever decrease meaningfully. This meant that the training set performance did not increase with the number of epochs. I played around with the parameters by increasing the model size but, due to the memory constraints of my laptop, increasing one parameter meant I had to decrease the others. 
+
+I would be hopeful that longer training on a more powerful machine would help this issue. The Perceiever is a complex model, and even this simplified version had nearly 8 million parameters. Also, it has to learn the positional encodings to begin to obtain meaningful results. Since these are the first layer of the model, updating weights through back-propogation may take a long time to make these encodings accurate. I think that a longer training time would go a long way towards improving the loss function and hence the training accuracy. 
+
+## Project Structure and Reproducability
+The code for loading the data is contained in **`dataset.py`**. The methods ``` train_data_loader``` and ``` test_data_loader`` both take a directory and a batch size as arguments. The directory must contain two folders, one names train and one named test. Within both of these, there needs to be two folders, one named AD and one named MC. These contain the respective images for both classes of brain scans. Note that the test/training splits were predefined in the provided data.
 
 In order to train the data, the script **`train.py`** should be run. This script contains various constants that the Perceiever takes as parameters. This includes the latent dimensions N and D as well as parameters for the depth of the Perceiever. It also includes training constants such as the batch size, learning rate and the number of epochs. This script saves the model in the path specified by MODEL_PATH. This should be altered as desired. 
 
