@@ -328,8 +328,9 @@ The code includes generation of random seeds to remove stochasticity from the cr
 
 ---
 
-
 # Training & Validation Splits
+
+The ADNI data came pre-split into a test and training set.  A validation split of 10% of the training set was chosen.  This value was felt to be a good compromise between maximizing the data available for training and the ability to periodically assess the model's generalizability.
 
 
 [Back to Top](#section-navigation)
