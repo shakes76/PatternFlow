@@ -1,30 +1,37 @@
+"""
+Author: Remington Greenhill-Brown
+SN: 44343309
+"""
 import tensorflow as tf
 from tensorflow.keras import Model, activations, initializers
 from tensorflow.keras.layers import Layer, Input, Dropout
 
-def GCN(numNodes, numFeatures, numClasses, channelA=64, channelB=32, channelC=16, channelD=8, dropout=0.1):
+"""
+GCN(): creates a tensorflow model for data to be passed through. passed through 4 relu layers before a final softmax layer. 
+params: number of nodes in dataset, number of classes/labels in dataset, 4 channels of halving size, and a dropout value
+returns: a model ready to be fit by tensorflow (in tensorflow Model format)
+"""
+def GCN(numNodes, numFeatures, numClasses, channelA=64, channelB=32, channelC=16, channelD=8):
   features = Input(shape=(numFeatures))
   nodes = Input((numNodes), sparse=True)
 
-  dp1 = Dropout(dropout)(features)
-  layer1 = GCNLayer(channelA, activation='relu')([dp1, nodes])
-
-  dp2 = Dropout(dropout)(layer1)
-  layer2 = GCNLayer(channelB, activation='relu')([dp2, nodes])
-
-  dp3 = Dropout(dropout)(layer2)
-  layer3 = GCNLayer(channelC, activation='relu')([dp3, nodes])
-
-  dp4 = Dropout(dropout)(layer3)
-  layer4 = GCNLayer(channelD, activation='relu')([dp4, nodes])
-
-  dp5 = Dropout(dropout)(layer4)
-  layer5 = GCNLayer(numClasses, activation='softmax')([dp5, nodes])
-
+  layer1 = GCNLayer(channelA, activation='relu')([features, nodes])
+  layer2 = GCNLayer(channelB, activation='relu')([layer1, nodes])
+  layer3 = GCNLayer(channelC, activation='relu')([layer2, nodes])
+  layer4 = GCNLayer(channelD, activation='relu')([layer3, nodes])
+  layer5 = GCNLayer(numClasses, activation='softmax')([layer4, nodes])
+  
   model = Model(inputs=[features, nodes], outputs=layer5)
     
   return model
+
+"""
+GCNLayer(Layer): class to create each layer for use in model creation
+"""
 class GCNLayer(Layer):
+  """
+  __init__(channels, activation, kernel initialiser, bias initialiser): initialises data for class, calls super on the Layer class in tensorflow.
+  """
   def __init__(self, channels, activation=None, kernel_initializer='glorot_uniform', 
               bias_initializer='zeros'):
     super(GCNLayer, self).__init__(
