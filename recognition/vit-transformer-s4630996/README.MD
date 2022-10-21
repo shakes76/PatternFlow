@@ -18,7 +18,7 @@
 This is an implemention of a Vision Transformer (ViT) which follows as closely as possible the model presented by Dosovitskiy et al $^1$ in their 2021 paper *An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale*.     
 
 ![This is an image](./images/vit.png)
-(Image Reference)
+Image from *An Image is Worth 16x16 Words*
 
 This implemenaton of a ViT has been tailored for use with data from the Alzheimer's Disease Neuroimaging Initiative (ADNI).  This data was provided on the COMP3710 Blackboard site in a zip format.  It is unknown as to what extent this data matches that available directly from ADNI.
 
@@ -26,7 +26,7 @@ The ADNI images are 240x256 greyscale jpeg files.  Details on image pre-processi
 
 *ViT Stage 1: Create Embedding Vectors from Input Images*
 
-The ViT takes as input a sequence 1D arrays, each of which is a flattened "patch" extracted from an image.  For example, a 240 x 240 image with a patch size of 16 would create 15 x 15 = 225 patches each having a length of 256 once flattened.  Each of the flattened patches is then mapped onto *D* dimensions (the projection dimensions).  These projections are referred to as the patch embeddings.
+The ViT takes as input a sequence of 1D arrays, each of which is a flattened "patch" extracted from an image.  For example, a 240 x 240 image with a patch size of 16 would create 15 x 15 = 225 patches each having a length of 256 once flattened.  Each of the flattened patches is then mapped onto *D* dimensions (the projection dimensions).  These projections are referred to as the patch embeddings.
 
 A class token of the same dimensions as the flattened patches is then prepended to the patch embeddings.  Continuing with the example from above there would now be 226 1D inputs (225 flattened patches plus the class token).  
 
@@ -43,9 +43,9 @@ The class token is now extracted from the Transformer Encoder output and fed int
 [Back to Top](#section-navigation)
 # Problem it Solves
 
- Since their introduction in 2017 $^3$ self-attention based transformers have  been the model of choice for state of the art natural language processing.  At the same time convolutional neural networks have dominated computer vision and image classification.  The use of vision transformers in image classification is an opportunity to extend the success of attention based transformers into the domain of computer vision.  Such an extension is enticing due to the computational efficiencies and scalabilities that transformers provide. Dosovitskiy et al's paper was groundbreaking in that it demonstrated that self-attention based transformer architectures could compete with state of the art convolution based architectures in many image recognition tasks. $^1$
+ Since their introduction in 2017 $^3$ self-attention based transformers have  been the model of choice for state of the art natural language processing.  At the same time, convolutional neural networks have dominated computer vision and image classification.  The use of vision transformers in image classification is an opportunity to extend the success of attention based transformers into the domain of computer vision.  Such an extension is enticing due to the computational efficiencies and scalabilities that transformers provide. Dosovitskiy et al's paper was groundbreaking in that it demonstrated that self-attention based transformer architectures could compete with state of the art convolution based architectures in many image recognition tasks. $^1$
 
-One reason why CNNs are so successful image recognition is their ability to identify local features in the image that are translation invariant.  The inductive bias of the CNN architecture promotes both identification of these features and their assembly into a hierarchical structure.  In contrast, attention transformers have been successful due to their ability to provide global context.  For example, the word "bank" has several different meanings depending on the context in which it is used and transformers are proficient at identifying this context.  It is therefore significant that the contextual approach (eg attention based transformers) has been found to be successful in image recognition where hierarchical feature maps have been dominate.
+One reason why CNNs are so successful at image recognition is their ability to identify features in the images that are translation invariant.  The inductive bias of the CNN architecture promotes both identification of these features and their assembly into a hierarchical structure.  In contrast, attention transformers have been successful due to their ability to provide global context.  For example, the word "bank" has several different meanings depending on the context in which it is used, and transformers are proficient at identifying this context.  It is therefore significant that the contextual approach (eg attention based transformers) has been found to be successful in image recognition where hierarchical feature maps have been dominate.
 
 This Vision Transformer implementaion attempts to solve the problem of Alzheimer's Disease diagnoses using a 2D image of a patient's brain.  Alzheimer's Disease is a neurological disorder that affects tens of millions of people worldwide and its early detection is critical to mitigating the adverse impacts of the disease on patients and their families. $^4$ 
 
@@ -80,7 +80,7 @@ The ADNI images are received in a zip format.  Once extracted, the images are pl
 │           └───NC
 
 ```
-It is of the uptmost importance that the AD_NC folder above (and its images) be relocated to the project directory.  The scripts for directory creation, validation split, image cropping, and image augmentation will not work if this is not done.
+It is of the uptmost importance that the AD_NC folder above (and its images) be relocated to the project directory.  The scripts for directory creation, validation split, image cropping, and image augmentation will only work if this is done.
 
 Once the AD_NC folder has been relocated to the project folder the structure should look like this:
 
@@ -97,13 +97,13 @@ Once the AD_NC folder has been relocated to the project folder the structure sho
 │   ├───images
 │   └───__pycache__
 ```
-The training set contains 19360 images, of which 9360 are AD (classified Alzheimers) and 10000 are NC v.  The test set contains 9000 images of which 4460 are AD  and 4540 are NC.  
+The training set contains 19360 images, of which 9360 are AD (classified Alzheimers) and 10000 are NC (classified normal cognition).  The test set contains 9000 images of which 4460 are AD  and 4540 are NC.  
 
 #### 2. <u>Create environment</u>
 
 It is necessary to create two different environnments, one for image pre-processing and another for the Vision Transformer.  The two environments are recommended due to conflicts in dependencies that could exist between the Augmentor package and other Python image modules.  Augmentor uses Pillow, which is a fork of PIL, but both packages cannot exist simultaneously.
 
-The ViT is developed in a Tensorflow environment.  Tensorflow 2.9 is recommended for compatibility with Tensorflow Add Ons and Keras CV.  For installation of the Tensorflow environment it is strongly recommended to use a Windows 11 based PC and follow the guidance available here:
+The ViT is developed in a Tensorflow environment.  Tensorflow 2.9 is recommended for compatibility with Tensorflow Add Ons and Keras CV.  For installation of the Tensorflow environment it is strongly recommended to use a Windows 11 based PC with a modern GPU and follow the guidance available here:
 
 https://github.com/jeffheaton/t81_558_deep_learning/blob/master/install/manual_setup2.ipynb
 
@@ -131,7 +131,7 @@ The model can be trained by running "python train.py" from the Anaconda (or temi
 - Ensure you are running the command from the folder "VIT-TRANSFORMER-S4630996" (this is where train.py is located)
 - Ensure the correct environment you created for the ViT has been activated
 
-At the end of each epoch, the model is evaluated against the validation set and a checkpoint callback saves the model with the lowest validation loss.  These model weights can be loaded and used to classify new data points (See next step, Load Model Weights and Make Predictions).
+At the end of each epoch, the model is evaluated against the validation set and a checkpoint callback saves weights for the model with the lowest validation loss.  These model weights can be loaded and used to predict the classification of new data points (See next step, Load Model Weights and Make Predictions).
 
 
 #### 6. <u>Load Model Weights and Make a Prediction on a Random Sample</u>
@@ -185,11 +185,11 @@ Here is image "839474_78.jpeg" from the NC folder:
 
 ![This is an image](./images/839474_78.jpeg)
 
-The files names appear to be formatted such that the numbers separated by "_" has some significance.  An assumption can be made that the first number is a patient ID and the second number is an image ID for this patient.  This assumption is supported by the fact that each ID is associated with 20 images.  Thus the 9360 training images for class "AD" contain images from 468 unique patients.
+The files names appear to be formatted such that the numbers separated by "_" have significance.  An assumption can be made that the first number is a patient ID and the second number is an image ID for this patient.  This assumption is supported by the fact that each ID is associated with 20 images.  Thus the 9360 training images for class "AD" contain images from 468 unique patients.
 
 #### Potential for Data Leakage
 
-This insight into the provenance of the filename has important implications for the selection of a method to generate a validation set.  If patient IDs are not taken into consideration and validation images are selected at random from the training set, then it would be possible for the images of one or more patients to appear in both the training and validation ("data leakage").  Thus a python script was created to generate the validation set taking into account the patient ID so that no images for any single patient are found in both the training and validation set.  
+This insight into the provenance of the filename has important implications for the selection of a method to generate a validation set.  If patient IDs are not taken into consideration and validation images are selected at random from the training set, then it would be possible for the images of one or more patients to appear in both the training and validation ("data leakage").  Thus a python script was created to generate the validation set taking into account the patient ID, so that no images for any single patient are found in both the training and validation set.  
 
 The ADNI_dataset_utility method move_and_split_images() creates a new folder named "AD_NC_split that contains the following subfolders:
 
@@ -201,7 +201,7 @@ The test folder contains the same test images from the original AD_NC/test folde
 
 #### <u> Crop the Images</u>
 
-The ADNI images have dimensions of 256 x 240 (w x h).  The ViT needs square images as its inpu and it is therefore necessary to crop the original images.  The ADNI_dataset_utility method crop_and_save_images() images creates a new folder named "AD_NC_square" that contains the same sub-folders and images as AD_NC_split except that the images are cropped to 240 x 240 pixels.
+The ADNI images have dimensions of 256 x 240 (w x h).  The ViT needs square images as its input and it is therefore necessary to crop the original images.  The ADNI_dataset_utility method crop_and_save_images() images creates a new folder named "AD_NC_square" that contains the same sub-folders and images as AD_NC_split except that the images are cropped to 240 x 240 pixels.
 
 Assuming the empty space will not play a role in classification performance, we can crop the images to a smaller size.  The benefit to the model is computational - for the same patch size, fewer patches will need to be processed for each image.  However, the brains will have variation in size and relative position on the image so care must be taken to select the minimum size that will reliably capture all brain images.  After some tinkering, an image size of 200 x 200 was found to significantly reduce empty space while also ensuring no brains were cropped.  However, the downside to this approach is that very little room is left to allow robust image augmentation (discussed below).  Thus the base code retains the 240 x 240 image size.
 
@@ -209,9 +209,9 @@ Assuming the empty space will not play a role in classification performance, we 
 
 Compared to other datasets used by Vision Transformers, the ADNI dataset is quite small.  Thus image augmentation was utilized in an attempt to improve training results.  
 
-Two approaches are taken with image augmentation.  The first is augmentaion within the model itself through the Keras layers RandomFlip, RandomRotation, RandomTranslation, RandomBrightness, and GaussianNoise.
+Two approaches are taken with image augmentation.  The first is augmentation within the model itself through the Keras layers RandomFlip, RandomRotation, RandomTranslation, RandomBrightness, and GaussianNoise.
 
-The second approach involves artificially enlarging the dataset with augmented image augmentations.  The Python package Augmentor was used to add augmented images.  The hyperparameter NUM_AUG_SAMPLES is set at a default value of 10,000 which is the number of augmented images to be added to the training set.  Thus when the ADNI_dataset_utility method add_augmented_images is called, the additional images are added to AD_NC_square/training.
+The second approach involves artificially enlarging the dataset with augmented image augmentations.  The Python package Augmentor was used to add augmented images.  The hyperparameter NUM_AUG_SAMPLES is set at a default value of 10,000 which is the number of augmented images to be added to the training set.  Thus when the ADNI_dataset_utility method add_augmented_images is called, the additional images are added to existing AD_NC_square/training folder.
 
 A sample image from the augmented dataset can be seen below.  Here the brain has been slightly rotated, skewed, and a patch of the image has been removed from a random location.
 
@@ -224,13 +224,13 @@ A sample image from the augmented dataset can be seen below.  Here the brain has
 
 # Experiments and Results
 
-The image datasets tackled by [$1$] include CIFAR-100 and Oxford Flowers-102.  These datasets are large and complex in that many possible labels exist for a single image in the dataset.  The models developed to classify these images were commensurately large and complex.  The smallest of these models (ViT-Base) has 86M trainable parameters and the largest(ViT Huge) has 632M parameters.  
+The image datasets tackled by [ $1$ ] include CIFAR-100 and Oxford Flowers-102.  These datasets are large and complex in that many possible labels exist for a single image in the dataset.  The models developed to classify these images were commensurately large and complex.  The smallest of these models (ViT-Base) has 86M trainable parameters and the largest (ViT Huge) has 632M parameters.  
  
-Unfortunately the author of this project does not have the same computational resources as Google, Inc. and the models were commensurately scaled down.  However, the ADNI labels are binary - the image is either classified AD or NC, and for this reason it was hoped that a large complex model was not required.   That being said, the largest model tried here was by no means small (100M parameters).
+Unfortunately the author of this project does not have the same computational resources as Google, Inc. and it was necessary to scale the model options down.  However, the ADNI labels are binary - the image is either classified AD or NC, and for this reason it was hoped that a large and complex model was not required.   That being said, the largest model tried here was by no means small (100M parameters).
 
 Given the small size of the ADNI dataset, regularization and augmentation techniques were heavily relied upon.  These included dropout, rescaling, random flip, random rotate, random noise, and random brightness.
 
-Test accuracy percentages reported are based on an evaluation against the test set using model weights saved at epoch for which there was the lowest validation loss. 
+Test accuracy percentages reported are based on an evaluation against the test set using model weights saved for an epoch for which there was the lowest validation loss. 
 
 
 ### Example Small Model Results
@@ -255,9 +255,9 @@ The smallest of the models achieves results on par with the largest model.  Here
 
 Test Accuracy: 55.09%
 
-The medium model achieves results that are little better than chance (50%).  An attempt to train this model using the AdamW optimizer was unsuccessful so a switch was made to Stochastic Gradient Descent.  Unfortunately despite attempting a wide range of learning rates, the validation loss and accuracy and loss using AdamW remained (essentially) stationary despite a prolonged (300 epochs) training period. 
+The medium model achieves results that are little better than chance (50%).  An attempt to train this model using the AdamW optimizer was unsuccessful so a switch was made to Stochastic Gradient Descent.  Unfortunately, despite attempting a wide range of learning rates, the validation loss and accuracy using AdamW remained (essentially) stationary despite a prolonged (300 epochs) training period. 
 
-It is observed that the validation loss becomes increasingly erratic.  Validation accuracy, although somewhat less erratic, appears cyclically stationary.  It is unclear what dynamics are causing these  behaviours.
+It is also observed that the validation loss becomes increasingly erratic.  Validation accuracy, although somewhat less erratic, appears cyclically stationary.  It is unclear what dynamics are causing these  behaviours.
 
 
 ### Example Large Model Results
@@ -270,7 +270,7 @@ It is observed that the validation loss becomes increasingly erratic.  Validatio
 
 Test Accuracy: 59.88%
 
-Although shown here on a different x and y scale, the behavior for the large model seems similar to that of the medium model above. Training accuracy and loss steadily improves over time while validation results are erratic and inconsistent. 
+Although shown here on a different x and y scale, the behavior for the large model seems similar to that of the medium model above. Training accuracy and loss steadily improve over time while validation results are erratic and inconsistent. 
 
 Although some overtraining appears to occur after epoch 40, a repeat attempt to train the model for only forty epochs achieved similar results.
 
@@ -281,11 +281,11 @@ A larger sample of the experiments performed is found below.
 
 ![This is an image](./images/experiments.png)
 
-It should be noted that the accuracy results listed here are a few percentage points higher than those reported above for the small/medium/large models.  These results were obtained prior to the data leakage issued identified when making the validation set (as discussed above in [Image Pre-processing](#image-pre-processing)).  After addressing the data-leakage problem, the higher test accuracy scores could not be replicated and there was very little variation in test accuracy results.
+It should be noted that the accuracy results listed here are a few percentage points higher than those reported above for the small/medium/large models.  These results were obtained prior to identifying the data leakage issue when making the validation set by random draw (as discussed above in [Image Pre-processing](#image-pre-processing)).  After addressing the data-leakage problem, the higher test accuracy scores could not be replicated and there was very little variation in test accuracy results.
 
 These results are dissapointing in consideration of the repeated and detailed reviews of [1], the amount of hyperparameter tuning attempted, and the numerous consulations with course TAs who could not identify any obvious error in the model construction.  
 
-One theory as to why improved results are so difficult here is that the data is actually 3D but presented in a 2D fashion.  Each image appears to be a different "slice' of the brain (as indicated by the file name syntax of patientID_sliceNum).  For this reason hybrid CNN - Vit model architectures might prove to be more effective.  One such model might aggregate each patients's slices into channels so that each observation is actually 20 slices for the same patient (the dataset contains 20 images for each patient ID). Convolutions could then be learned to reduce each patient's 3D data into a set of 20 features each of which could be input into the ViT as a patch.
+One theory as to why improved results are so difficult here is that the data is actually 3D but presented in a 2D fashion.  Each image appears to be a different "slice' of the brain (as indicated by the file name syntax of patientID_sliceNum).  For this reason a hybrid CNN - Vit model architecture might prove more effective.  One such model might aggregate each patients's slices into channels so that each observation is actually 20 slices for the same patient (the dataset contains 20 images for each patient ID). Convolutions could then be learned to reduce each patient's 3D data into a set of 20 features each of which could be input into the ViT as a patch.
 
 
 
