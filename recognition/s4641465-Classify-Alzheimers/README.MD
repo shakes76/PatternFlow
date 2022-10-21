@@ -2,10 +2,7 @@
 ***
 This model takes upscaled (approximately by 4x) images from the ADNI Brain Dataset and downscales them.
 ***
-
-
-
-
+Using several (in this case 3) convolutional layers to create a feature map, the model then creates a 16 layer sub-pixel convolutional layer. Using pixel shuffling these 16 layers are reconstructed into one layer where each pixel in the sub-pixel layer corresponds to a pixel in a 4x4 section of the greater high-resolution output layer, creating a higher-resolution image
 ![graph](images/graph.png)
 ***
 Here are the results, high resolution images are taken from the test set and upscaled by 4x creating the low resolution image. These low res images are then input into the model which outputs the prediction.
