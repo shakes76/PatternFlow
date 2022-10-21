@@ -1,12 +1,11 @@
 #Contains the source code for training, validating, testing and saving the model
 
-import imp
 from modules import model
 from dataset import *
 
 import tensorflow as tf
 from keras import backend as K
-import joblib
+
 
 path = "C:/Users/danie/Downloads/ISIC DATA/"
 
@@ -34,20 +33,20 @@ def train_model():
         metrics=[dice_similarity]
     )
 
-    improved_unet_model.fit(
+    hist = improved_unet_model.fit(
         train_x, 
         train_y,
         batch_size=32,
-        epochs=50,
+        epochs=2,
         validation_data=(valid_x, valid_y),
         steps_per_epoch=12
     )
 
     #Saving the file
-    filename = "Improved_UNetModel.sav"
-    joblib.dump(improved_unet_model, filename)
+    improved_unet_model.save('improved_unet.model', save_format='h5')
 
-    return improved_unet_model
+
+    return improved_unet_model, hist
 
 def dice_similarity(x, y):
     """
@@ -68,5 +67,4 @@ def dice_similarity(x, y):
     return 2 * intersect / union
 
 if __name__ == "__main__":
-    print(train_model())
-   
+    train_model()

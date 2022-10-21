@@ -75,7 +75,17 @@ def train_test_valid(images, masks, split=0.2):
     train_y, test_y = train_test_split(train_y, test_size=test_size, random_state=42)
 
     return (train_x, train_y), (valid_x, valid_y), (test_x, test_y)
-    
 
-if __name__ == "__main__":
-    print(load_data("C:/Users/danie/Downloads/ISIC DATA/"))
+def load_raw_data(path):
+    """
+    Loads a ISIC data set
+    Param: path - should reference a folder which contains 2 subfolders one with images, and one with masks
+    Returns: Raw data in the form: (train_x, train_y), (valid_x, valid_y), (test_x, test_y)
+    """
+    
+    #Adds only the jpg files to the list i.e. NOT THE SUPERPIXEL images
+    images = sorted(glob(os.path.join(path, "ISIC-2017_Training_Data", "*.jpg")))
+    #Adds only the png files to the list: in this case it is all files, but filters for files that shouldn't be there
+    masks = sorted(glob(os.path.join(path, "ISIC-2017_Training_Part1_GroundTruth", "*.png")))
+
+    return np.array(images), np.array(masks)
