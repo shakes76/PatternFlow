@@ -104,7 +104,7 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
 
 
 def main():
-    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(images=100)
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset()
     time = datetime.now().strftime('%H:%M:%S')
 
     vqvae_trainer = Trainer(data_variance, latent_dim=16, num_embeddings=128)
