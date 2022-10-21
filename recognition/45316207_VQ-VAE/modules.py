@@ -4,7 +4,7 @@ modules.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains all the source code of the components of the VQ-VAE model as well as a function to build and return the full model
+Contains all the source code of the components of the VQ-VAE model and Pixel CNN model as well as a function to build and return the full model. The model and implementation are based off of the Keras VQ VAE tutorial and the original VQ VAE paper ('Neural Discrete Representation Learning').
 
 """
 
