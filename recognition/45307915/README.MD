@@ -3,6 +3,9 @@ Paragraph about ISIC dataset and what this project is
 
 ## ISIC Dataset
 
+![Training Image](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/image.png)
+![Training Mask](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/mask.png)
+
 Available: https://challenge.isic-archive.com/data/#2017
 
 ## Improved UNET Model Architecture
