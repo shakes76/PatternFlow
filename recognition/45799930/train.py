@@ -13,12 +13,12 @@ def train_model():
     history = model.fit(dataset.training.batch(10), epochs=10, validation_data=dataset.validate.batch(10))
     print_history(history)
 
-    # Print the model history
+    return model, dataset
 
 
 def print_history(history):
-    plt.plot(history.history['accuracy'])
-    plt.plot(history.history['val_accuracy'])
+    plt.plot(history.history['dice_sim_co'])
+    plt.plot(history.history['val_dice_sim_co'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
