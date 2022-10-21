@@ -49,6 +49,10 @@ def MLP(layer, layer_count, dropout):
     return layer
 
 
+"""
+A patch encoder is required to retain the image order information. We map the flattened patches to projection_dim through a dense layer.
+In addition, we embed the position of the patch in the image with an embedding layer.
+"""
 class PatchEncoder(layers.Layer):
   def __init__(self, num_patches, projection_dim):
     super(PatchEncoder, self).__init__()
@@ -59,6 +63,9 @@ class PatchEncoder(layers.Layer):
     )
 
   def call(self, patch):
+    # store positions as integer values of the all the patches
     positions = tf.range(start=0, limit=self.num_patches, delta=1)
+    # project the patch and add the position to it
     encoded = self.projection(patch) + self.position_embedding(positions)
     return encoded
+

@@ -30,4 +30,9 @@ def load_dataset(size):
     images_train_labels = np.concatenate((np.ones(images_train_AD.shape[0]), np.zeros(images_train_NC.shape[0])))
     images_train = np.concatenate((images_train_AD, images_train_NC), axis = 0)
     print("Data successfully loaded")
-    return (images_train, images_train_labels, images_test, images_test_labels)
+
+    train = np.repeat(images_train[..., np.newaxis], 3, -1)
+    test = np.repeat(images_test[..., np.newaxis], 3 -1)
+    trainy = images_train_labels.reshape(images_train_labels.shape[0], 1)
+    testy = images_test_labels.reshape(images_test_labels.shape[0], 1)
+    return (train, trainy, test, testy)
