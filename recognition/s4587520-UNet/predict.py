@@ -1,4 +1,4 @@
-from modules import UNet
+from modules import UNet, dice_similarity
 import matplotlib.pyplot as plt
 from PIL import Image
 import torch
@@ -21,6 +21,7 @@ image = transform(Image.open(predict_image_path))
 #Test model and save output
 image = image.to(device)
 output = model(image[None,:,:,:])
+print(f"DICE Similarity = {dice_similarity(output, image[None,:,:,:])}")
 
 #Show Output
 plt.figure()
