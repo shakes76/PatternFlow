@@ -15,6 +15,7 @@ from sklearn.manifold import TSNE
 import torch
 from modules import Net, GNNLayer
 from train import test_gcn
+from train import plot_tsne
 from dataset import preprocess
 
 MODEL_PATH = "/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt"
@@ -37,3 +38,9 @@ model.eval()
 # add node embeddings and evaluate:
 node_embeddings = model((sample_features), (sample_adj))
 test_gcn(node_embeddings, test=False)
+# visualise node embeddings of sample using tSNE
+plot_tsne(node_embeddings)
+
+# visualise node embeddings of entire dataset using tSNE
+node_embeddings_total = model((node_features), (adj_mtrx))
+plot_tsne(node_embeddings_total, labels)
