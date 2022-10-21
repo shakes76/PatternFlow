@@ -17,7 +17,7 @@ Levels represent the vertical depth within the 'U' shaped with higher levels bei
 The recognition solution is implemented using TensorFlow _(version 2.9.1)_ and divided into multiple Python files,
 * **modules.py** - contains Improved UNet model class and components. From here, the UNet CNN can be built.
 * **dataset.py** - provides a data loader for the 2017 ISIC data. Performs pre-processing to image and mask data.
-* **train.py** - used to trin the Improved UNet model on the 2017 ISIC data. Provides useful plots, metrics and prediction comparisons to evaluate segmentation performance.
+* **train.py** - used to train the Improved UNet model on the 2017 ISIC data. Provides useful plots, metrics and prediction comparisons to evaluate segmentation performance.
 * **predict.py** - contains functions to predict segmentation mask from a trained model. Provides comparison plots to ground truth.
 * **utility.py** - contains metric calculations used when training, validating and testing the Improved UNet model.
 * **config.py** - provides the ability to adjust system parameters including pre-processed image dimensions and training epochs.
