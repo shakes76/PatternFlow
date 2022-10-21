@@ -6,7 +6,7 @@ All images returned are of size 1 * 240 * 240
 
 def transform():
     """
-    Transform that crops some of than blank space out of the images. 
+    Transform that convert to grayscale, before applying a random crop and resizing to appropriate dimensions. 
     """
     return transforms.Compose([transforms.Lambda(lambda x:  transforms.functional.rgb_to_grayscale(x)),
                                 transforms.RandomCrop(240),

@@ -1,16 +1,11 @@
 import torch
 import torch.nn as nn
 
-def Conv1D(out_dim):
-    return nn.Linear(out_dim, out_dim)
-
 class CrossAttention(nn.Module):
     """
     The inputs are a latent array and the actual data. The latent array is the query and the data forms the key and value.
 
-    First process inputs through a batch normalisation, before putting them through a linear layer.
-
-    Then put them through the attention block, before one last linear layer
+    Apply the the attention operation, before going through a linear layer.
     """
     def __init__(self, d_latents):
         super(CrossAttention, self).__init__()
@@ -26,13 +21,11 @@ class SelfAttention(nn.Module):
     """
     The inputs are a latent array, which is the query, key and value. 
 
-    First process inputs through a batch normalisation, before putting them through a linear layer.
-
-    Then put them through the attention block, before one last linear layer
+    Apply the the attention operation, before going through a linear layer.
     """
     def __init__(self, d_latents):
         super(SelfAttention, self).__init__()
-        self.attn = nn.MultiheadAttention(d_latents, 1, batch_first=True)           
+        self.attn = nn.MultiheadAttention(d_latents, 4, batch_first=True)           
         self.o_l = nn.Linear(d_latents, d_latents)
 
     def forward(self, latent):
@@ -43,7 +36,8 @@ class SelfAttention(nn.Module):
 
 class LatentTransformer(nn.Module):
     """
-    Consists of a self attention block between two linear layers. 
+    The latent transformer is a repeated set of (SelfAttention, MLP) blocks. The number of 
+    blocks is given as the depth.
     """
     def __init__(self, d_latents, depth) -> None:
         super(LatentTransformer, self).__init__()
@@ -80,7 +74,7 @@ class MLP(nn.Module):
 
 class Block(nn.Module):
     """
-    A Cross attend block followed.
+    A Cross attend block followed by a MLP.
     """
     def __init__(self, d_latents) -> None:
         super(Block, self).__init__()
@@ -97,7 +91,10 @@ class Block(nn.Module):
         
 
 class Output(nn.Module):
-    # FIX PARAMTERER HERE
+    '''
+    Averages the final latent array to find final attention scores, before projecting to the number of classes
+    for classification.
+    '''
     def __init__(self, n_latents, n_classes=2) -> None:
         super(Output, self).__init__()
         self.project = nn.Linear(n_latents, n_classes)
@@ -109,6 +106,11 @@ class Output(nn.Module):
 
 
 class Perciever(nn.Module):
+    '''
+    Takes parameters n_latents, d_latents for the size of the latent array. 
+    transformer_depth is the depth of the Latent Transformers.
+    n_cross_attends is the number of CrossAttend, LatentTransformer blocks.
+    '''
     def __init__(self, n_latents, d_latents, transformer_depth, n_cross_attends) -> None:
         super(Perciever, self).__init__()
         self.depth = n_cross_attends
@@ -118,23 +120,29 @@ class Perciever(nn.Module):
         nn.init.trunc_normal_(latent,std=0.02)
         self.latent=nn.Parameter(latent)
 
+        # Cross Attends
         self.ca = nn.ModuleList([Block(d_latents) for _ in range(n_cross_attends)])
+        # Latent Transformers
         self.lt = nn.ModuleList([LatentTransformer(d_latents, transformer_depth) for _ in range(n_cross_attends)])
         self.op = Output(n_latents)
-
+        
         self.image_project = nn.Linear(1, d_latents)
 
+        # Position encoding
         self.pe = nn.Parameter(torch.empty(1, 240*240, d_latents))
         nn.init.normal_(self.pe)
 
 
     def forward(self, data):
         b, _, _, _ = data.size()
+        # Project the input image to one dimension
         flat_img = torch.flatten(data, start_dim=1)[:, :, None]
         proj_img = self.image_project(flat_img)
 
+        # Add the position encoding to each image
         proj_img = proj_img + self.pe.repeat(b, 1, 1)
 
+        # Make the latent array have dimensions equal to the batch size
         x = self.latent.repeat(b, 1, 1)
 
         for i in range(self.depth):

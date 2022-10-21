@@ -1,16 +1,17 @@
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from dataset import train_data_loader
+import matplotlib.pyplot as plt
 
+from dataset import train_data_loader
 from modules import Perciever
 
 DATA_PATH = "./Images/AD_NC"
 
 # Training parameters
-EPOCHS = 100
+EPOCHS = 10
 BATCH_SIZE = 5
-L_R = 0.0005
+L_R = 0.005
 
 trainloader = train_data_loader(DATA_PATH, BATCH_SIZE)
 
@@ -20,8 +21,10 @@ DIM_LATENTS = 128
 NUM_CROSS_ATTENDS = 1
 DEPTH_LATENT_TRANSFORMER = 4
 
+# Path to save the model to
+MODEL_PATH = './perciever.pth'
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
 
 model = Perciever(NUM_LATENTS, DIM_LATENTS, DEPTH_LATENT_TRANSFORMER, NUM_CROSS_ATTENDS)
 model.to(device)
@@ -29,8 +32,13 @@ model.to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimiser = optim.Adam(model.parameters(), lr=L_R)
 
+loss_data = []
+accuracy = []
+
 for epoch in range(EPOCHS):
-    # running_loss = 0.0
+    correct = 0
+    total = 0
+    running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
@@ -47,16 +55,23 @@ for epoch in range(EPOCHS):
         loss.backward()
         optimiser.step()
 
-        if i % 50 == 0:
-            print(outputs)
-            print(loss)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+        running_loss += loss.item()
+        
+    print(f"Epoch {epoch} completed")
+    loss_data.append(running_loss / 500)
+    accuracy.append(correct / total * 100)
 
-        # print statistics
-        # running_loss += loss.item()
-        # if i == 20:
-        #     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss:.3f}')
-        #     running_loss = 0.0
-        #     break
+plt.plot(loss_data)
+plt.xlabel('EPOCH')
+plt.ylabel('Average Loss')
+plt.show()   
 
-MODEL_PATH = './perciever.pth'
+plt.plot(accuracy)
+plt.xlabel('EPOCH')
+plt.ylabel('Training Accuracy')
+plt.show()  
+
 torch.save(model.state_dict(), MODEL_PATH)
