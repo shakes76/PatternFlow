@@ -1,8 +1,6 @@
 # MRI Super-Resolution Network on the ADNI Brain Dataset
-***
 
 ## Background on ADNI Brain Dataset
-***
 The ![ADNI Brain Dataset](http://adni.loni.usc.edu/) used to train this model can be found preprocessed on the COMP3710 blackboard
 ***
 
