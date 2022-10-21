@@ -17,7 +17,7 @@ Available: https://challenge.isic-archive.com/data/#2017
 
 Like the original UNET the Improved UNET is made up of encoding and decoding layers. Components of the improved UNET Architecture are as follows.
 
-- Leaky ReLU - "leaky ReLU nonlinearities with a negative slope of 10−2 for all feature map computing convolutions" [1]
+- Leaky ReLU - "leaky ReLU nonlinearities with a negative slope of $10^{−2}$ for all feature map computing convolutions" [1]
 - Instance Normalisation - "replace the traditional batch with instance normalization" [1]
 - Context Module - "Each context module is in fact a pre-activation residual block with two 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between." [1]
 - Upsampling Module - "This is achieved by first upsampling the low resolution feature maps, which is done by means of a simple upscale that repeats the feature voxels twice in each spatial dimension, followed by a 3x3x3 convolution" [1]
@@ -28,7 +28,7 @@ Like the original UNET the Improved UNET is made up of encoding and decoding lay
 ## Training
 
 ### Optimiser and Loss Function
-The optimiser used for training was "the adam optimizer with an initial learning rate lrinit = 5 · 10−4, the following learning rate schedule: lrinit · 0.985epoch".
+The optimiser used for training was "the adam optimizer with an initial learning rate $lr_{init} = 5 · 10^{−4}$, the following learning rate schedule: $lr_{init} · 0.985epoch$".
 
 For the loss function the dice coefficient for the true and predicted values was used.
 
