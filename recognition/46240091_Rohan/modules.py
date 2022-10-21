@@ -1,5 +1,4 @@
 import numpy as np
-from tensorflow.keras.preprocessing import image_dataset_from_directory
 import tensorflow as tf
 from tensorflow import keras
 import keras.models
@@ -71,7 +70,7 @@ class VectorQuantizer(layers.Layer):
         + tf.reduce_sum(self.embeddings ** 2, axis=0)
         - 2 * similarity
     )
-
+    #Finding indices with min distance
     encoding_indices = tf.argmin(distances, axis=1)
     return encoding_indices
 
@@ -218,11 +217,10 @@ class ResidualBlock(keras.Model):
 
 def pcnn_model_maker(input_shape, existing_vqvae):
     """
-    Making the model as mentioned in the original Pixel Recurrent Neural Networks paper
+    Making the model as mentioned in the Pixel Recurrent Neural Networks paper
     The first layer is a masked convolution (type A) with 7x7 filters. Then, 15 residuals blocks were used.
     Then a chain of Relu X Conv 
     Then the output layer.
-
     """
 
     pixelcnn_inputs = keras.Input(shape=input_shape, dtype=tf.int32)
@@ -231,7 +229,7 @@ def pcnn_model_maker(input_shape, existing_vqvae):
     l = MaskedConv2D(
         mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same")(ohe)
 
-    #15 residual blocks according to original pixelcnn paper (mask type B)
+    #15 residual blocks according to paper (mask type B)
     for i in range(15):
         l = ResidualBlock(num_filters=64)(l)
 
@@ -241,6 +239,7 @@ def pcnn_model_maker(input_shape, existing_vqvae):
     l = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(l)
     l = keras.layers.Activation(activation='relu')(l)
     l = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(l)
+    #output layer
     l = keras.layers.Conv2D(filters=existing_vqvae.num_embeddings, kernel_size=1, strides=1)(l)
 
     return keras.Model(inputs=pixelcnn_inputs, outputs=l, name = 'pixelcnn')

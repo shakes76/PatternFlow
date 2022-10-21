@@ -10,6 +10,7 @@ def data_loader(dir_path, scale_flag):
   """
   Loading and preprocessing data using keras image loader: 
   load_image and img_to_array and converting it to grayscale.
+  I am also normalising the image to get value between 0 and 1
   """
   all_files = glob.glob(dir_path + "/*.png")
   image_list = []

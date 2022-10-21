@@ -63,5 +63,5 @@ def plot_vqvae_recons(original, reconstructed):
     ax.imshow(im.squeeze(),  cmap='gray')
     count += 1
   plt.show()
-
+  
   return total/2

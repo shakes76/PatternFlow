@@ -25,7 +25,7 @@ VQVAE_training_plot(history)
 #Plotting the actual images with reconstructed ones along with ssim
 print("Showing actual images with reconstructed images")
 trained_vqvae_model = vqvae.vqvae1
-#Plotting first 10 images from test data
+#Getting first 10 images from test data
 test_images = xt[:10]
 # Prediction
 reconstructions_test = trained_vqvae_model.predict(test_images)

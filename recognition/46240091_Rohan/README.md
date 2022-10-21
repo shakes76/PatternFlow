@@ -26,7 +26,7 @@ We are using preprocessed OASIS brain MRI data for this project. The mask images
 
 I am resizing the data from 256x256 to 64x64 to improve performance. Despite this, the novel images generate are clear. During the process of loading the data, I normalise it to get the values between 0 and 1.
 
-Note: If using collab to run the project, run the below given commands to get the dataset:
+Note: If using collab to run the project, run the below given commands to get the dataset and then run predict.py:
 
 ```
 !wget 'https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download'
@@ -37,7 +37,7 @@ But if running locally, change TRAIN, TEST in predict.py to the location where y
 
 ## Training
 
-I am training VQVAE for 30 epochs with a batch size of 64 and plotting the losses. Also, the value of beta in initializing vector quantizer is chosen to be 1 after trying many values, as this gives the best performance in lesser number of epochs.
+I am training VQVAE for 30 epochs with a batch size of 64 and plotting the losses. Also, the value of beta in initializing vector quantizer is chosen to be 1 after trying many values, as this gives the best performance in lesser number of epochs. It should be between 0.25 and 2 according to the paper.
 
 
 <img src="readme_images/VQVAE%20loss.png" alt="readme_images/VQVAE%20loss.png" width="400"/>
@@ -69,7 +69,7 @@ I am plotting new generated image against image from test dataset below.
 
 ## References
 
-[1] A.v. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: https://arxiv.org/pdf/1711.00937.pdf. 
+[1] A.v. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: https://arxiv.org/abs/1711.00937 
 
 [2] A.v. Oord, N. Kalchbrenner, and K. Kavukcuoglu, 2016. Pixel Recurrent Neural Networks, [Online]. Available: http://arxiv.org/abs/1601.06759
 
