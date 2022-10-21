@@ -5,6 +5,10 @@ import shutil
 from os import listdir
 from PIL import Image
 import random
+from config import *
+
+random.seed(20)
+
 
 class ADNI_dataset_utility:
     """
@@ -18,11 +22,11 @@ class ADNI_dataset_utility:
     def __init__(self):
         self.crop = True
         self.augment = True
-        self.num_samples = 10000
-        self.folders_top = ["AD_NC_new"]
+        self.num_samples = NUM_AUG_SAMPLES
+        self.folders_top = ["AD_NC_split"]
         self.folders_middle = ["test", "training", "validation"]
         self.folders_bottom = ["AD", "NC"]
-        self.validation_split = 0.1
+        self.validation_split = VALIDATION_SPLIT
         self.steps = ['create_directories', "move_and_split_images", "crop_images", "augment_images"]
         self.parent_directory = os.getcwd()
 
@@ -53,14 +57,20 @@ class ADNI_dataset_utility:
                     path_bottom = os.path.join(path_middle, folder_bottom)
                     os.mkdir(path_bottom)
         
-        # create folder for checkpoint
+        # create folder to save model weights (checkpoint)
         path_checkpoint = os.path.join(self.parent_directory, "checkpoint")
         os.mkdir(path_checkpoint)
-            
+
+        # create folder to save plots
+        path_plots = os.path.join(self.parent_directory, "plots")
+        os.mkdir(path_plots)
+
             
     def move_and_split_images(self):
         """ assumes new directory structure in place"""
         
+        top_folder = "AD_NC_split"
+
         # import list of AD and NC file names from the train folder
         train_AD_filenames = os.listdir(r"AD_NC\train\AD")
         train_NC_filenames = os.listdir(r"AD_NC\train\NC")
@@ -84,18 +94,18 @@ class ADNI_dataset_utility:
             ID, _ = file.split("_")
             src = r"AD_NC\train\AD\{}".format(file)
             if ID in patients_AD_train:
-                des = r"{}\training\AD\{}".format(self.folders_top[0], file)
+                des = r"{}\training\AD\{}".format(top_folder, file)
             else:
-                des = r"{}\validation\AD\{}".format(self.folders_top[0], file)
+                des = r"{}\validation\AD\{}".format(top_folder, file)
             shutil.copy(src, des)  
 
         for file in train_NC_filenames:
             ID, _ = file.split("_")
             src = r"AD_NC\train\NC\{}".format(file)
             if ID in patients_NC_train:
-                des = r"{}\training\NC\{}".format(self.folders_top[0], file)
+                des = r"{}\training\NC\{}".format(top_folder, file)
             else:
-                des = r"{}\validation\NC\{}".format(self.folders_top[0], file)
+                des = r"{}\validation\NC\{}".format(top_folder, file)
             shutil.copy(src, des)  
 
         # copy images from test folder to new test folder
@@ -104,12 +114,12 @@ class ADNI_dataset_utility:
 
         for file in test_NC_filenames:
             src = r"AD_NC\test\NC\{}".format(file)
-            des = r"{}\test\NC\{}".format(self.folders_top[0], file)
+            des = r"{}\test\NC\{}".format(top_folder, file)
             shutil.copy(src, des)
 
         for file in test_AD_filenames:
             src = r"AD_NC\test\AD\{}".format(file)
-            des = r"{}\test\AD\{}".format(self.folders_top[0], file)
+            des = r"{}\test\AD\{}".format(top_folder, file)
             shutil.copy(src, des)
  
     def create_folder_structure(self, folders_top):
@@ -149,14 +159,13 @@ class ADNI_dataset_utility:
                     os.mkdir(path_bottom)
 
 
-
         # get a list of files to crop
-        uncropped_files_training_AD = os.listdir(r"AD_NC_new\training\AD")
-        uncropped_files_training_NC = os.listdir(r"AD_NC_new\training\NC")
-        uncropped_files_validation_AD = os.listdir(r"AD_NC_new\validation\AD")
-        uncropped_files_validation_NC = os.listdir(r"AD_NC_new\validation\NC")
-        uncropped_files_test_AD = os.listdir(r"AD_NC_new\test\AD")
-        uncropped_files_test_NC = os.listdir(r"AD_NC_new\test\NC")
+        uncropped_files_training_AD = os.listdir(r"AD_NC_split\training\AD")
+        uncropped_files_training_NC = os.listdir(r"AD_NC_split\training\NC")
+        uncropped_files_validation_AD = os.listdir(r"AD_NC_split\validation\AD")
+        uncropped_files_validation_NC = os.listdir(r"AD_NC_split\validation\NC")
+        uncropped_files_test_AD = os.listdir(r"AD_NC_split\test\AD")
+        uncropped_files_test_NC = os.listdir(r"AD_NC_split\test\NC")
 
         left = 8
         top = 0
@@ -164,57 +173,59 @@ class ADNI_dataset_utility:
         bottom = 240
 
         for file in uncropped_files_training_AD:
-            image = Image.open(r"AD_NC_new\training\AD\{}".format(file))
+            image = Image.open(r"AD_NC_split\training\AD\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\training\AD\{}".format(file))
 
         for file in uncropped_files_training_NC:
-            image = Image.open(r"AD_NC_new\training\NC\{}".format(file))
+            image = Image.open(r"AD_NC_split\training\NC\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\training\NC\{}".format(file))
 
         for file in uncropped_files_validation_AD:
-            image = Image.open(r"AD_NC_new\validation\AD\{}".format(file))
+            image = Image.open(r"AD_NC_split\validation\AD\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\validation\AD\{}".format(file))
 
         for file in uncropped_files_validation_NC:
-            image = Image.open(r"AD_NC_new\validation\NC\{}".format(file))
+            image = Image.open(r"AD_NC_split\validation\NC\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\validation\NC\{}".format(file))
             
         for file in uncropped_files_test_AD:
-            image = Image.open(r"AD_NC_new\test\AD\{}".format(file))
+            image = Image.open(r"AD_NC_split\test\AD\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\test\AD\{}".format(file))
 
         for file in uncropped_files_test_NC:
-            image = Image.open(r"AD_NC_new\test\NC\{}".format(file))
+            image = Image.open(r"AD_NC_split\test\NC\{}".format(file))
             cropped = image.crop((left, top, right, bottom))
             cropped.save(r"AD_NC_square\test\NC\{}".format(file))
 
     def add_augmented_images(self):
 
-        # create folder structure
-        self.create_folder_structure(["AD_NC_aug"])
+        parent_directory = os.getcwd()
 
         # copy existing files into new folder structure
-        training_NC_filenames = os.listdir(r"AD_NC_square\training\NC")
-        training_AD_filenames = os.listdir(r"AD_NC_square\training\AD")
+        # training_NC_filenames = os.listdir(r"AD_NC_square\training\NC")
+        # training_AD_filenames = os.listdir(r"AD_NC_square\training\AD")
 
-        for file in training_NC_filenames:
-            src = r"AD_NC_square\training\NC\{}".format(file)
-            des = r"AD_NC_aug\training\NC\{}".format(file)
-            shutil.copy(src, des)
+        # for file in training_NC_filenames:
+        #     src = r"AD_NC_square\training\NC\{}".format(file)
+        #     des = r"AD_NC_aug\training\NC\{}".format(file)
+        #     shutil.copy(src, des)
 
-        for file in training_AD_filenames:
-            src = r"AD_NC_square\training\AD\{}".format(file)
-            des = r"AD_NC_aug\training\AD\{}".format(file)
-            shutil.copy(src, des)
+        # for file in training_AD_filenames:
+        #     src = r"AD_NC_square\training\AD\{}".format(file)
+        #     des = r"AD_NC_aug\training\AD\{}".format(file)
+        #     shutil.copy(src, des)
 
         # define source and destination paths
-        src_path = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_aug\training\AD"
-        dest_path = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_aug\training\AD"
+        src_path = r"AD_NC_square\training\AD"
+        dest_path = r"AD_NC_square\training\AD"
+
+        src_path = os.path.join(parent_directory, src_path)
+        dest_path = os.path.join(parent_directory, dest_path)
 
         p = Augmentor.Pipeline(source_directory=src_path, output_directory=dest_path)
         p.skew(probability=0.3, magnitude=0.1)
@@ -228,8 +239,11 @@ class ADNI_dataset_utility:
         p.sample(self.num_samples)
 
         # repeat for NC data
-        src_path = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_aug\training\NC"
-        dest_path = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_aug\training\NC"
+        src_path = r"AD_NC_square\training\NC"
+        dest_path = r"AD_NC_square\training\NC"
+
+        src_path = os.path.join(parent_directory, src_path)
+        dest_path = os.path.join(parent_directory, dest_path)
 
         p = Augmentor.Pipeline(source_directory=src_path, output_directory=dest_path)
         p.skew(probability=0.3, magnitude=0.1)
@@ -249,13 +263,13 @@ def main():
     new_utility = ADNI_dataset_utility()
     
     # create directories
-    new_utility.create_directories()
+    # new_utility.create_directories()
 
     # move and split images
-    new_utility.move_and_split_images()
+    # new_utility.move_and_split_images()
 
     # crop to square
-    new_utility.crop_and_save_images()
+    # new_utility.crop_and_save_images()
 
     # augment images into new folder structures
     new_utility.add_augmented_images()
