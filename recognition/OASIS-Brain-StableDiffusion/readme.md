@@ -57,6 +57,7 @@ concatenated with the embedded position tensor
 concatenated with the embedded position tensor
 - `AttentionBlock` - Transformer attention block to enhance some parts of the data and diminish other parts
 - `UNet` - Unet model consisting of a decoding block, an encoding block, cross attention, and residual skip connections along with positional encoding
+
 These blocks used to implement the network can be found in the `modules.py` file.
 To better understand the model, below are annotated forward steps for each block.
 ### ConvReluBlock
