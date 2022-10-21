@@ -23,8 +23,8 @@ As the input passes forward through the network, what results are images of a si
 ### Loss and Metrics
 The performance of this model was measured using the Sørensen–Dice coefficient [2]. The loss function is directly derived from this statistic, being 1 - the Dice coefficient. It should be noted that the dice coefficient calculated for the loss function is derived from the isolated channel of the output image itself, and not the mask derived from it. This is done to ensure the possibility for backpropagation. As such, the Dice coefficients displayed in the loss function and the DSC metric itself may show some discrepancies, though in effect this does not affect the performance of the model.
 
-### Dataset 
-#### Folder Structure
+## Dataset 
+### Folder Structure
 The dataset module itself is structure-agnostic, though train.py and predict.py expect a folder structure as detailed below in order to access the dataset:
 ```
 data/
