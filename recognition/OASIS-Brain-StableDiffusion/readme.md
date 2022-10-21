@@ -5,7 +5,9 @@
 ## Model Description
 Stable Diffusion is a deep learning image generation model. Unlike other diffusion models that denoise in pixel space, Stable Diffusion uses a Latent Diffusion Model (LDM) to add and remove noise in the latent space, making it more time and space efficient. An Encoder is used to transform images into the latent space, while a Decoder is used to transform the latent space back into pixel space. In the model, each denoising step is performed by a modified U-Net architecture consisting of cross attention and positional embedding. The cross attention increases the segmentation accuracy by enhancing prominent regions of the image and suppressing irrelevant regions. The positional embedding allows the model to know what noising or denoising step it is on, vital to add and remove the correct amount of noise to an image, as the basic U-Net architecture does not allow for this. For more information on the model used and for the mathematics behind it please read this [paper](https://arxiv.org/pdf/2112.10752.pdf).
 
-![image](https://miro.medium.com/max/1400/0*rW_y1kjruoT9BSO0.png)Source: https://arxiv.org/pdf/2112.10752.pdf
+![image](https://miro.medium.com/max/1400/0*rW_y1kjruoT9BSO0.png)
+
+Source: https://arxiv.org/pdf/2112.10752.pdf
 
 For the model implemented here, the conditioning part of the stable diffusion model was intentionally dismissed as unnecessary since the task is to only recreate one specific type of data set. The conditioning would be needed if we were trying to recreate many types of data from a given input. For example, creating an image from text, in this case, text is the conditioning element.
 
@@ -24,6 +26,7 @@ The OASIS Brain MRI dataset is the data this model was trained against.
 This data can be found [here](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). 
 Example MRI slice from the dataset
 ![Brain MRI](https://lh3.googleusercontent.com/pw/AL9nZEViraVfAx4nNjNFk7ga3r2QBN5zKUvgXMg7C-OvQLNKJN_mnTjKSrS4PmHYn5VZlt0ZUenfr15Bym4h08bWUF6XhivR0WwOXxGN1IJM2C7_oxYpSskmnNR9tzFdSVWPNmuhdTFF24qV4DDC4qrnkUx2=s256-no?authuser=0)
+
 Source: [OASIS Brain MRI dataset](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA)
 
 To load this data into the program, I used a function called `load_dataset` found in `dataset.py`. This function loads data from a folder, normalizes it, and puts it in a pytorch dataloader for ease of use.
@@ -47,7 +50,7 @@ As discussed above a modified U-Net was used to denoise the data in latent space
 
 A general U-Net is an encoder and decoder convolutional network with skip connections between each opposing block. It was originally created to produce image segmentation mapping which makes it the golden choice to use in a stable diffusion model.
 
-![Unet Diagram](https://www.researchgate.net/publication/334287825/figure/fig2/AS:778191392210944@1562546694325/The-architecture-of-Unet.ppm)
+![Unet Diagram](https://photos.google.com/share/AF1QipMt0Y7G1djhopVX_kNX0DHn0OMqmg_NmPQbAZJGKRk0BaFRx0LoWFozJttkpl-msw/photo/AF1QipM5fX5cAPG8LiJQhOXhwFXaM9USl6jgzIiqCUY?key=Z1RWSjJDNld1N3pCV1BnZk1IMGNXbkd1dUZpempB)
 Source: https://www.researchgate.net/figure/The-architecture-of-Unet_fig2_334287825
 
 The U-Net implemented for this model is slightly different and consists of the following blocks.
