@@ -6,7 +6,7 @@ Code for training, validating, testing and saving model.
 Author: Joshua Wang (Student No. 46965611)
 Date Created: 11 Oct 2022
 """
-from dataset import DataLoader
+from dataset import load_data
 from modules import build_vision_transformer
 import tensorflow as tf
 import tensorflow_addons as tfa
@@ -92,8 +92,7 @@ def train_model(model, train_data, val_data):
 
 if __name__ == '__main__':
     # Load data
-    loader = DataLoader(DATA_LOAD_PATH, IMAGE_SIZE, BATCH_SIZE)
-    train, val, test = loader.load_data()
+    train, val, test = load_data()
 
     # Compile and train model
     model = compile_model()

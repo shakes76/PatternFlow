@@ -9,9 +9,9 @@ Date Created: 11 Oct 2022
 import tensorflow as tf
 import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
-from dataset import DataLoader
+from dataset import load_data
 from modules import EmbedPatch, MultiHeadAttentionLSA, PatchLayer
-from parameters import DATA_LOAD_PATH, LEARNING_RATE, MODEL_SAVE_PATH, IMAGE_SIZE, BATCH_SIZE, WEIGHT_DECAY
+from parameters import LEARNING_RATE, MODEL_SAVE_PATH, WEIGHT_DECAY
 
 
 def predict(load_path, test_data):
@@ -57,8 +57,7 @@ def predict(load_path, test_data):
     plt.savefig('confusion_matrix')
     plt.clf()
 
-if __name__ == '__main__':
-    loader = DataLoader(DATA_LOAD_PATH, IMAGE_SIZE, BATCH_SIZE)
-    train, val, test = loader.load_data()
 
+if __name__ == '__main__':
+    train, val, test = load_data()
     predict(MODEL_SAVE_PATH, test)

@@ -8,9 +8,9 @@ Date Created: 15 Oct 2022
 """
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from dataset import DataLoader
+from dataset import load_data
 from modules import PatchLayer
-from parameters import DATA_LOAD_PATH, IMAGE_SIZE, NUM_PATCHES, PATCH_SIZE, PROJECTION_DIM
+from parameters import IMAGE_SIZE, NUM_PATCHES, PATCH_SIZE, PROJECTION_DIM
 
 
 def plot_image(dataset):
@@ -23,6 +23,7 @@ def plot_image(dataset):
     plt.imshow(image.numpy().astype('uint8'))
     plt.axis('off')
     plt.show()
+
 
 def plot_patches(dataset):
     """
@@ -55,8 +56,8 @@ def plot_patches(dataset):
 
     plt.show()
 
+
 if __name__ == '__main__':
-    loader = DataLoader(DATA_LOAD_PATH)
-    train, val, test = loader.load_data()
+    train, val, test = load_data()
     plot_image(train)
     plot_patches(train)

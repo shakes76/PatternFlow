@@ -160,6 +160,7 @@ class MultiHeadAttentionLSA(layers.MultiHeadAttention):
 		config = super(MultiHeadAttentionLSA, self).get_config()
 		return config
 
+
 def build_vision_transformer(input_shape, image_size, patch_size, num_patches,
 			attention_heads, projection_dim, hidden_units, dropout_rate,
 			transformer_layers, mlp_head_units):
