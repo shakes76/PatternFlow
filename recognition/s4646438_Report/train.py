@@ -2,7 +2,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from dataset import import_dataset, downsample_image
+from dataset import import_dataset
 from modules import Model
 upsample_factor = 4
 batch_size = 8
