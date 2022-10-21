@@ -2,11 +2,8 @@
    - (1) https://keras.io/examples/vision/super_resolution_sub_pixel/
 """
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from dataset import input_downsample, input_process
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_to_img
-from IPython.display import display
 import numpy as np
 import os
 import tensorflow as tf
@@ -17,6 +14,9 @@ from dataset import collect_test_images
 comp_images_path = "comp_images"
 
 def load_model():
+  '''
+  Load the trained model.
+  '''
   model = Model(upsample_factor)
   model.load_weights(checkpoint_loc)
   return model
@@ -58,10 +58,16 @@ def produce_comparison_plot(model, input_path, multi:bool):
   print(f"Model PSNR: {model_psnr}")
   print(f"Scaled PSNR: {scaled_psnr}")
   original_image.save(os.path_join(comp_images_path, 'original_image.png'))
-  scaled.save(os.path_join(comp_images_path,'comp_images/bicubic.png'))
-  model_output.save(os.path_join(comp_images_path,'comp_images/model_output.png'))
+  scaled.save(os.path_join(comp_images_path,'bicubic.png'))
+  model_output.save(os.path_join(comp_images_path,'model_output.png'))
   
 def produce_multiple_comparison_plot(model, test_path, num_comp=5):
+  '''
+  Creats a plot 3xnum_comp to compare output image, bicubic rezizing and model output
+  :param model: the trained model
+  :param test_path: the path to the test images
+  :num_comp: the number of samples to compare
+  '''
   cols, rows = num_comp, 3
   figure = plt.figure(figsize=(13, 22), dpi=80)
   for i in range(num_comp):

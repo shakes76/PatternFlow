@@ -31,7 +31,7 @@ def plot_training_statistics(history, epochs):
   plt.savefig('training_statistics_psnr_range.png')
   plt.show()
 
-
+#import the dataset
 train, validation, test = import_dataset(batch_size, read_image_size, target_image_width, upsample_factor)
 
 model = Model(upsample_factor)
