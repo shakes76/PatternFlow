@@ -1,22 +1,10 @@
 """
-Assumptions:
-
-Steps / Key Functions:
-1. Instantiate model
-2. Select Optimzer
-3. Compile model
-4. Create Checkpoint callback
-5. Train the model
-
-
 References:
 1) https://keras.io/examples/vision/image_classification_with_vision_transformer/
 2) https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093
 
 """
 
-
-# def main():
 from tensorflow import keras
 import tensorflow_addons as tfa
 from modules import vit_classifier
@@ -31,20 +19,18 @@ paths = {"training": path_training, "validation": path_validation, "test": path_
 data_train, data_validate, data_test = import_data(IMAGE_SIZE, BATCH_SIZE, paths)
 
 ##############################  TRAINING SCRIPT  ###################################
-# Run Experiment --> Instantiate model, Select optimzer, compile, checkpoint, train and evaluate
+
 
 # instantiate model
 vit_classifier = vit_classifier()
 print(vit_classifier.summary())
 
 # select optimzer
-optimizer = tfa.optimizers.AdamW(
-    learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY
-)
+optimizer = tfa.optimizers.AdamW(learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
 #     optimizer = tf.optimizers.Adam(LEARNING_RATE=LEARNING_RATE)
 
 
-# compile
+# compile the model
 vit_classifier.compile(
     optimizer=optimizer,
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -88,8 +74,7 @@ plt.title("Loss")
 plt.xlabel("Epochs")
 plt.ylabel("Accuracy")
 plt.legend()
-# plt.savefig("./plots/loss.png")
-plt.savefig(r"C:\Users\lovet\Documents\COMP3710\Report\plots\loss.png")
+plt.savefig("./plots/loss.png")
 plt.show()
 
 
@@ -103,10 +88,7 @@ plt.title("Accuracy")
 plt.xlabel("Epochs")
 plt.ylabel("Accuracy")
 plt.legend()
-# plt.savefig("./plots/accuracy.png")
-plt.savefig(r"C:\Users\lovet\Documents\COMP3710\Report\plots\accuracy.png")
+plt.savefig("./plots/accuracy.png")
 plt.show()
 
 
-# if __name__ == "__main__":
-#     main()

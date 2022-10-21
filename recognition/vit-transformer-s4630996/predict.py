@@ -1,15 +1,15 @@
+import tensorflow as tf
 from tensorflow import keras
 import tensorflow_addons as tfa
 from modules import vit_classifier
 from dataset import import_data
 import matplotlib.pyplot as plt
+import numpy as np
 from config import *
+import random
+import os
+from PIL import Image
 
-
-# import test data
-paths = {"training": path_training, "validation": path_validation, "test": path_test} 
-
-_, _, data_test = import_data(IMAGE_SIZE, BATCH_SIZE, paths)
 
 # instantiate model
 vit_classifier = vit_classifier()
@@ -25,10 +25,28 @@ vit_classifier.compile(
 )
 
 # create checkpoint callback
-checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint2\\"
+parent_directory = os.getcwd()
+checkpoint_filepath = os.path.join(parent_directory, "checkpoint")
 
+# draw a sample from test data
+test_NC_filenames = os.listdir(r"AD_NC\test\NC")
+x_sample_file = random.sample(test_NC_filenames, 1)[0]
+x_sample_path = r"AD_NC\test\NC\{}".format(x_sample_file)
 
-# evaluate the model 
+# open and display the image
+x_image = Image.open(x_sample_path)
+plt.imshow(x_image)
+plt.show()
+
+# convert the image to a numpy array
+x_data = np.asarray(x_image)
+
+# load the model weights
 vit_classifier.load_weights(checkpoint_filepath)
-_, accuracy, = vit_classifier.evaluate(x=data_test)
-print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+
+# make a prediction
+print(vit_classifier.predict(x_data))
+
+
+# _, accuracy, = vit_classifier.evaluate(x=data_test)
+# print(f"Test accuracy: {round(accuracy * 100, 2)}%")

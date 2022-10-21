@@ -1,28 +1,19 @@
 """
-Assumptions:
-
-Steps / Key Functions:
-1. Augment Data (data_augmentation)
-2. Create Patches (Patches)
-3. Embed Patches (PatchEmbedding)
-4. Create MLP (mlp)
-5. Create Transformer Encoder (transformer_encoder)
-5. Create ViT (vit_classifier)
-
-References:
+ViT Code Inspiration References:
 1) https://keras.io/examples/vision/image_classification_with_vision_transformer/
 2) https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093
-
+3) https://dzlab.github.io/notebooks/tensorflow/vision/classification/2021/10/01/vision_transformer.html
+4) https://medium.com/geekculture/vision-transformer-tensorflow-82ef13a9279
 """
 
-
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-import tensorflow as tf
 from config import *
 
 ##############################  INPUT DATA AUGMENTATION  ###################################
 
+# layers for augmenting input data
 data_augmentation = keras.Sequential(
     [
         layers.Rescaling(scale=1./255),
@@ -46,8 +37,10 @@ class Patches(layers.Layer):
         self.PATCH_SIZE = PATCH_SIZE
 
     def call(self, images):
-        """ Allows Patches class to act like a method with images as input """
+        """ Allows Patches class to utilize the Keras functional api """
+        # batch size of input images
         batch_size = tf.shape(images)[0]
+        # create pathces
         patches = tf.image.extract_patches(
             images=images,
             sizes=[1, self.PATCH_SIZE, self.PATCH_SIZE, 1],
@@ -55,39 +48,43 @@ class Patches(layers.Layer):
             rates=[1, 1, 1, 1],
             padding="SAME",
         )
+        # reshape patches
         patch_dims = patches.shape[-1]
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-        return patches#
+        
+        return patches
 
 ###################################  EMBED PATCHES  #######################################
 
 class PatchEmbedding(layers.Layer):
-    """ Class to linear project flattened patch into PROJECTION_DIM and add positional embedding and class token"""
+    """ Class to linearly project flattened patch into PROJECTION_DIM and add positional 
+    embedding and class token."""
     def __init__(self, NUM_PATCHES, PROJECTION_DIM):
         super(PatchEmbedding, self).__init__()
         self.num_patches = NUM_PATCHES
+        # linear projection of patches
         self.projection = layers.Dense(units=PROJECTION_DIM)
-        self.position_embedding = layers.Embedding(
-            input_dim=NUM_PATCHES, 
-            output_dim=PROJECTION_DIM)
+        # position embedding
+        self.position_embedding = layers.Embedding(input_dim=NUM_PATCHES, output_dim=PROJECTION_DIM)
+        # class token - initialize weights randomly
         w_init = tf.random_normal_initializer()
         class_token = w_init(shape=(1, PROJECTION_DIM), dtype="float32")
-        self.class_token = tf.Variable(
-            initial_value=class_token,
-            trainable=True)
+        # make weights trainable
+        self.class_token = tf.Variable(initial_value=class_token,trainable=True)
     def call(self, patch):
         # reshape class token to take into account batch sizes
         batch = tf.shape(patch)[0]
         class_token = tf.tile(input=self.class_token, multiples=[batch, 1])
         class_token = tf.reshape(class_token, (batch, 1, PROJECTION_DIM))
         
+        # create 1D positions for position embedding
         positions = tf.range(start=0, limit=self.num_patches+1, delta=1)
-        # add linear project to position embedding
         
         # create patch embeddings
         patch_embedding = self.projection(patch)
         patch_embedding = tf.concat([class_token, patch_embedding], axis=1)
         
+        # embedding vectors are patch embedding plus the position embedding
         embedding = patch_embedding + self.position_embedding(positions)
         
         return embedding
@@ -154,6 +151,7 @@ def transformer_encoder(embedded_patches, NUM_ENCODER_LAYERS, DROPOUTS, PROJECTI
 ##############################  CREATE VISION TRANSFORMER MODEL  #################################
 
 def vit_classifier():
+    """ create vit classification model"""
     
     inputs = layers.Input(shape=INPUT_SHAPE)
     
