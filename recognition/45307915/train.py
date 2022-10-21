@@ -28,7 +28,14 @@ class ModelTrainer():
     
     def __init__(self, batch_size=BATCH_SIZE, learning_rate=INIT_LEARNING_RATE, epochs=EPOCHS):
         """
-        
+        ???????
+
+        Parameters:
+            ?????? (??????): ??????
+            
+        Return:
+            ??????: ?????
+
         """
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -106,7 +113,7 @@ class ModelTrainer():
             ??????: ?????
 
         """
-        
+
         # Batch the data
         train_batch = train_dataset.batch(self.batch_size)
         test_batch = test_dataset.batch(self.batch_size)

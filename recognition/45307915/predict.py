@@ -25,7 +25,8 @@ class ModelPredictor():
         
         self.model = model
         self.test_dataset = test_dataset
-        self.test_batch = test_dataset.batch(batch_size)
+        self.batch_size = batch_size
+        
         
     def evaluateModel(self):
         """
@@ -38,16 +39,12 @@ class ModelPredictor():
             ??????: ?????
 
         """
+
         
-        coefficients = []
-        for image, mask in self.test_batch:
-            loss, coefficient = self.model.evaluateData(self.test_batch)
-            coefficients.append(coefficients)
-            
-        averageCoefficient = sum(coefficients)/len(coefficients)
-        print("Average Dice Coefficient: " + averageCoefficient)
-        minCoefficient = min(coefficients)
-        print("Minimum Coefficient: " + minCoefficient)
+        test_batch = self.test_dataset.batch(self.batch_size)
+        loss, coefficient = self.model.evaluate(test_batch)
+
+        print("Test Data Dice Coefficient: " + coefficient)
         
     def makePredictions(self):
         """
@@ -61,12 +58,11 @@ class ModelPredictor():
 
         """
         
-        batch_size = 10
-        test_batch = self.test_dataset.batch(batch_size)
+        test_batch = self.test_dataset.batch(self.batch_size)
         test_image, test_mask = next(iter(test_batch))
         predictions = self.model.predict(test_image)
         
-        for i in range(batch_size):
+        for i in range(self.batch_size):
             
             plt.figure(figsize=(10,10))
         
@@ -77,18 +73,18 @@ class ModelPredictor():
 
             # Plot the test mask
             plt.subplot(1, 3, 2)
-            plt.imshow(test_mask[i])
+            mask = test_mask[i]
+            plt.imshow(mask[:, :, 0], cmap='gray')
             plt.title("Ground Truth Mask")
 
             # Plot the resultant mask
             plt.subplot(1, 3, 3)
             # Display 0 or 1 for classes
             prediction = tf.where(predictions[i] > 0.5, 1.0, 0.0)
-            plt.imshow(prediction)
+            plt.imshow(prediction[:, :, 0], cmap='gray')
             plt.title("Predicted Mask")
 
             plt.show()
-
 
 def main():
 
@@ -101,7 +97,7 @@ def main():
     model = improvedUNETModel.modelArchitecture()
     
     # Train the model
-    t = ModelTrainer()
+    t = ModelTrainer(epochs=1)
     model = t.trainModel(train_dataset, test_dataset, validate_dataset, model)
     
     # Evaluate the model and make predictions
