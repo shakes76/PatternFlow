@@ -1,4 +1,4 @@
-# Graph Convolutional Network (GCN) for  classifying Facebook's Large Page-Page Network Dataset
+# Graph Convolutional Network (GCN) for  classifying the Facebook Large Page-Page Network Dataset
 
 Author: Remington Greenhill-Brown
 SN: 44343309
