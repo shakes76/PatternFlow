@@ -11,14 +11,19 @@ if __name__ == "__main__":
     else:
         device = 'cpu'
 
+    # load test dataset
+    # see README.md for expected folder structure
     batch_size = 1
     dataset_test = Dataset(
         data_path='data/test/data', 
         truth_path='data/test/truth', 
         metadata_path='data/test/data/ISIC-2017_Test_v2_Data_metadata.csv'
         )
+
+    # shuffle set to false for reproducible mask generation
     dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size, shuffle=False)
 
+    # load model from saved state
     model = modules.IUNET(3, 16)
     model.load_state_dict(torch.load('model.pt'))
     model.to(device)
@@ -33,14 +38,18 @@ if __name__ == "__main__":
             mask = mask.to(device)
 
             out = model(img)
+
+            # calculate loss
             loss = 1 - dsc(out[:,0,:,:], mask[:,0,:,:])
             losses.append(loss)
 
+            # calculate Dice Similarity Coefficient
             pred = get_mask(out[:,0,:,:], 0.5)
             dscs.append(dsc(pred, mask[:,0,:,:]))
         avg_loss = sum(losses)/len(losses)
         avg_dsc = sum(dscs)/len(dscs)
 
+        # display average loss and dsc over test dataset
         print(f"loss: {avg_loss:.2f}\tdsc: {avg_dsc:.2f}")
         
         # display first 4 predicted masks
@@ -55,12 +64,12 @@ if __name__ == "__main__":
             pred = torch.where(out >= 0.5, 1.0, 0.0)
             
             fig.add_subplot(4, 4, 1 + 4*i)
-            plt.imshow(img.to('cpu')[0].permute(1,2,0))
+            plt.imshow(img.to('cpu')[0].permute(1,2,0)) # input image
             fig.add_subplot(4, 4, 2 + 4*i)
-            plt.imshow(mask.to('cpu')[0].permute(1,2,0))
+            plt.imshow(mask.to('cpu')[0].permute(1,2,0))# ground truth mask
             fig.add_subplot(4, 4, 3 + 4*i)
-            plt.imshow(out)
+            plt.imshow(out)                             # isolated model raw output
             fig.add_subplot(4, 4, 4 + 4*i)
-            plt.imshow(pred)
+            plt.imshow(pred)                            # mask generated from model output
         plt.show()
         plt.axis('off')
