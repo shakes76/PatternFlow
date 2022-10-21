@@ -15,7 +15,7 @@ To learn features from the product of an adjacency matrix with node features, th
 
 Normalising the rows of the adjacency matrix to sum to 1 can help mitigate this issue, as this ensured that the product of the adjacency and feature matrices are now scaled between 0 and 1. This is performed by taking the inverse of the degree matrix's diagonal and multiplying it with the adjacency matrix. Operations performed between this normalised matrix and the feature matrix during training is mathematically equivalent to averaging the graph's neighbours. 
 
-Performing symmetric normalisation ensures that features can be weighted according to their importance. For example, a feature with an average degree 
+Performing symmetric normalisation ensures that features can be weighted according to their importance. 
 
 
 #### Using this file 
