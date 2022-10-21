@@ -21,7 +21,7 @@ def show_single_image(model):
     image = torch.randn((1, 3, 64, 64)).to("cuda")
 
     # Iteratively remove the noise
-    for i in tqdm(range(999, -1, -1)):
+    for i in tqdm(range(499, -1, -1)):
         with torch.no_grad():
             image = remove_noise(image, torch.tensor([i]).to("cuda"), model)
 
@@ -39,6 +39,43 @@ def show_single_image(model):
     plt.axis("off")
     plt.title("Image Created from Stable Diffusion Model")
     plt.imshow(image)
+    plt.savefig('Image{}.png'.format(ts))
+    plt.show()
+
+
+def show_x_images(model, img_num=6):
+    """
+    Create and show a x amount of images from the model
+
+    Args:
+        model (Module): PyTorch model to use
+        img_num (int, optional): number of images to create. Defaults to 6.
+    """
+    model = model.to("cuda")
+    
+    # Setup pyplot
+    plt.figure(figsize=(24, 4))
+    plt.axis("off")
+    plt.title("Images Created from Stable Diffusion Model")
+    img_pos = 1
+
+    for i in range(1, img_num+1, 1):
+        image = torch.randn((1, 3, 64, 64)).to("cuda")
+        for j in tqdm(range(499, -1, -1)):
+            with torch.no_grad():
+                image = remove_noise(image, torch.tensor([j]).to("cuda"), model)
+
+        # convert image back into range [0, 255]
+        image = image[0].permute(1, 2, 0).detach().to("cpu")
+        image = image*255
+        image = np.array(image, dtype=np.uint8)
+        sub = plt.subplot(1, img_num, img_pos)
+        plt.imshow(image)
+        img_pos += 1
+
+    # Get unique time stamp
+    dt = datetime.now()
+    ts = round(datetime.timestamp(dt))
     plt.savefig('Image{}.png'.format(ts))
     plt.show()
 
@@ -63,7 +100,7 @@ def load_model(model_path):
 def main():
     model_path = r"D:\COMP3710\rangpur\train2\DDPM_Uncondtional\ckpt.pt"
     model = load_model(model_path)
-    show_single_image(model)
+    show_x_images(model)
 
 
 if __name__ == "__main__":
