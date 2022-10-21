@@ -122,6 +122,11 @@ class Trainer():
         print("Saved DCGAN")
         
     def init_weights_dcgan(self, dcgan_model):
+        """Initialize weights for the given DCGAN model.
+
+        Args:
+            dcgan_model (_type_): DCGAN model.
+        """
         for m in dcgan_model.modules():
             if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
                 nn.init.normal_(m.weight.data, 0.0, 0.02)
@@ -144,6 +149,11 @@ class Trainer():
         print(f"Device Selected = [{self.device}]")
         
     def is_trained_vqvae(self):
+        """Returns whether there exists a trained VQVAE
+
+        Returns:
+            bool: True or false
+        """
         try: # Try to load last model state
             torch.load(self.path_state + "\\vqvae.txt")
         except (FileNotFoundError): # If model doesn't exist create model
@@ -151,6 +161,11 @@ class Trainer():
         return True
     
     def is_trained_dcgan(self):
+        """Returns whether the exists a trained DCGAN
+
+        Returns:
+            bool: True or false
+        """
         try: # Try to load last model state
             torch.load(self.path_state + "\\generator.txt")
         except (FileNotFoundError): # If model doesn't exist create model
