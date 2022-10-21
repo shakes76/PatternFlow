@@ -92,3 +92,7 @@ Layer format                     Test accuracy
 This table shows some testing done with various GCN formats in order to determine the optimal choice for this project. There are 3 double GCN layer tests and 4 triple layer tests. As a whole two GCN layers performed worse than three layers by a relatively wide margin. During the 3 layer tests each increase number of weights and see a corresponding improvement in performance. Testing was stopped at the final format shown above as the improvements had began to shrink and the time taken to run each test was increasing expontentially. This final setup chosen was the first layer of (input, 64), next layer of (64, 32) and the final layer of the 32 going into the four output classes.
 
 
+## Conclusion
+
+The project was a success, with a Graph Convolutional Network providing very strong results with a test accuracy of ~92%, with a larger dataset and more time/compute power this result could improve a decent amount. There is plenty of other future work that could be done also, particularly tuning hyperparameters and formats. To do this a 10-fold cross validation setup should be used in order to improve the reliability of results and reduce the effect of outliers, although this will take more time to run than the current setup. Parameters such as learning rate, weight decay, optimiser, different activation functions and more could be tested and tuned to improve both time efficiency and the accuracy of the GCN.
+

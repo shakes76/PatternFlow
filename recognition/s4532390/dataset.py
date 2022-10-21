@@ -39,15 +39,17 @@ def parse_data(file_path):
                                                     dtype=np.float32)
         # Add identity matrix as each page connects to itself
         coo_matrix += scipy.sparse.eye(coo_matrix.shape[0])
+
         # Normalise the matrix
-        # coo_matrix = F.normalize(coo_matrix, p=1, dim=1)
         coo_matrix = preprocessing.normalize(coo_matrix, axis=1, norm='l1')
         coo_matrix = coo_matrix.tocoo().astype(np.float32)
 
-        # Creating the adjacency matrix
+        # Getting values needed for the adjacency matrix
         indices = torch.from_numpy(np.vstack((coo_matrix.row, coo_matrix.col)).astype(np.int64))
         values = torch.from_numpy(coo_matrix.data)
         shape = torch.Size(coo_matrix.shape)
+        
+        # Creating the adjacency matrix
         adjacency_matrix = torch.sparse_coo_tensor(indices, values, shape)
 
         return features, adjacency_matrix, targets
