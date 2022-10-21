@@ -7,27 +7,12 @@ import dataset
 import modules
 
 
-def plot_data(history, type):
-    plt.figure(figsiz = (10, 5))
-
-    if type == 'acc': add = 'DSC'
-    else: add = 'loss'
-
-    plt.plot(history.history['' + add], label='Training ' + add)
-    plt.plot(history.history['val_' + add], label='Validation ' + add)
-    plt.title('Test vs Validation ' + add)
-    plt.legend(loc='lower right')
-    plt.xlabel('Epochs')
-    plt.ylabel('' + add)
-    plt.savefig('./images/'+ add +'.png')
-    plt.show()
 
 
 def main():
     val_x, val_y = dataset.load_val()
-    model, history = train.training(data_reshape = False)
-    plot_data(history, 'acc')
-    plot_data(history, 'loss')
+    model = tf.keras.models.load_model('imp_unet_model.h5', 
+                custom_objects={'DSC': modules.DSC, 'DSC_loss': modules.DSC_loss})    
 
     pred = model.predict(val_x)
     gt = tf.convert_to_tensor(val_y, dtype=tf.float32)
