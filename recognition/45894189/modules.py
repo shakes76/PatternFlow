@@ -2,6 +2,16 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
+"""
+modules.py defines StyleGAN Generator and Discriminator models and their associated network blocks.
+
+The following example was used as a guide:
+Face image generation with StyleGAN. Soon-Yau CHeong. Date Created: 01/07/2021, 
+Last Modified: 20/12/2021. https://keras.io/examples/generative/stylegan/
+
+Author: Sam Smeaton 45894189 21/10/2022
+"""
+
 def add_noise(n_filters, image_size):
     """
     Noise input layer [B]

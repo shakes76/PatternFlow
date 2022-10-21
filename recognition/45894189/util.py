@@ -2,6 +2,12 @@ import tensorflow as tf
 import os
 from tensorflow import keras
 
+"""
+util.py creates keras callbacks that save output images and model weights each epoch
+
+Author: Sam Smeaton 45894189 21/10/2022
+"""
+
 class ImageSaver(keras.callbacks.Callback):
     """
     callback that saves output images each epoch

@@ -3,6 +3,13 @@ import os
 from tensorflow import keras
 from train import StyleGAN
 
+"""
+predict.py creates a model and either trains it or loads weights, then shows
+and example image output
+
+Author: Sam Smeaton 45894189 21/10/2022
+"""
+
 #=======INPUT=FILE=LOCATIONS=========
 
 # path for input images (non-null unless using a pretrained model)

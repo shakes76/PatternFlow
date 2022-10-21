@@ -6,6 +6,16 @@ from tensorflow import keras
 from modules import Generator, Discriminator
 from util import ImageSaver, WeightSaver
 
+"""
+train.py defines a StyleGAN model and its training procedure
+
+The following example was used as a guide:
+Face image generation with StyleGAN. Soon-Yau CHeong. Date Created: 01/07/2021, 
+Last Modified: 20/12/2021. https://keras.io/examples/generative/stylegan/
+
+Author: Sam Smeaton 45894189 21/10/2022
+"""
+
 class StyleGAN(keras.Model):
     def __init__(self, epochs, batch_size):
         super(StyleGAN, self).__init__()
