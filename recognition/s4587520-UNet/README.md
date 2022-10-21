@@ -1,6 +1,8 @@
 # U-Net Segmentation of ISIC 2017
 This repository contains functionality to segment the [ISIC 2017 Lesion Dataset](https://challenge.isic-archive.com/data/#2017) using the [Improved UNet Model](https://arxiv.org/abs/1802.10508v1).
 
+Completed by Luke Harrison, Student Number 45875209
+
 ## Dependencies
 This model was created/tested using the following software versions:
 Python 3.10.6
