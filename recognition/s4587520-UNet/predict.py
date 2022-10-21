@@ -1,6 +1,10 @@
+from modules import UNet
 import matplotlib.pyplot as plt
 from PIL import Image
-from modules.py import UNet
+import torch
+from torchvision.transforms import ToTensor
+
+predict_image_path = "./data/test/image/ISIC_0000000.jpg"
 
 #Import GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -11,7 +15,6 @@ save_path = "./Trained_Model.pth"
 model.load_state_dict(torch.load(save_path))
 
 #Image Pathway
-predict_image_path = "./test_lesion"
 transform = ToTensor()
 image = transform(Image.open(predict_image_path))
 
@@ -20,7 +23,8 @@ image = image.to(device)
 output = model(image[None,:,:,:])
 
 #Show Output
-plt.imshow(image.permute(1,2,0))
-plt.show()
-plt.imshow(output[0,:,:,:].permute(1,2,0)[:,:,0].detach().numpy())
+plt.figure()
+f, axarr = plt.subplots(1,2) 
+axarr[0].imshow(image.cpu().permute(1,2,0))
+axarr[1].imshow(output[0,:,:,:].permute(1,2,0)[:,:,0].cpu().detach().numpy())
 plt.show()

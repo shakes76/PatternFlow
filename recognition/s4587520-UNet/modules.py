@@ -1,6 +1,7 @@
 #Create Model
 import torch
 from torch import nn
+from torch.autograd import Variable
 
 class UNet(nn.Module):
   def __init__(self):
@@ -144,12 +145,12 @@ def simple_size_fix(x, desired):
 def dice_similarity(prediction, truth):
   numerator = torch.sum(torch.mul(prediction[0, 0, :, :], truth[0,0,:,:])).item()
   denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
-
-  return 2*numerator/denom
+  similarity = Variable(torch.as_tensor(2*numerator/denom), requires_grad=True)
+  return similarity
 
 #Calculates DICE loss:
 def dice_loss(prediction, truth):
   numerator = torch.sum(torch.mul(prediction[0, 0, :, :], truth[0,0,:,:])).item()
   denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
-
-  return 1 + -2*numerator/denom
+  loss = Variable(torch.as_tensor(1 + -2*numerator/denom), requires_grad=True)
+  return loss
