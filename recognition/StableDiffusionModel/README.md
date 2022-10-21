@@ -46,7 +46,7 @@ The Autoencoder was trained against the mean-squared-error between its reconstru
 <br>
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
 <br>
-![aEExample](/recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderExample.png)
+![aEExample](Images/AutoEncoderExample.png)
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
