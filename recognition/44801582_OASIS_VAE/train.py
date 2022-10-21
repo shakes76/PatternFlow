@@ -113,7 +113,7 @@ def main():
 
     history = vqvae_trainer.fit(train_data, epochs=3, batch_size=4)
 
-    plot_reconstructions(vqvae_trainer.vqvae, test_data)
+    plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time)
 
 
