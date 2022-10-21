@@ -214,13 +214,3 @@ class IUNET(nn.Module):
         # output
         out = self.out_layer(out)
         return out
-        
-
-if __name__ == '__main__':
-    # test network on random input
-    x = torch.rand((2, 3, 256, 256)).to('cuda')
-    iunet = IUNET(3, 16).to('cuda')
-    y = iunet(x)
-    print(x.shape)
-    print(y.shape)
-    
