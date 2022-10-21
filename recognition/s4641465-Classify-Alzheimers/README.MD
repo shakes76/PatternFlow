@@ -2,8 +2,18 @@
 ***
 This model takes upscaled (approximately by 4x) images from the ADNI Brain Dataset and downscales them.
 ***
+
+
+
+
 ![graph](images/graph.png)
 ***
+
+![highres](images/0-highres.png)
+![lowres](images/0-lowres.png)
+![prediction](images/0-prediction.png)
+
+
 How to use:
 - Add dataset images to new folder named "datasets"
 - run train.py
