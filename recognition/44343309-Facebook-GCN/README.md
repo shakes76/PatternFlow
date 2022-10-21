@@ -17,7 +17,9 @@ Data is first loaded into separate variables for edges, features, and labels.
 * Train, test, and validation label sets are individually one-hot-encoded.
 
 ## The Algorithm Method
-Typical to Convolutional Neural Networks, and by extension, Graph Convolution Neural Networks, the algorithm used is composed of a series of layers that data is pushed through to perform classification. In sticking with the normal operation of CNNs in Tensorflow, Keras' Model and Layer classes were utilised to create the aforementioned layers. No dropout was used in model creation, as through testing it was determined that the Facebook Large Page-Page dataset was not large enough to warrant dropout. Notably, accuracy would decrease if/when dropout was added. The activation function "Rectified Linear Unit" (ReLU) was used for all but the last of the model layers, as Softmax was used there to map outputs to usable values.
+Typical to Convolutional Neural Networks, and by extension, Graph Convolution Neural Networks, the algorithm used is composed of a series of layers that data is pushed through to perform classification. In sticking with the normal operation of CNNs in Tensorflow, Keras' Model and Layer classes were utilised to create the aforementioned layers. No dropout was used in model creation, as through testing it was determined that the Facebook Large Page-Page dataset was not large enough to warrant dropout. Notably, accuracy would decrease if/when dropout was added. The activation function "Rectified Linear Unit" (ReLU) was used for all but the last of the model layers, as Softmax was used there to map outputs to usable values.  
+
+It should be noted here that the "training" folder contains the pretrained model for use in predict.py. It was decided that this was the best way to store weights for later use, and to save time in re-running the model when users are making predictions.
 
 ## Inputs, Outputs, and Plots of Results
 ### Inputs
