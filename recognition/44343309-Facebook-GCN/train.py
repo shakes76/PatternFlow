@@ -71,6 +71,10 @@ class ModelTrainer:
             shuffle=False,
             callbacks=[self.cp_callback]
         )
+        self.trainAcc = self.model.history.history['acc']
+        self.valAcc = self.model.history.history['val_acc']
+        self.trainLoss = self.model.history.history['loss']
+        self.valLoss = self.model.history.history['val_loss']
         return self.model
 
     """

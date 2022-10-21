@@ -29,19 +29,19 @@ Typical input to the GCN is an .npz file containing data in 128 dim formats, arr
 #### Performance in Training
 The model achieves roughly 94% accuracy in both training and validation (Figure 1). Gradual increases are observed even at 350 epochs. 
 
-![Accuracy Plot](images/acc.png)
+![Accuracy Plot](images/acc.jpg)
 
 The model suffers from loss initially at 1.4 before decreasing to roughly 0.18 by around 350 epochs (Figure 2). It can be observed that the trend is decreasing further. Increased training length likely would reduce loss further.
 
-![Loss Plot](images/loss.png)
+![Loss Plot](images/loss.jpg)
 
 A TSNE plot was generated based upon the test set data and demonstrated that the model was able to effectively classify the data (Figure 3).
 
-![Training TSNE](images/trainTsne.png)
+![Training TSNE](images/trainTsne.jpg)
 #### Performance in Prediction
 As no model is run during prediction (the one run in training was saved and loaded instead), the accuracy and losses are the same. As demonstrated by the TSNE plot below, the model is able to effectively categorise the entire Facebook Large Page-Page dataset when it is fed in (Figure 4)
 
-![Prediction TSNE](images/predictTsne.png)
+![Prediction TSNE](images/predictTsne.jpg)
 
 ## Dependencies 
 * Python 3.7.15
@@ -52,7 +52,7 @@ As no model is run during prediction (the one run in training was saved and load
 * Scikit-learn 0.20.1
 * matplotlib 3.2.2
 ## References
-Baheti, P. (2022, October 07). _Train Test Validation Split: How To & Best Practices [2022]_. Retrieved from V7 Labs: https://www.v7labs.com/blog/train-validation-test-set#:~:text=In%20general%2C%20putting%2080%25%20of,dimension%20of%20the%20data%2C%20etc.
+Baheti, P. (2022, October 07). _Train Test Validation Split: How To & Best Practices_. Retrieved from V7 Labs: https://www.v7labs.com/blog/train-validation-test-set#:~:text=In%20general%2C%20putting%2080%25%20of,dimension%20of%20the%20data%2C%20etc.
 
 Lin, Chia-Hung & Lin, Yu-Chien & Wu, Yen-Jung & Chung, Wei-Ho & Lee, Ta-Sung. (2021). A Survey on Deep Learning-Based Vehicular Communication Applications. _Journal of Signal Processing Systems_. 93. 10.1007/s11265-020-01587-2. 
 
