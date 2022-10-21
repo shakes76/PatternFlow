@@ -7,7 +7,7 @@ import torch
 import scipy.sparse as sp
 from sklearn.preprocessing import LabelBinarizer
 
-PATH = '/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/facebook.npz'
+PATH = './facebook.npz'
 
 def rownormalise(inp):
   """
