@@ -11,11 +11,61 @@ then generates new codebook samples which are decoded by the VQ-VAE to generate 
 
 ### VQ-VAE Overview
 
+A variational autoencoder is an unsupervised model which takes in input images, expresses them as a representation in a 
+latent space, and decodes these representations into reconstructions of the original images. A key difference between various
+VAE's is the structure imposed on the latent space.
+
+A Vector Quantized Variational AutoEncoder (VQ-VAE) imposes a discrete codebook on the latent space, implemented through a vector-quantization layer. 
+This discrete codebook consists of a series of vectors, or embeddings, each with a given indexes and dimension size.
+
+<p align = "center"><img src = "./images/VQVAE_paper_img.PNG", height = 400></p>
+
+In this codebook, each encoded image is mapped to the nearest codebook embedding / vector, where this notion
+of "nearness" is defined by the L2 norm. These quantized vectors are then passed to the decoder as input to produce the
+reconstructed images.
+
+The training loss for a VQ-VAE is unqiue and is defined below, where
+- $x$ = input
+- $z_e(x)$ = Encoded input
+- $z_q(x)$ = Decoded image of input
+- $e$ = closest embedding
+- $\beta$ = Scaling for commitment loss
+<p align = "center"><img src = "./images/vqvae_loss_function.PNG", height = 200></p>
+
+There are 3 key components to the loss. The first term represents standard reconstruction loss. The second term represents codebook alignment loss
+which aims to minimise the difference between the closest codebook vector and the encoder output. This term controls optimising the embeddings.
+The final term is a commitment loss to ensure that the encoder commits to a single codebook embedding.
+
+During the training process, the prior distribution of the latent variables is kept constant and from a uniform distribution.
+However, to generate new images, an autoregressive distribution is fitted to the embeddings using a PixelCNN over the discrete
+latent variables.
+
+
+
+
 ### Implemented VQ-VAE Model
 
-### PixelCNN
+As will be justified in Hyper-Parameter Selection, the codebook was given
+a size of (32,32,128), so 3 convolutional layers were implemented for both the encoder and decoder.
+
+**Encoder**
+
+<p align = "center"><img src = "./images/encoder_model.PNG", height = 400></p>
+
+**Decoder**
+
+<p align = "center"><img src = "./images/decoder_model.PNG", height = 400></p>
+
+
+### PixelCNN Overview
 
 ### Implemented PixelCNN Model
+
+Following the implementation of the PixelCNN in the original PixelCNN paper (https://arxiv.org/pdf/1601.06759v3.pdf), 
+a Pixel Convolution Layer followed by 2 Residual Blocks and 2 Pixel Convolution layers were implemented with a kernel size of 128.
+
+<p align = "center"><img src = "./images/PixelCNN_model.PNG", height = 400></p>
+
 
 ## Data Pre-Processing
 
@@ -96,22 +146,19 @@ as well as the SSIM value between input and output images.
 
 We find that after 30 epochs that the decoded images have an ***average SSIM of 0.823*** across the 9000 ADNI 
 test images (above is 0.6 SSIM threshold). Decoded images visually resemble the input images, indicating that the 
-trained encoder and decoder are performing well.
+trained encoder, codebook and decoder are performing well.
 
 
 ### Pixel CNN Generated Samples
 
 Below are some of the better samples of the generated codebooks from the PixelCNN, and decoded outputs using the trained VQ-VAE
 decoder. We can see that the generated images are ***reasonably clear, resembling the input brain images in shape, size and location, indicating good performance.***
-However, the structure of the brain's internals for the given sample is not perfect, and is missing key detailed features of
-a typical brain.
 
-<p align = "center"><img src = "./images/Brain_04.PNG", height = 300></p>
-
-Below are more generated samples which exhibit better details and clarity of the brain's internal features. However, for this sample the
+However, on the left sample, the structure of the brain's internals for the given sample is not perfect, and is missing key detailed features of
+a typical brain. The right sample exhibits better details and clarity of the brain's internal features. However, for this sample the
 shape and size of the generated brains are too large and not perfect.
 
-<p align = "center"><img src = "./images/Brain_05.PNG", height = 300></p>
+<p align = "center"><img src = "./images/Brain_04.PNG", height = 400><img src = "./images/Brain_05.PNG", height = 400></p>
 
 Despite this, the images indicate that the VQ-VAE and PixelCNN are learning the input images and codebooks appropriately.
 
@@ -259,6 +306,7 @@ References for understanding and creating the VQ-VAE Model
 - https://keras.io/examples/generative/vq_vae/
 - https://www.kaggle.com/code/ameroyer/keras-vq-vae-for-image-generation/notebook
 - https://www.youtube.com/watch?v=VZFVUrYcig0
+- https://ml.berkeley.edu/blog/posts/vq-vae/
 
 Tutorial referenced for creating the PixelCNN model
 - https://keras.io/examples/generative/pixelcnn/
