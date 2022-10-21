@@ -16,9 +16,7 @@ class Trainer(tf.keras.models.Model):
         self.vqvae = modules.VQVAE(self.latent_dim, self.num_embeddings)
 
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(
-            name="reconstruction_loss"
-        )
+        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
         self.vq_loss_tracker = tf.keras.metrics.Mean(name="vq_loss")
 
     @property
@@ -86,16 +84,20 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
     reconstructions = trained_vqvae_model.predict(test_images)
 
     i = 0
+    plt.figure(figsize=(4, num_tests*2), dpi=512)
     for test_image, reconstructed_image in zip(test_images, reconstructions):
-        plt.subplot(num_tests, 2, 2*i + 1)
+        plt.subplot(num_tests, 2, 2*i + 1,)
         plt.imshow(test_image.astype(np.float32).squeeze(), cmap='gray')
         plt.title("Original")
         plt.axis("off")
 
         plt.subplot(num_tests, 2, 2*i + 2)
-        plt.imshow(reconstructed_image.squeeze(), cmap='gray')
+        plt.imshow(reconstructed_image[:, :, 0], cmap='gray')
         plt.title("Reconstructed")
         plt.axis("off")
+
+        print(test_image)
+        print(reconstructed_image)
 
         i += 1
 
@@ -111,7 +113,7 @@ def main():
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
 
-    history = vqvae_trainer.fit(train_data, epochs=3, batch_size=4)
+    history = vqvae_trainer.fit(train_data, epochs=10, batch_size=4)
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time)
