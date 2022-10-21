@@ -80,6 +80,7 @@ We can then feed these latent representations through the trained PixelCNN modul
 <p align="center">
   <img style="width:30vw" src="./images/pixelcnn_reconstructions.png"/>
 </p>
+
 ## Implementation Details
 ### Dependencies
 This project leverages a few non-standard libraries, including TensorFlow. Their versions are listed here:
