@@ -29,21 +29,19 @@ Typical input to the GCN is an .npz file containing data in 128 dim formats, arr
 #### Performance in Training
 The model achieves roughly 94% accuracy in both training and validation (Figure 1). Gradual increases are observed even at 350 epochs. 
 
-INSERT ACCURACY PLOT
+![Accuracy Plot](images/acc.png)
 
 The model suffers from loss initially at 1.4 before decreasing to roughly 0.18 by around 350 epochs (Figure 2). It can be observed that the trend is decreasing further. Increased training length likely would reduce loss further.
 
-INSERT LOSS PLOT
+![Loss Plot](images/loss.png)
 
 A TSNE plot was generated based upon the test set data and demonstrated that the model was able to effectively classify the data (Figure 3).
 
-INSERT TRAINING TSNE PLOT
-
+![Training TSNE](images/trainTsne.png)
 #### Performance in Prediction
 As no model is run during prediction (the one run in training was saved and loaded instead), the accuracy and losses are the same. As demonstrated by the TSNE plot below, the model is able to effectively categorise the entire Facebook Large Page-Page dataset when it is fed in (Figure 4)
 
-INSERT PREDICTION TSNE
-
+![Prediction TSNE](images/predictTsne.png)
 
 ## Dependencies 
 * Python 3.7.15
