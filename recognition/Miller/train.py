@@ -112,8 +112,8 @@ def calculate_stddev(image, reconstructed_image, image_mean, reconstructed_image
             image_variance += np.square(image[row][col] - image_mean)
             reconstructed_image_variance += np.square(reconstructed_image[row][col] - reconstructed_image_mean)
     
-    image_variance = np.sqrt(image_variance/256**2 - 1)
-    reconstructed_image_variance = np.sqrt(reconstructed_image_variance/256**2 - 1)
+    image_variance = np.sqrt(image_variance/(256**2 - 1))
+    reconstructed_image_variance = np.sqrt(reconstructed_image_variance/(256**2 - 1))
     return image_variance, reconstructed_image_variance
 
 # Returns the covariance for both images
@@ -124,7 +124,7 @@ def calculate_covariance(image, reconstructed_image, image_mean, predicted_mean)
         for col in range(256): 
             covariance_value += (image[row][col] - image_mean)*(reconstructed_image[row][col] - predicted_mean)
     
-    return covariance_value/256**256-1
+    return covariance_value/(256**256-1)
 
 
 # Return the structural similarity between two images; measures the window x and y of common size.
@@ -146,7 +146,7 @@ def structural_similarity(mean_X, predicted_mean, stddev_X, predicted_stddev, co
 def plot_comparision_original_to_reconstructed(original, reconstructed, ssim):
     plt.suptitle("Structured Similiarity Rating: %.2f" %ssim)
 
-    plt.figure(figsize = (10,12))
+    #plt.figure(figsize = (10,12))
     plt.subplot(1, 2, 1)
     plt.imshow(original.squeeze() + 0.5, cmap = 'gray')
     plt.title("Original")
@@ -168,10 +168,12 @@ reconstructions_test = trained_model.predict(test_images)
 
 # Perform Predictions on the test images
 for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-    mean, mean_r = calculate_mean(test_image, reconstructed_image)
-    stddev, stddev_r = calculate_stddev(test_image, mean, reconstructed_image, mean_r)
+    """mean, mean_r = calculate_mean(test_image, reconstructed_image)
+    stddev, stddev_r = calculate_stddev(test_image,reconstructed_image, mean, mean_r)
     cov = calculate_covariance(test_image, reconstructed_image, mean, mean_r)
     structured_similiarity_rating = structural_similarity(mean, mean_r, stddev, stddev_r, cov)
+    """
+    structured_similiarity_rating = tf.image.ssim(test_image, reconstructed_image, max_val=1.0)
     plot_comparision_original_to_reconstructed(test_image, reconstructed_image, structured_similiarity_rating)
 
 
