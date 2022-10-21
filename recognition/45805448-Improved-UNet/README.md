@@ -101,6 +101,7 @@ Datasets used:
 Libraries used:
 
 - os
+- python 3.10.6
 - tensorflow 2.10.0
 - keras 2.10.0
 - matplotlib 3.6.1
