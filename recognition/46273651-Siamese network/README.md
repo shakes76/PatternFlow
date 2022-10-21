@@ -78,7 +78,7 @@ Through putting the test image pairs into the trained Siamese model, the test ac
 
 Due to the Siamese model only predict the similary between two images, I construct a new model to classify the images.
 
-![Untitled](Images/Untitled%207.png)
+![predict_test](Images/predict_test.png)
 
 The classifier only contains a output layer, the acivation function is softmax, which can classify the image with the highest probability.
 
