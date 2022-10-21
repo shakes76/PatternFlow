@@ -3,22 +3,26 @@
 The aim of this project is to prepare the 2000 lesion images inside the ISIC 2017 challenge training dataset to train a YOLO v5 network that is capable of producing a suitable detection accuracy, with a Intersection Over Union of over 0.8 on the test set for detecting Melonoma.
 
 ## YOLO v5
-*You Only Look Once*, or YOLO is a real-time object detection neural network. It is known to be a fast performing, lightweight model and thus can be deployed on slower hardware to achieve reasonable performance. 
+*You Only Look Once*, or YOLO is a real-time object detection neural network. It is known to be a fast performing, lightweight model and thus can be deployed on slower hardware to achieve impressive performance. 
 
 ### How it works
-The architecture splits the input image in a *m* x *m* grid and generates 2 bounding boxes for each grid. 
+The architecture splits the input image in a *m* x *m* grid and generates 2 bounding boxes for each grid. The bounding boxes and class probabilities are determined, and when the centre of an object falls inside of the 2 x 2 bounding box, it creates the overall bounding box for the object, showing both its confidence score (0-1) and class label.
 ![Model Example](Images/model_example.jpeg)
+The relationship between these probabilities are as follows:
 ```
 Pr(Classi|Object)∗Pr(Object)∗IOU = Pr(Classi)∗IOU
 ```
 ### Model Architecture
 ![Model Architecture](Images/architecture.jpg)
+The model backbone is mainly used to extract the important features from the given input image, whereby it is passed into the neck. The backbone for YOLOv5 is pre-trained on the COCO dataset, and Cross Stage Partial Networks (CSPs) are used as the backbone. The neck of model is used to generate feature pyramids, which improves the detection of objects particularly when scaling said object. PANet is used as the neck to acquire the feature pyramids of the input data. The head consitutes the output, meaning performing a dense prediction and apply anchor boxes, generating class probabilities and bounding boxes.
+
 ### Model Choices
 ![Model Comparison](Images/model_comparison.png)
+The creators of YOLOv5 had state that the *S* and *M* versions of YOLOv5 were suitable for quick, mobile deployment, whilst those bigger than that such as *L* are suited more towards cloud deployment or data centre deployment. Therefore, the *S* and *M* versions were chosen to be trained as Kaggle has a strict memory limit which prevents any of the larger models to be trained successfully.
 
 ### Loss Function
 ![Loss Function of the YOLO model](Images/loss_func.jpg)
-The multi-part loss function above was used during training by the YOLO v5 model, which sums the loss between the localisation loss, object confidence loss and classification loss. 
+The multi-part loss function above was used during training by the YOLO v5 model, which sums the loss between the localisation loss, object confidence loss and classification loss.
 
 ## ISIC Challenge 2017 Dataset
 The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are known to be either unharmful, melanoma or seborrheic keratosis. The dataset has already split its data into individual training, validation and test datasets. The training data includes 2000 lesion images in JPEG format, along with the ground truth in PNG format. The validation set and test set includes 150 and 600 JPEG images respectively and, like the training data, includes the ground truth for each image. The dataset includes extra information such as the patients age and gender, these are not within the scope of the project and will not be encoded during training. 
@@ -32,7 +36,8 @@ The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are 
 - pillow (PIL)
 
 ### File Structure
-
+The files used for training on kaggle should be set out in the following file structure:
+![File Structure](Images/file_struc.jpg)
 
 ## Pre-processing
 The dataset downloaded from the ISIC website was then processed for training/test/validating as follows:
@@ -72,6 +77,36 @@ When running the small version of the YOLO v5 model, the following model archite
  24      [17, 20, 23]  1     18879  models.yolo.Detect                      [2, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [128, 256, 512]]
 Model summary: 214 layers, 7025023 parameters, 7025023 gradients, 16.0 GFLOPs
 ```
+When running the medium version of the YOLO v5 model, the following model architecture is shown:
+```
+                 from  n    params  module                                  arguments                     
+  0                -1  1      5280  models.common.Conv                      [3, 48, 6, 2, 2]              
+  1                -1  1     41664  models.common.Conv                      [48, 96, 3, 2]                
+  2                -1  2     65280  models.common.C3                        [96, 96, 2]                   
+  3                -1  1    166272  models.common.Conv                      [96, 192, 3, 2]               
+  4                -1  4    444672  models.common.C3                        [192, 192, 4]                 
+  5                -1  1    664320  models.common.Conv                      [192, 384, 3, 2]              
+  6                -1  6   2512896  models.common.C3                        [384, 384, 6]                 
+  7                -1  1   2655744  models.common.Conv                      [384, 768, 3, 2]              
+  8                -1  2   4134912  models.common.C3                        [768, 768, 2]                 
+  9                -1  1   1476864  models.common.SPPF                      [768, 768, 5]                 
+ 10                -1  1    295680  models.common.Conv                      [768, 384, 1, 1]              
+ 11                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 12           [-1, 6]  1         0  models.common.Concat                    [1]                           
+ 13                -1  2   1182720  models.common.C3                        [768, 384, 2, False]          
+ 14                -1  1     74112  models.common.Conv                      [384, 192, 1, 1]              
+ 15                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 16           [-1, 4]  1         0  models.common.Concat                    [1]                           
+ 17                -1  2    296448  models.common.C3                        [384, 192, 2, False]          
+ 18                -1  1    332160  models.common.Conv                      [192, 192, 3, 2]              
+ 19          [-1, 14]  1         0  models.common.Concat                    [1]                           
+ 20                -1  2   1035264  models.common.C3                        [384, 384, 2, False]          
+ 21                -1  1   1327872  models.common.Conv                      [384, 384, 3, 2]              
+ 22          [-1, 10]  1         0  models.common.Concat                    [1]                           
+ 23                -1  2   4134912  models.common.C3                        [768, 768, 2, False]          
+ 24      [17, 20, 23]  1     28287  models.yolo.Detect                      [2, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [192, 384, 768]]
+Model summary: 291 layers, 20875359 parameters, 20875359 gradients, 48.2 GFLOPs
+```
 ## Accuracy Metrics
 ### Intersection over Union (IOU)
 ![IOU](Images/iou_equation.png)
@@ -80,14 +115,21 @@ The ratio between the intersection and the union of the predicted boxes and the 
 
 ## Results
 ### YOLOv5s
-
+mAP of 61.7% overall
+83.6% in detecting non melanoma cases
+39.9% in detecting melanoma cases
+IOU - 0.8237
 ### YOLOv5m
-
+mAP of 63.2% overall
+84.9% in detecting non melanoma cases
+41.6% in detecting melanoma cases
+IOU - 0.8357
 
 ## Discussion
 Recommends more than 1500 images per class, and more than 10000 instances (labeled objects) per class
 Lack of background images, COCO has 1000 background images or about 1%
 Even spread of Melanoma positive images vs Non Melanoma, currently a lot of objects inside the images are not melanoma
+Training on the Larger model may result in better results, however it could also reduce accuracy due to the relatively small sample of data
 
 
 ## References
