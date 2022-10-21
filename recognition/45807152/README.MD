@@ -20,6 +20,7 @@ The recognition solution is implemented using TensorFlow _(version 2.9.1)_ and d
 * **train.py** - used to trin the Improved UNet model on the 2017 ISIC data. Provides useful plots, metrics and prediction comparisons to evaluate segmentation performance.
 * **predict.py** - contains functions to predict segmentation mask from a trained model. Provides comparison plots to ground truth.
 * **utility.py** - contains metric calculations used when training, validating and testing the Improved UNet model.
+* **config.py** - provides the ability to adjust system parameters including preprocessed image dimensions and training epochs.
 
 Through the training pipeline, firstly, the ISIC images and masks are loaded into the _dataset_ and preprocessing is performed. 
 ### Data Preprocessing
@@ -32,16 +33,22 @@ Finally, one-hot encoding with 2 classes was mapped to the processed masks to fo
 ### Dataset Splitting
 The preprocessed dataset was then split into training, validation and testing subsets. This was done so in a _80/10/10_ breakdown to ensure adequate data to train the model with. Ideally, the split would be closer to _70/20/10_ however this could result in diminished training given the relativly small dataset of 2000 images.
 
-### The Algorithm Model
+### UNet Model Creation
 The _modules.py_ file is then utilised to load in a Improved UNet Model with the resized image dimensions, 16 filters and a kernel size of 3x3. These configuration parameters were established within the [Improved UNet research paper](https://arxiv.org/pdf/1802.10508v1.pdf).
 
 The model is then built by following the architecture identified and shown above with a vertical depth approach. The input layer is specified to be the dimensions of the input data images and the output layer is designed to be the same shape as the one-hot encoded lesion masks. For more information and model layer explation, please see comments within _[modules.py](./modules.py)_.
 
+The model summary can be seen [here](./figures/modelSummary.txt), altogether there are _2,949,538_ trainable parameters.
 
+The model is then compiled using the _Adam_ optimiser and the _Binary Crossentropy_ loss function, additionally, from the _utility.py_ file, dice coefficent and IoU were added as training metrics.
 
+### Model Training
+The model was then subjected to training using the training and validation subsets of data. 90 Epochs was found to be an adequate training duration as the model appears to dramatically flatten improvement at around 60 epochs (with much more being unessesary). Given the GPU assisted computing system available, batch size was set to 64 to increase training speed.
 
+Once the model was trained, it was exported as a trained TF model.
 
-
+### Model Testing
+Using the _make_prediction_ function within _[predict.py](./predict.py)_, the model can be tested using the reserved test data subset. Calling _make_prediction_ generates plots which compare the predicted lesion segmentation to the original image and ground truth segmentation. Furthermore, the dice coefficient and IoU metrics can be assessed.
 
 
 
