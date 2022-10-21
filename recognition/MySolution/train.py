@@ -47,12 +47,6 @@ class Train:
             callbacks=[checkpoint_callback],
         )
 
-        # os.listdir(checkpoint_filepath)
-        # model.load_weights(checkpoint_filepath)
-        # _, accuracy, top_5_accuracy = model.evaluate(np.load('X_train.npy'), np.load('y_train.npy'))
-        # print(f"Test Accuracy: {round(accuracy * 100, 2)}%")
-        # print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
-
         plt.plot(history.history['Accuracy'], label='accuracy')
         plt.plot(history.history['val_Accuracy'], label = 'val_accuracy')
         plt.plot(history.history['loss'], label = 'loss') 

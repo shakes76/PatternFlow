@@ -90,7 +90,7 @@ def main():
 
     features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
 
-    logits = layers.Dense(num_classes, activation="sigmoid")(features)
+    logits = layers.Dense(num_classes, activation="softmax")(features)
 
     model = keras.Model(inputs=inputs, outputs=logits)
     model.summary()
