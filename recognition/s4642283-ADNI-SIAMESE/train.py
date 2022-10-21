@@ -43,3 +43,22 @@ siamese.save(os.path.join(__location__, "SiameseModel"))
 # Test Model
 print("Finished!\n")
 siamese.evaluate([x_test[0], x_test[1]], labels_test, batch_size=batch_size)
+
+# Plot Model History (Acc and Loss)
+import matplotlib.pyplot as plt
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
