@@ -30,7 +30,7 @@ The training loss for a VQ-VAE is unqiue and is defined below, where
 - $z_q(x)$ = Decoded image of input
 - $e$ = closest embedding
 - $\beta$ = Scaling for commitment loss
-<p align = "center"><img src = "./images/vqvae_loss_function.PNG", height = 200></p>
+<p align = "center"><img src = "./images/vqvae_loss_function.PNG"></p>
 
 There are 3 key components to the loss. The first term represents standard reconstruction loss. The second term represents codebook alignment loss
 which aims to minimise the difference between the closest codebook vector and the encoder output. This term controls optimising the embeddings.
@@ -39,8 +39,6 @@ The final term is a commitment loss to ensure that the encoder commits to a sing
 During the training process, the prior distribution of the latent variables is kept constant and from a uniform distribution.
 However, to generate new images, an autoregressive distribution is fitted to the embeddings using a PixelCNN over the discrete
 latent variables.
-
-
 
 
 ### Implemented VQ-VAE Model
@@ -59,6 +57,35 @@ a size of (32,32,128), so 3 convolutional layers were implemented for both the e
 
 ### PixelCNN Overview
 
+A PixelCNN model learns the distribution of pixels in an image through an autoregressive model in order to predict
+the next pixel, based on all prior predicted pixels.
+
+<p align = "center"><img src = "./images/PixelCNN_image.PNG", height = 400></p>
+
+To correctly define the conditional probaility of the prior predicted pixels to predict the next pixel, a mask is applied so that
+pixels which have not been predicted are not considered in the convolution operation.
+
+**Types of Masked Convolution Layer**
+
+- Type "A": The mask zeros out all unpredicted pixels and the current pixel being predicted. This mask is only applied to the first
+convolutional layer
+- Type "B": The mask zeros out all unpredicted pixels but not the current pixel, allowing convolutional connections between the
+current pixel and itself. This is applied to all subsequent convolutional layers after the first one.
+
+<p align = "center"><img src = "./images/PixelCNN_mask.PNG"></p>
+
+**Pixel Convolutional Layer**
+
+A convolutional layer combined with the defined masks. This allows for a convolutional kernel
+to slide over the pixels, masking out all pixels that have not been predicted and only considering
+pixels which have been predicted, to ensure the conditional distribution is a probability distribution.
+
+**Residual Block**
+
+A layer within the PixelCNN model which involves convolutional layers, activation functions and use of residual connections or skip conenctions.
+The idea is that the block learns the functions on the residuals compared to the input images as seen below.
+
+
 ### Implemented PixelCNN Model
 
 Following the implementation of the PixelCNN in the original PixelCNN paper (https://arxiv.org/pdf/1601.06759v3.pdf), 
@@ -66,6 +93,15 @@ a Pixel Convolution Layer followed by 2 Residual Blocks and 2 Pixel Convolution 
 
 <p align = "center"><img src = "./images/PixelCNN_model.PNG", height = 400></p>
 
+**Residual Block Structure**
+
+The implemented residual block has the following model structure
+```
+input --> 2DConv --> ReLU --> PixelConv --> ReLU --> 2DConv --> ReLU --> Add --> Output 
+|                                                                         ^
+|                                                                         |
+|--------------------------------------------------------------------------
+```
 
 ## Data Pre-Processing
 
