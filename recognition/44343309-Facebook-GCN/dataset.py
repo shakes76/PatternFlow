@@ -5,7 +5,7 @@ SN: 44343309
 import numpy as np
 import scipy as sp
 import tensorflow as tf
-from sklearn.preprocessing import LabelBinarizer, normalize
+from sklearn.preprocessing import normalize
 
 """
 loadData(): function to load data
@@ -63,6 +63,7 @@ class DataProcess:
            training/validation/testing labels, the actual labels themselves, the number of nodes in the dataset, and the number of features in the dataset
   """
   def processing(self):
+    trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask = self.splitData()
     labelsOneHot = tf.keras.utils.to_categorical(self.target, 4)
     adjMat = sp.sparse.coo_matrix(
             (np.ones(self.edges.shape[0]), 
@@ -71,12 +72,10 @@ class DataProcess:
             dtype=np.float32)
     normalAdj = normalize(adjMat, norm='l1', axis=1)
 
-    trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask = self.splitData()
-
     # changes label data to one hot encoding instead of 'random' numbers
-    trainLabels = LabelBinarizer().fit_transform(trainLabels)
-    testLabels = LabelBinarizer().fit_transform(testLabels)
-    validaLabels = LabelBinarizer().fit_transform(validaLabels)
+    trainLabels = tf.keras.utils.to_categorical(trainLabels, 4)
+    testLabels = tf.keras.utils.to_categorical(testLabels, 4)
+    validaLabels = tf.keras.utils.to_categorical(validaLabels, 4)
 
     return self.features, labelsOneHot, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels, self.target, self.numNodes, self.numFeatures
 

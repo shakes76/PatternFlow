@@ -70,7 +70,7 @@ class PredictionFromModel:
         plt.show()
 
 def main():
- model = PredictionFromModel("facebook.npz")
+ model = PredictionFromModel("facebook.npz") 
  model.generateModel()
  predictions, labels = model.predictResults()
  model.plotTSNE(labels, predictions)
