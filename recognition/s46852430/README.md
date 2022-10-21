@@ -10,3 +10,6 @@ TensorFlow 2.5.0
 matplotlib 3.4.3
 ISICs 2018 Challenge dataset
 
+# Model 
+![model_plot](https://user-images.githubusercontent.com/56865527/197185218-dc1c81a0-1914-4328-955b-2c0e610299ec.png)
+
