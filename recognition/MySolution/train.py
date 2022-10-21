@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 class Train:
     def __init__(self, model):
-        self.learning_rate = 0.001
-        self.weight_decay = 0.0001
+        self.learning_rate = 0.01
+        self.weight_decay = 0.000001
         self.batch_size = 64
         self.num_epochs = 50
         self.model = model
@@ -23,10 +23,9 @@ class Train:
 
         model.compile(
             optimizer=optimizer,
-            loss= tf.keras.losses.BinaryCrossentropy(from_logits=False),
+            loss= tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             metrics = [
-                keras.metrics.SparseCategoricalAccuracy(name="Accuracy"),
-                keras.metrics.SparseTopKCategoricalAccuracy(5, name="top-5-accuracy"),
+                keras.metrics.BinaryAccuracy(name="Accuracy"),
             ],
         )
 

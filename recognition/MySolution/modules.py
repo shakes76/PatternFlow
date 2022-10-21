@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
@@ -17,8 +18,8 @@ def main():
     image_size = 250
     patch_size = 32
     num_patches = (image_size // patch_size) ** 2
-    projection_dim = 128 # increase
-    num_heads = 12 # increase
+    projection_dim = 64 # increase
+    num_heads = 8 # increase
     transformer_units = [
         projection_dim * 3, # increase
         projection_dim,
@@ -90,10 +91,10 @@ def main():
 
     features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
 
-    logits = layers.Dense(num_classes, activation="softmax")(features)
+    logits = layers.Dense(num_classes, activation="sigmoid")(features)
 
     model = keras.Model(inputs=inputs, outputs=logits)
-    model.summary()
+    # model.summary()
     Train(model=model)
 
 def mlp(x, hidden_units, dropout_rate):
