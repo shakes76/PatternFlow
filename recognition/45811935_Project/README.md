@@ -57,45 +57,64 @@ PixelCNN is an autoregressive neural network model. This essentially means it le
 Specifically, it (starting from the top left pixel and working to the bottom right) predicts the 
 value of the next pixel, based on the values of the previous pixel.
 
-To achieve this, two types of layers must be defined:
-
-1. Masked Convolutional Layer
-2. 
-
-![VQ-VAE Architecture](ReducedResults/PixelCNNArchitecture.PNG)
+![PixelCNN Architecture](ReducedResults/PixelCNNArchitecture.PNG)
 From [[1](#references)]
 
-![VQ-VAE Architecture](ReducedResults/maskTypes.png)
+To achieve this, the PixelCNN uses the concept of a 'mask'.
+
+A mask essentially 'zeros out' all pixels upto the current pixel, to allow the PixelCNN to 
+implement its autoregressive behaviour. There are two types of masks:
+
+- Type "A" - zeros out all previous pixels including the current
+- Type "B" - zeros out all previous pixels excluding the current
+
+Type "A" masks are used once in the first convolutional layer, with Type B masks being used 
+thereafter.
+
+![Mask Types Architecture](ReducedResults/maskTypes.png)
 
 From [[4](#references)]
 
 ## Dataset - ADNI Brain
 
-## Training
+The ADNI Brain Dataset contains RGB images of size 256x256 of brain images of people with or 
+without Alzheimer's Disease.
 
-## Validation - Hyperparameter Tuning & Model Selection
+The data was obtained from this link: https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI
+
+## Final Model Architectures
+
+![VQ-VAE Model](ReducedResults/vqvaeModel.png)
+
+![VQ-VAE Model](ReducedResults/encoderModel.png)
+
+![VQ-VAE Model](ReducedResults/decoderModel.png)
+
+![PixelCNN Model](ReducedResults/pixelModel.png)
+
+## Training/Validation - Hyperparameter Tuning & Model Selection
+
+![VQ-VAE Reconstructions 0](ReducedResults/vqvae_total_losses.png)
+
+![VQ-VAE Reconstructions 0](ReducedResults/quantisation_losses.png)
+
+![VQ-VAE Reconstructions 0](ReducedResults/reconstruction_losses.png)
 
 ## Testing + Reconstructions
 
+![VQ-VAE Reconstructions 0](ReducedResults/vq_vae_reconstructions_0.png)
+
+![VQ-VAE Reconstructions 1](ReducedResults/vq_vae_reconstructions_1.png)
+
+![VQ-VAE Reconstructions 2](ReducedResults/vq_vae_reconstructions_2.png)
+
+![VQ-VAE Reconstructions 3](ReducedResults/vq_vae_reconstructions_3.png)
+
+![VQ-VAE Reconstructions 4](ReducedResults/vq_vae_reconstructions_4.png)
+
+![VQ-VAE Reconstructions 0](ReducedResults/SSIMResults.png)
+
 ## Usage
-
-
-
-The readme file should contain a description of the algorithm and the problem that it solves
-(approximately a paragraph)
-
-how it works in a paragraph and a figure/visualisation.
-2. It should also list any dependencies required, including versions and address reproduciblility of results,
-if applicable.
-3. provide example inputs, outputs and plots of your algorithm
-4. The read me file should be properly formatted using GitHub markdown
-5. Describe any specific pre-processing you have used with references if any. Justify your training, validation
-and testing splits of the data
-
-description and explanation of the working principles of the algorithm implemented and the problem it
-solves (5 Marks)
-2. description of usage
-
 
 ### Dependencies
 
@@ -118,12 +137,3 @@ the mask types section) (Links below).
 - [2] https://arxiv.org/abs/1601.06759v3 - PixelCNN Paper
 - [3] https://keras.io/examples/generative/vq_vae/ - Keras Tutorial
 - [4] https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1 - PixelCNN Article
-
-
-how much work you have done,
-
-what results you got, what what different model variants you have tried, what worked and what didnt 
-
-did you understand the concept,
-
-was your experiments reproducible given the instructions
