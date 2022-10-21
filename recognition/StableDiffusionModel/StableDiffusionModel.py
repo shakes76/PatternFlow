@@ -16,22 +16,69 @@ from CustomLayers import *
 
 
 class SinusodialTimeEmbedding(kr.layers.Layer) :
-    def __init__(self, dimension, maxPos = 10000):
-      super().__init__()
+  def __init__(self, dimension, maxPos = 10000):
+    super().__init__()
 
-      self.dimension = dimension
-      self.maxPos = maxPos
+    self.dimension = dimension
+    self.maxPos = maxPos
 
-    def call(self, input, training=True) :
-      # Casting to float to allow later operations (i.e. mult)
-      hDim = ((self.dim // 2) - 1)
+  def call(self, input, training=True) :
+    # Casting to float to allow later operations (i.e. mult)
+    hDim = ((self.dim // 2) - 1)
 
-      x = tf.cast(input, tf.float32)
-      emb = tf.math.log(self.maxPos) / hDim
-      emb = tf.exp(tf.range(hDim, dtype=tf.float32) * -emb)
-      emb = x[:, None] * emb[None, :]
+    x = tf.cast(input, tf.float32)
+    e = tf.math.log(self.maxPos) / hDim
+    e = tf.exp(tf.range(hDim, dtype=tf.float32) * -e)
+    e = x[:, None] * e[None, :]
 
-      emb = tf.concat([tf.sin(emb), tf.cos(emb)], axis=-1)
+    e = tf.concat([tf.sin(e), tf.cos(e)], axis=-1)
+
+#
+class ResidualLayer(kr.layers.Layer) :
+  def __init__(self, function):
+    self.function = function
+
+
+  def call(self, x, training=True):
+    return self.function(x, training=training) + x
+
+class PreNorm(kr.layers.Layer):
+  def __init__(self, dim, fn):
+    super(PreNorm, self).__init__()
+    self.fn = fn
+    self.norm = kr.layers.LayerNormalization(dim)
+
+  def call(self, x, training=True):
+    x = self.norm(x)
+    return self.fn(x)
+
+class GELU(kr.layers.Layer):
+    def __init__(self):
+        super(GELU, self).__init__()
+
+    def call(self, input, training=True):
+      return 0.5 * input * (1.0 + tf.math.erf(input / tf.cast(1.4142135623730951, input.dtype)))
+
+
+class Block(kr.layers.Layer):
+    def __init__(self, dim, groups=8):
+        super().__init__()
+        self.projection = kr.layers.Conv2D(dim, kernel_size=3, strides=1, padding='SAME')
+        self.norm = tfa.layers.GroupNormalization(groups, epsilon=1e-05)
+        self.act = tf.nn.silu()
+
+
+    def call(self, input, gammaBeta=None, training=True):
+        x = self.proj(input)
+        x = self.norm(x, training=training)
+
+        if gammaBeta is not None:
+            gamma, beta = gammaBeta
+            x = x * (gamma + 1) + beta
+
+        x = self.act(x)
+        return x
+
 
 
 class UNetBlock(kr.layers.Layer) :
@@ -196,6 +243,35 @@ def buildUnet(latentSpaceSize) :
     x = finalLayer(x)
 
     return kr.Model([noisedImages, noiseIntensity], x)
+
+
+
+class DiffusionModel(kr.Model) :
+    def __init__(self, betaMin = 0.0001, betaMax = 0.02, timeSteps = 200):
+        super().__init__()
+        self.betaSchedule = tf.linspace(betaMin, betaMax, timeSteps)
+        self.timeSteps = timeSteps
+        self.alpha = 1- self.betaSchedule
+        self.alphaHat = tf.math.cumprod(self.alpha, 0)
+        self.alphaHat = tf.concat((tf.convert_to_tensor([1.]), self.alphaHat[:-1]), axis=0)
+        self.sqrtAlphaHat = tf.math.sqrt(self.alphaHat)
+        self.sqrtAlphaHatCompliment = tf.math.sqrt(1-self.alphaHat)
+
+
+    def addNoise(self, input, step) :
+        noise = tf.random.normal(shape=input.shape)
+        reshapedSAH = tf.reshape(self.sqrtAlphaHat[step], (-1, 1, 1, 1))
+        reshapedSAHC = tf.reshape(self.sqrtAlphaHatCompliment[step], (-1, 1, 1, 1))
+        noisedInput = reshapedSAH  * input + reshapedSAHC  * noise
+        
+        return noisedInput, noise
+
+    def generateTimeSteps(self, stepsGenerated):
+        return tf.random.uniform(shape=[stepsGenerated], minval=0, maxval=self.timeSteps, dtype=tf.int32)
+
+testModel = DiffusionModel()
+print(testModel.generateTimeSteps(100).shape)
+
 
 class StableDiffusionModel(kr.Model) :
     """
