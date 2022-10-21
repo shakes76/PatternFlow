@@ -19,8 +19,7 @@ from train import plot_tsne
 from dataset import preprocess
 
 MODEL_PATH = "/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt"
-N_EPOCHS = 5
-N_HID = 4
+N_HID = 20
 N_OUTPUT = 4
 
 # load in adjacency matrix, features, labels and indices
