@@ -14,10 +14,8 @@ tf.random.Generator = None
 def conv_block(input_matrix, num_filter):
   X = Conv2D(num_filter,kernel_size = 3, strides= 1,padding='same')(input_matrix)
   X = BatchNormalization()(X)
-  
   X = Activation('relu')(X)
   X = Conv2D(num_filter,kernel_size = 3,strides= 1,padding='same')(X)
-  
   X = BatchNormalization()(X)
   
   X = Activation('relu')(X)
@@ -29,7 +27,7 @@ def modified_UNET(input_shape, num_filter = 8, dropout = 0.3):
 
   inputs = Input(input_shape)
   
-  #Encode
+  "Downsampling"
   c1 = conv_block(inputs,num_filter)
   p1 = MaxPooling2D(pool_size= 2, strides=2)(c1)
   p1 = Dropout(dropout)(p1)
@@ -48,7 +46,7 @@ def modified_UNET(input_shape, num_filter = 8, dropout = 0.3):
   
   c5 = conv_block(p4,num_filter*16);
 
-  # Decode    
+  "Upsampling"    
   u6 = Conv2DTranspose(num_filter*8, 3, strides= 2, padding='same')(c5);
   u6 = concatenate([u6,c4]);
   c6 = conv_block(u6,num_filter*8)
