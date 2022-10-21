@@ -32,7 +32,7 @@ class Dataloader:
 
     def process_image(self, img_paths, mask_paths):
         X = np.zeros((len(img_paths), self.IMG_WIDTH, self.IMG_HEIGHT, 3), dtype=np.float32)
-        Y = np.zeros((len(mask_paths), self.IMG_WIDTH, self.IMG_HEIGHT, 1), dtype=np.uint8)
+        Y = np.zeros((len(mask_paths), self.IMG_WIDTH, self.IMG_HEIGHT, 1), dtype=np.float32)
 
         for i in range(len(img_paths)):
             img = img_paths[i]
@@ -43,7 +43,7 @@ class Dataloader:
             mask = mask_paths[i]
             mask = load_img(mask, color_mode="grayscale", target_size=(self.IMG_WIDTH, self.IMG_HEIGHT))
             mask = img_to_array(mask)
-            Y[i] = mask
+            Y[i] = mask.astype('float32') / 255
         return X,Y
 
     def split_data(self, img_paths, X, Y):
@@ -57,7 +57,7 @@ class Dataloader:
     def get_XY_split(self):
         img_paths, mask_paths = self.load_image_path()
         X,Y = self.process_image(img_paths, mask_paths)
-        X_train, Y_train, X_test, Y_test = self.split_data(input, X,Y)
+        X_train, Y_train, X_test, Y_test = self.split_data(img_paths, X,Y)
         return X_train, Y_train, X_test, Y_test
 
 
