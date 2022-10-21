@@ -20,7 +20,7 @@ The recognition solution is implemented using TensorFlow _(version 2.9.1)_ and d
 * **train.py** - used to trin the Improved UNet model on the 2017 ISIC data. Provides useful plots, metrics and prediction comparisons to evaluate segmentation performance.
 * **predict.py** - contains functions to predict segmentation mask from a trained model. Provides comparison plots to ground truth.
 * **utility.py** - contains metric calculations used when training, validating and testing the Improved UNet model.
-* **config.py** - provides the ability to adjust system parameters including preprocessed image dimensions and training epochs.
+* **config.py** - provides the ability to adjust system parameters including pre-processed image dimensions and training epochs.
 
 Through the training pipeline, firstly, the ISIC images and masks are loaded into the _dataset_ and pre-processing is performed. 
 ### Data Pre-Processing
@@ -61,7 +61,13 @@ Loss                       |  Dice Coefficient         |  Intersection Over Unio
 :-------------------------:|:-------------------------:|:-------------------------:
 ![Loss vs Epoch](./figures/lossVsEpoch.png)   | ![Dice vs Epoch](./figures/diceVsEpoch.png) | ![IoU vs Epoch](./figures/iouVsEpoch.png)
 
-To evaluate the performance against 'unseen' data, the model was made to predict the segmentation mask from the test subset images. Below are the resulting comparisons between the original image, ground truth segmentation mask and the segmentation prediction. The dice coefficient and IoU metric for each prediction is also noted.
+Evaluating the model performance resulted in the following testing metrics:
+
+Dice Coefficient           |   Intersection Over Union (IoU)
+:-------------------------:|:-------------------------:
+**0.9528**                 |  **0.9104**
+
+Furthermore, to visually evaluate the performance against 'unseen' data, the model was made to predict the segmentation mask from the test subset images. Below are the resulting comparisons between the original image, ground truth segmentation mask and the segmentation prediction. The dice coefficient and IoU metric for each prediction is also noted.
 
 Prediction Evaluation      
 :-------------------------:
@@ -71,10 +77,14 @@ Prediction Evaluation
 ![Loss vs Epoch](./figures/testComparison154.png)
 ![Loss vs Epoch](./figures/testComparison155.png)
 
-As you can see, from visual inspection, the model has successfully segmented the image into lesion and non-lesion regions. Furthermore, the above examples all have dice coefficient of **_>0.95_** and IoU of **__>0.91__**. This is greater than our dice coefficient target of _0.8_ indicating successful and adequate training.
+As you can see, from visual inspection, the model has successfully segmented the image into lesion and non-lesion regions. Furthermore, the model having a dice coefficient of **_0.9528_** and IoU of **__0.9104__** indicates very accurate segmentation. These results are greater than the dice coefficient target of _0.8_ indicating successful and adequate training for the scope of this problem.
 
 ### Reproducibility of Results
 From experimental testing, these results have been very replicable and indicate a foundationally strong CNN model.
+
+### Further Improvements
+To further optimise this model and generate even more accurate predictions, several factors can be adjusted. Firstly, data augmentation can be introduced to synthetically increase the sample size available. Existing images could be flipped or rotated such that more data is available for training.
+As evident in the above graphs, it is unlikely the model made will benefit from additional epochs, and as such, model adjustments could be made to increase precision. This could include expanding the input image dimensions from 128x128 to 256x256 or beyond.
 
 ## Dependencies
 The following dependencies are required:
