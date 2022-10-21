@@ -16,34 +16,34 @@ DEVICE = "mps" if torch.has_mps else "cuda" if torch.cuda.is_available() else "c
 TRANSFORM = tf.Compose([
     tf.ToTensor()
 ])
-codebook_transform = tf.Compose([
-    tf.Resize(128),
-    tf.ToTensor()
-])
 
+from torch.utils.data import Dataset
+import os
+from PIL import Image
 
-class NumpyDataset(Dataset):
-    """
-    Creates a dataset using numpy arrays for making use of the codebooks produced by the VQVAE
-    """
-    def __init__(self, data, targets, transform):
-        self.data = data
-        self.targets = targets
-        self.transform = transform
-
-    def __getitem__(self, index):
-        x = self.data[index]
-        y = self.targets[index]
-
-        if self.transform:
-            x = Image.fromarray(self.data[index].astype(np.uint8).transpose(1, 2, 0))
-            x = self.transform(x)
-
-        return x, y
+# define dataset
+class PixelCNNData(Dataset):
+    def __init__(self, model, transforms):
+        self.model = model
+        self.images = os.listdir(TRAIN_PATH)
+        self.tfs = transforms
 
     def __len__(self):
-        return len(self.data)
+        return len(self.images)
 
+    def __getitem__(self, x):
+        img_path = TRAIN_PATH
+        image = Image.open(img_path).convert('RGB')
+        image = self.tfs(image)
+        image = image.unsqueeze(dim=0)
+        image = image.to(DEVICE)
+        encoded_output = self.model.encoder(image)
+        z = model.conv1(encoded_output)
+        _,_,_,z = model.vq(z)
+        z = z.float().to('cuda')
+        z = z.view(64,64)
+        z = torch.stack((z,z,z),0) # Pixel CNN uses 3 channel inputs
+        return z,z
 
 # create datasets and dataloaders
 train_set = datasets.ImageFolder(root=root, transform=TRANSFORM)
@@ -53,3 +53,6 @@ validate_set = datasets.ImageFolder(root=root, transform=TRANSFORM)
 train_dl = DataLoader(train_set, batch_size=batch_size)
 test_dl = DataLoader(test_set, batch_size=batch_size)
 validate_dl = DataLoader(validate_set, batch_size=batch_size)
+
+
+

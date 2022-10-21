@@ -88,7 +88,7 @@ class PixelCNN(nn.Module):
             kernel = 7 if i == 0 else 3
             residual = False if i == 0 else True
 
-            self.layers.append(module=MaskedGatedConv2d(mask_type, dim, kernel, residual, num_classes))
+            self.layers.append(module=MaskedGatedConv2d(self, mask_type, dim, kernel, residual, num_classes))
 
         self.out_conv = nn.Sequential(
             nn.Conv2d(dim, 512, 1),
