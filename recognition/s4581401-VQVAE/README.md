@@ -20,6 +20,8 @@ This discrete codebook consists of a series of vectors, or embeddings, each with
 
 <p align = "center"><img src = "./images/VQVAE_paper_img.PNG", height = 400></p>
 
+Reference: https://arxiv.org/pdf/1711.00937.pdf
+
 In this codebook, each encoded image is mapped to the nearest codebook embedding / vector, where this notion
 of "nearness" is defined by the L2 norm. These quantized vectors are then passed to the decoder as input to produce the
 reconstructed images.
@@ -31,6 +33,8 @@ The training loss for a VQ-VAE is unqiue and is defined below, where
 - $e$ = closest embedding
 - $\beta$ = Scaling for commitment loss
 <p align = "center"><img src = "./images/vqvae_loss_function.PNG"></p>
+
+Reference: https://arxiv.org/pdf/1711.00937.pdf
 
 There are 3 key components to the loss. The first term represents standard reconstruction loss. The second term represents codebook alignment loss
 which aims to minimise the difference between the closest codebook vector and the encoder output. This term controls optimising the embeddings.
@@ -62,6 +66,8 @@ the next pixel, based on all prior predicted pixels.
 
 <p align = "center"><img src = "./images/PixelCNN_image.PNG", height = 400></p>
 
+Reference: https://arxiv.org/pdf/1606.05328.pdf
+
 To correctly define the conditional probability of the prior predicted pixels to predict the next pixel, a mask is applied so that
 pixels which have not been predicted are not considered in the convolution operation. The PixelCNN is trained on codebook samples, which
 are obtained by passing the training input images through VQ-VAE's trained encoder from the previous section.
@@ -74,6 +80,8 @@ convolutional layer
 current pixel and itself. This is applied to all subsequent convolutional layers after the first one.
 
 <p align = "center"><img src = "./images/maskA.PNG", height=150><img src = "./images/maskB.PNG" height = 150></p>
+
+Reference: https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1
 
 **Pixel Convolutional Layer**
 
@@ -354,6 +362,7 @@ References for understanding and creating the VQ-VAE Model
 Tutorial referenced for creating the PixelCNN model
 - https://keras.io/examples/generative/pixelcnn/
 - https://towardsdatascience.com/auto-regressive-generative-models-pixelrnn-pixelcnn-32d192911173
+- https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1
 
 Customising a tf.keras model
 - https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit
