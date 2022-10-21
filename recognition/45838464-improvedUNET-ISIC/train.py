@@ -1,7 +1,9 @@
 from dataset import preprocess_data, preprocess_masks
 from modules import Improved_UNet
+from utils import plot_accuracy, plot_loss
 from tensorflow.keras.optimizers import Adam
 import numpy as np
+import matplotlib.pyplot as plt 
 
 
 def training(datapaths, batch_size, epochs):
@@ -12,6 +14,7 @@ def training(datapaths, batch_size, epochs):
     Learning rate as per the paper.
     """
 
+    # process data
     # x_train = preprocess_data(datapaths[0])
     # y_train = preprocess_masks(datapaths[1])
 
@@ -23,13 +26,16 @@ def training(datapaths, batch_size, epochs):
     x_val = np.load('x_val.npy')
     y_val = np.load('y_val.npy')
 
+    # build up Improved UNet model
     model = Improved_UNet()
-
-    # fit the model with normal learning rate
     model.compile(optimizer = Adam(0.0005), loss = "cro", metrics=['accuracy', modules.DSC])
 
     history = model.fit(x_train, y_train,  validation_data= (x_val, y_val),
                             batch_size=batch_size,shuffle='True',epochs=epochs)
 
-
-    return model, history 
+    # save model
+    model.save('./trained-model', include_optimizer=True, save_format='tf')
+    # plot learning
+    plot_accuracy(history)
+    plot_loss(history)
+    plot_disc_scores()
