@@ -122,11 +122,11 @@ def test_gcn(input_gcn, labels=[], test=True):
         acc_test = pred_accuracy(input_gcn, labels)
         print("Test set results:",
             f"loss= {loss_test.item()}), accuracy= {(acc_test.item())}")
-
-    print(f"Predicted nodes are:")
-    for i in range(len(input_gcn.max(1)[1])):
-      node = input_gcn.max(1)[1][i].item()
-      print(f"{i}. {node}- {label_dict[node]}")
+    else:
+        print(f"Predicted nodes are:")
+        for i in range(len(input_gcn.max(1)[1])):
+            node = input_gcn.max(1)[1][i].item()
+            print(f"{i}. {node}- {label_dict[node]}")
 
 def plot_tsne(embeddings, labels):
     tsne = TSNE(n_components=2)
