@@ -17,7 +17,7 @@ class VQ(layers.Layer):
     """
 
     def __init__(self, num_encoded, latent_dim, beta=0.25, name="vq"):
-        super().__init__(name=name)
+        super(VQ, self).__init__(name=name)
 
         self._latent_dim = latent_dim
         self._num_encoded = num_encoded
@@ -109,7 +109,6 @@ class Encoder(Model):
 
             Returns: outputs of this block
         """
-        # inputs = self.input1(inputs)
         hidden = self.conv1(inputs)
         hidden = self.conv2(hidden)
         return self.conv3(hidden)
@@ -120,9 +119,9 @@ class Decoder(Model):
         Defines Decoder for VQ-VAE.
     """
 
-    def __init__(self, name="decoder", rgb=True, **kwargs):
+    def __init__(self, name="decoder", num_channels=1, **kwargs):
         super(Decoder, self).__init__(name=name, **kwargs)
-        self._num_channels = 3 if rgb else 1
+        self._num_channels = num_channels
         self.conv_t1 = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")
         self.conv_t2 = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")
         self.conv_t3 = layers.Conv2DTranspose(self._num_channels, 3, padding="same")
@@ -146,18 +145,19 @@ class VQVAE(Model):
         Defines main VQ-VAE architecture.
     """
 
-    def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, rgb=True, name="vq_vae"):
-        super(VQVAE, self).__init__(name=name)
+    def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, num_channels=3,
+                 name="vq_vae",
+                 **kwargs):
+        super(VQVAE, self).__init__(name=name, **kwargs)
         self._tr_var = tr_var
-        # self._img_size = img_size (default was 28)
         self._num_encoded = num_encoded
         self._latent_dim = latent_dim
         self._beta = beta
-        self._rgb = rgb
+        self._num_channels = num_channels
 
         self._encoder = Encoder(self._latent_dim)
         self._vq = VQ(self._num_encoded, self._latent_dim, self._beta)
-        self._decoder = Decoder(rgb=self._rgb)
+        self._decoder = Decoder(num_channels=self._num_channels)
 
         self._total_loss = metrics.Mean(name="total_loss")
         self._vq_loss = metrics.Mean(name="vq_loss")
@@ -236,17 +236,16 @@ class VQVAE(Model):
         ]
 
     def get_encoder(self):
-        """ Returns encoder """
+        """ Return the encoder """
         return self._encoder
 
     def get_vq(self):
-        """ Returns VQ layer """
+        """ Return the quantisation layer """
         return self._vq
 
     def get_decoder(self):
-        """ Returns decoder """
+        """ Return the decoder """
         return self._decoder
-
 
 """ PixelCNN """
 
