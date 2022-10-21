@@ -9,7 +9,7 @@ from train import get_lowres_image, plot_results, train, upscale_image
 
 def predict():
     upscale_factor = 4
-    model, test_ds, _ = train(1)
+    model, test_ds, _ = train(1, load=True)
     total_bicubic_psnr = 0.0
     total_test_psnr = 0.0
     for batch in test_ds.take(1):

@@ -23,7 +23,7 @@ def upscale_image(model, img):
     prediction = prediction.clip(0, 255)
     return prediction
 
-def train(epochs):
+def train(epochs, load=False):
     train_path = "dataset\\train"
     test_path = "dataset\\test"
     
@@ -63,7 +63,8 @@ def train(epochs):
 
     loss_fn = keras.losses.MeanSquaredError()
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
-    model.load_weights(checkpoint_filepath)
+    if load:
+        model.load_weights(checkpoint_filepath)
     model.compile(
         optimizer=optimizer, loss=loss_fn,
     )
@@ -99,7 +100,6 @@ def get_lowres_image(img, upscale_factor):
 def main():
     epochs = 100
     _, _, history = train(epochs)
-    print(history.history.keys())
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     xs = range(epochs)
