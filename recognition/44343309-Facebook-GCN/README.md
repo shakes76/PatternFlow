@@ -37,7 +37,7 @@ The model suffers from loss initially at 1.4 before decreasing to roughly 0.18 b
 
 A TSNE plot was generated based upon the test set data and demonstrated that the model was able to effectively classify the data (Figure 3).
 
-![Training TSNE](images/trainTsne.jpg)
+![Training TSNE](images/trainingTsne.jpg)
 #### Performance in Prediction
 As no model is run during prediction (the one run in training was saved and loaded instead), the accuracy and losses are the same. As demonstrated by the TSNE plot below, the model is able to effectively categorise the entire Facebook Large Page-Page dataset when it is fed in (Figure 4)
 
