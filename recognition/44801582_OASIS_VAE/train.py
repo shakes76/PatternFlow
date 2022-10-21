@@ -112,12 +112,12 @@ def get_structural_similarity(model, dataset):
 
 
 def main():
-    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(3000)
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(2000)
     time = datetime.now().strftime('%H:%M:%S')
 
     num_embeddings = 128
     latent_dim = 16
-    batch_size = 8
+    batch_size = 4
 
     # VQ VAE
     vqvae_trainer = Trainer(data_variance, latent_dim=latent_dim, num_embeddings=num_embeddings)
