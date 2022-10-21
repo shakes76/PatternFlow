@@ -1,7 +1,7 @@
 from dataset import *
 from modules import *
 
-EPOCHS = 1
+EPOCHS = 50
 BATCH_SIZE = 128
 
 train_images, test_images, train_data, test_data, data_variance = load_dataset()

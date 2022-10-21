@@ -98,29 +98,12 @@ def prior_gen(pcnn, batch=10):
   return priors
 
 def show_novel_imgs(priors, vqvae, quantizer, encoded_outputs):
-    # embedding lookup.
-    pretrained_embeddings = quantizer.embeds
-    priors_ohe = tf.one_hot(priors.astype("int32"), 64).numpy()
-    quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
-    quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
-
-
-    # generate images
-    decoder = vqvae.vqvae.get_layer("decoder")
-    generated_samples = decoder.predict(quantized)
-
     # visualise images
     for i in range(10):
         plt.subplot(1, 2, 1)
         plt.imshow(priors[i], cmap = plt.cm.gray)
         plt.title("Code")
         plt.axis("off")
-
-        plt.subplot(1, 2, 2)
-        plt.imshow(generated_samples[i].squeeze() + 0.5, cmap = plt.cm.gray)
-        plt.title("Generated Sample")
-        plt.axis("off")
-        plt.show()
 
 
 
@@ -151,7 +134,6 @@ def main():
     
     # generate the priors
     priors = prior_gen(pcnn, batch=5)
-    print(f"Prior shape: {priors.shape}")
     
     show_novel_imgs(priors, vqvae, quantizer, encoded_outputs)
 
