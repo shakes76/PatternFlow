@@ -45,13 +45,9 @@ def calculate_Image_IOU(test_image_path, label_path):
                 center_y = prediction.loc[0]["ycenter"]/np.array(img).shape[1]
                 width = prediction.loc[0]["width"]/np.array(img).shape[0]
                 height = prediction.loc[0]["height"]/np.array(img).shape[1]
-                #print(center_x, center_y, width, height)
+
                 # Open label .txt
                 label_val = open(label_path + label_filename).read().split()
-
-                # Convert center coords to left most and top most
-                #label_min_x = float(label_val[1]) - float(label_val[3])/2
-                #label_min_y = float(label_val[2]) - float(label_val[4])/2
 
                 iou = get_IOU([center_x, center_y, width, height], [float(label_val[1]), float(label_val[2]), float(label_val[3]), float(label_val[4])])
                 iou_list.append(iou)
