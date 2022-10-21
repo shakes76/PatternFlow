@@ -79,7 +79,8 @@ A DCGAN was implemented to generate new embedded codebook slices, which are in t
 Below is a high level architecture diagram of the DCGAN:
 ![image](./assets/dcgan-architecture.jpeg)
 
-# Results on OASIS brain dataset
+# Results
+## OASIS Brains
 The VQVAE training terminated after 2 epochs, once the loss decreased below the threshold of 0.3.
 
 The highest SSIM achieved was 0.2666, and there were no samples which exceeded an SSIM of > 0.6 :(
