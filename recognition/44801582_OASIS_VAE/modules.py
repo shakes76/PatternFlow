@@ -111,7 +111,5 @@ def PixelCNN(latent_dim, num_embeddings, num_residual_blocks, num_pixelcnn_layer
 
     output = keras.layers.Conv2D(num_embeddings, 1, 1, padding="valid")(x)
     pixel_cnn = keras.Model(inputs, output)
-    pixel_cnn.summary()
 
     return pixel_cnn
-
