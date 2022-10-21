@@ -29,13 +29,32 @@ Before the data was used, it was normalised through residual extration and resca
 
 ## ==============Training==============
 
-The three data groups - train, test, and validate are split 0.85/0.1/0.05. The training set contains the most images so the model has enough information to learn from to produce accurate reconstructions later. The test set is used to validate these reconstructions. The validation set is not required, as the model is judged by the quality of the reconstructons on the test set. The model is trained with ... epochs on a batch size of 128.
-*insert image
+The three data groups - train, test, and validate are split 0.85/0.1/0.05. The training set contains the most images so the model has enough information to learn from to produce accurate reconstructions later. The test set is used to validate these reconstructions. The validation set is not required, as the model is judged by the quality of the reconstructons on the test set. The model is trained with 5 epochs on a batch size of 128.
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/VQVAE%20LOSS%20GRAPH.png)
+
+>Figure 3: VQVAE Reconstruction loss over 5 epochs
 
 ## ==============Results==============
 
-The reconstructed images achieved a mean Structured Similarity of ...
-*Inerset image
+Below are 5 randomly chosen reconstructed images and its comparison to a test image
+
+NOTE: The below images and Avergae SSIM rating was originally run on 15 epochs. NOT 5.
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/Reconstructed%20Image%201.png)
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/Reconstructed%20Image%202.png)
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/Reconstructed%20Image%203.png)
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/Reconstructed%20Image%204.png)
+
+![](/recognition/s4581053%20VQVAE%20OASIS/Images/Reconstructed%20Image%205.png)
+
+>Figure 4: 5 randomly chosen reconstructed images and their ssim value compared to it original image
+
+The reconstructed images achieved a mean Structured Similarity of 73.4
+
 ## Dependencies
 * Python 3.7
 * TensorFlow 2.6.0
@@ -51,3 +70,5 @@ The reconstructed images achieved a mean Structured Similarity of ...
 [2] Paul, S., 2021. Keras documentation: Vector-Quantized Variational Autoencoders. [online] Keras.io. Available at: https://keras.io/examples/generative/vq_vae/.
 
 [3] https://github.com/shakes76/PatternFlow/tree/master/recognition/MySolution
+
+[4] https://keras.io/examples/generative/pixelcnn/

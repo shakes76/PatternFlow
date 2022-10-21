@@ -3,7 +3,8 @@
 implementated as a class or a function
 
 Based on Neural Discrete Representation Learning by van der Oord et al https://arxiv.org/pdf/1711.00937.pdf 
-and the given example on https://keras.io/examples/generative/vq_vae/
+and the given example on https://keras.io/examples/generative/vq_vae/ and 
+https://keras.io/examples/generative/pixelcnn/
 """
 import tensorflow as tf
 
@@ -76,6 +77,17 @@ class VectorQ_layer(tf.keras.layers.Layer):
         quantized = x + tf.stop_gradient(quantized - x)
         
         return quantized
+
+    def get_code_indices(self, inputs):
+        # Get code indices
+        # Calculate L2-normalized distance between the inputs and the embeddings.
+        # For each n*h*w vectors, we calculate the distance from each of k vectors of embedding dictionaty to obtain matrix of shape (n*h*w, k)
+        similarity = tf.matmul(inputs, self.embeddings)
+        distances = (tf.reduce_sum(inputs ** 2, axis=1, keepdims=True) + tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * similarity)
+
+        # For each n*h*w vectors, find the indices of closest k vector from dictionary; find minimum distance.
+        encoded_indices = tf.argmin(distances, axis=1)
+        return encoded_indices
 
 # Represents the VAE Structure
 class VAE:
@@ -194,4 +206,81 @@ class VQVAETRAINER(tf.keras.models.Model):
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
 
+"""
+# The first layer is the PixelCNN layer. This layer simply
+# builds on the 2D convolutional layer, but includes masking.
+class PixelConvLayer(tf.keras.layers.Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = tf.keras.layers.Conv2D(**kwargs)
 
+    def build(self, input_shape):
+        # Build the conv2d layer to initialize kernel variables
+        self.conv.build(input_shape)
+        # Use the initialized kernel to create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+        # Next, we build our residual block layer.
+# This is just a normal residual block, but based on the PixelConvLayer.
+class ResidualBlock(tf.keras.layers.Layer):
+    def __init__(self, filters, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.conv1 = tf.keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+        self.pixel_conv = PixelConvLayer(
+            mask_type="B",
+            filters=filters // 2,
+            kernel_size=3,
+            activation="relu",
+            padding="same",
+        )
+        self.conv2 = tf.keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return tf.keras.layers.add([inputs, x])
+
+
+def pixel_model(pixelcnn_input_shape, residualblock_num, pixelcnn_layers, model):
+    pixelcnn_inputs = tf.keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
+    ohe = tf.one_hot(pixelcnn_inputs, model.embeddings_num)
+    x = PixelConvLayer(
+        mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
+    )(ohe)
+
+    for _ in range(residualblock_num):
+        x = ResidualBlock(filters=128)(x)
+
+    for _ in range(pixelcnn_layers):
+        x = PixelConvLayer(
+            mask_type="B",
+            filters=128,
+            kernel_size=1,
+            strides=1,
+            activation="relu",
+            padding="valid",
+        )(x)
+
+    out = tf.keras.layers.Conv2D(
+        filters=model.embeddings_num, kernel_size=1, strides=1, padding="valid"
+    )(x)
+
+    pixel_cnn = tf.keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
+    pixel_cnn.summary()
+    return pixel_cnn
+"""

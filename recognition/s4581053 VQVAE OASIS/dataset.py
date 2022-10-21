@@ -111,3 +111,12 @@ def process_labels (seg_data):
     #print (onehot_Y.shape)
 
     return onehot_Y
+
+def codebook_indice_generator(data, encoder, quantizer):
+    encoded_outputs = encoder.predict(data)
+    flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+    codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+
+    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+    print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
+    return codebook_indices

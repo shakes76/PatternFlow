@@ -69,16 +69,19 @@ Learning rate = more wights but takes longer to compute
 model.compile (optimizer='adam')
 
 # Train model
-history = model.fit(train_X, epochs=15, batch_size=128)
+history = model.fit(train_X, epochs=5, batch_size=128)
 print("disaster!!!!")
+
 
 #%%
 # Plot Loss
 plt.plot(history.history['reconstruction_loss'], label='Reconstruction Loss')
-plt.title('VQVAE Loss')
+plt.plot(history.history['loss'], label='Reconstruction Loss')
+plt.plot(history.history['vqvae_loss'], label='Reconstruction Loss')
+plt.title('VQVAE Reconstruction Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
-plt.legend(['Train', 'Validation'], loc='upper left')
+plt.legend(['Training Data', 'Validation'], loc='upper right')
 plt.show()
 
 #%%
@@ -165,7 +168,7 @@ trained_model = model.vqvae_model
 idx = np.random.choice(len(test_X), 5)
 test_images = test_X[idx]
 reconstructions_test = trained_model.predict(test_images)
-
+ssim_mean = 0
 # Perform Predictions on the test images
 for test_image, reconstructed_image in zip(test_images, reconstructions_test):
     """mean, mean_r = calculate_mean(test_image, reconstructed_image)
@@ -175,34 +178,15 @@ for test_image, reconstructed_image in zip(test_images, reconstructions_test):
     """
     structured_similiarity_rating = tf.image.ssim(test_image, reconstructed_image, max_val=1.0)
     plot_comparision_original_to_reconstructed(test_image, reconstructed_image, structured_similiarity_rating)
-
-
-
-#%%
-
-# Returns the structured similarity for the entire data set
-def structural_similarity_mean(test_X, model):
-    structured_similarity_coef = 0
-
-    for i, data in enumerate(test_X):
-        # get reconstructed image
-        image_reconstruction = model.predict(data)
-        data = data[0,:,:,0]
-        image_reconstruction = image_reconstruction[0,:,:,0]
-
-        # Calculate structured similarity and add to total
-        mean_X, predicted_mean = calculate_mean(data, image_reconstruction)
-        stddev_X, predicted_stddev = calculate_stddev(data, image_reconstruction, mean_X, predicted_mean)
-        covariance = calculate_covariance(data, image_reconstruction, mean_X, predicted_mean)
-        structured_similarity_coef += structural_similarity(mean_X, predicted_mean, stddev_X, predicted_stddev, covariance)
-
-    return structured_similarity_coef / len(test_X)
+    ssim_mean += structured_similiarity_rating
+    print(structured_similiarity_rating)
 
 # Calculate the mean structural Similarity for the reconstructed images
-mean_structured_similiarity = structural_similarity_mean(test_X, trained_model)
-print(mean_structured_similiarity)
+print("The average structured similiarity rating is: ", ssim_mean/len(test_images))
 
-# %%
+
+"""Visualizing the discrete codes"""
+"""
 encoder = model.vqvae_model.get_layer("encoder")
 quantizer = model.vqvae_model.get_layer("vector_quantizer")
 
@@ -222,3 +206,87 @@ for i in range(len(test_images)):
     plt.title("Code")
     plt.axis("off")
     plt.show()
+
+"""
+
+""" PIXELCNN Hyperparameters"""
+"""
+residualblock_num = 2
+pixelcnn_layers = 2
+pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+
+
+pixel_model = mod.pixel_model(pixelcnn_input_shape, residualblock_num, pixelcnn_layers, model)
+
+"""
+
+""" DATA PREPARATION"""
+"""
+# Generate the codebook indices.
+codebook_indices = data.codebook_indice_generator(train_X, encoder, quantizer)
+
+"""
+""" PixelCNN TRAINING"""
+"""
+pixel_model.compile(
+    optimizer=tf.keras.optimizers.Adam(3e-4),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+pixel_model.fit(
+    x=codebook_indices,
+    y=codebook_indices,
+    batch_size=128,
+    epochs=5,
+    validation_split=0.1,
+)
+
+# Create a mini sampler model.
+inputs = tf.keras.layers.Input(shape=pixel_model.input_shape[1:])
+outputs = pixel_model(inputs, training=False)
+categorical_layer = tfp.layers.DistributionLambda(tfp.distributions.Categorical)
+outputs = categorical_layer(outputs)
+sampler = tf.keras.Model(inputs, outputs)
+
+# Create an empty array of priors.
+batch = 10
+priors = np.zeros(shape=(batch,) + (pixel_model.input_shape)[1:])
+batch, rows, cols = priors.shape
+
+# Iterate over the priors because generation has to be done sequentially pixel by pixel.
+for row in range(rows):
+    for col in range(cols):
+        # Feed the whole array and retrieving the pixel value probabilities for the next
+        # pixel.
+        probs = sampler.predict(priors)
+        # Use the probabilities to pick pixel values and append the values to the priors.
+        priors[:, row, col] = probs[:, row, col]
+
+print(f"Prior shape: {priors.shape}")
+
+# Perform an embedding lookup.
+pretrained_embeddings = quantizer.embeddings
+priors_ohe = tf.one_hot(priors.astype("int32"), model.num_embeddings).numpy()
+quantized = tf.matmul(
+    priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+)
+quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
+# Generate novel images.
+decoder = model.vqvae.get_layer("decoder")
+generated_samples = decoder.predict(quantized)
+
+for i in range(batch):
+    plt.subplot(1, 2, 1)
+    plt.imshow(priors[i])
+    plt.title("Code")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated_samples[i].squeeze() + 0.5)
+    plt.title("Generated Sample")
+    plt.axis("off")
+    plt.show()
+
+    """
