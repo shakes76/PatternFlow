@@ -92,6 +92,13 @@ class Tester():
     def convert_dcgan_slice_e(self, slice_e_dcgan):
         slice_e_dcgan = torch.flatten(slice_e_dcgan)
         range_intensity = [70, 358]
+        range_intensity = [
+            range_intensity[0],
+            ((range_intensity[1] - range_intensity[0]) / 4) + range_intensity[0],
+            ((range_intensity[1] - range_intensity[0]) / 2) + range_intensity[0],
+            ((range_intensity[1] - range_intensity[0]) / 2) + ((range_intensity[1] - range_intensity[0]) / 4) + range_intensity[0],
+            range_intensity[1]
+        ]
         slice_e_dcgan_min = torch.min(slice_e_dcgan)
         slice_e_dcgan_max = torch.max(slice_e_dcgan)
         num_slice = len(range_intensity)
