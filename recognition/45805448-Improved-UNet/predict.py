@@ -8,10 +8,17 @@ class Predictor:
         self.trainer = trainer
 
     def evaluate_model(self):
+        """
+        Evaluates the model based on the testing dataset split from training.
+        """
         loss, dice_coef = self.trainer.model.evaluate(self.trainer.test_dataset, verbose=2)
         print(f'Model evaluation on test dataset: loss = {loss}, dice_coef = {dice_coef}')
 
     def output_predictions(self):
+        """
+        Predicts a random batch from the test dataset, and recovers the images. Saves figures of the
+        input image, predicted mask, and actual mask into storage.
+        """
         if not os.path.isdir(self.trainer.plots_path):
             os.makedirs(self.trainer.plots_path)
 
@@ -44,6 +51,9 @@ class Predictor:
         print(f'Saved prediction images and plot to {self.trainer.plots_path}')
 
 def predict_isic_dataset(trainer=None, images_path='', masks_path='', dataset_path='', model_path='', plots_path=''):
+    """
+    Main driver for predicting test data on the trained Improved UNet model using the ISIC dataset.
+    """
     if trainer is None:
         trainer = train_isic_dataset(images_path, masks_path, dataset_path, model_path, plots_path)
 
