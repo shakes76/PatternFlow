@@ -77,12 +77,13 @@ def plot_reconstructions():
     vqvae = modules.VQVAE(16, 128)
     vqvae.load_weights("samples/vqvae_model_weights.h5")
     _, _, test_data, _ = dataset.oasis_dataset(500)
-    num_tests = 8
-    test_images = test_data[np.random.choice(len(test_data), 8)]
+
+    num_tests = 4
+    test_images = test_data[np.random.choice(len(test_data), num_tests)]
     reconstructions = vqvae.predict(test_images)
 
     i = 0
-    plt.figure(figsize=(4, num_tests * 2), dpi=512)
+    plt.figure(figsize=(num_tests * 2, 4), dpi=512)
     for test_image, reconstructed_image in zip(test_images, reconstructions):
         test_image = test_image.squeeze()
         reconstructed_image = reconstructed_image[:, :, 0]
