@@ -41,7 +41,7 @@ if __name__ ==  "__main__":
     imageList = []
     imageList.append(np.squeeze(np.squeeze(x, 0),-1))
 
-    fig, axs = plt.subplots(2,5)
+    fig, axs = plt.subplots(1,5)
     col = 0
 
     newInput = kr.Input((32, 32, 1))
@@ -57,18 +57,17 @@ if __name__ ==  "__main__":
             
             nextImage = np.array(np.clip((x[0] + 1) * 127.5, 0, 255), np.uint8)
 
-            axs[0,col].imshow(tf.squeeze(nextImage), cmap="Greys")
-            axs[0,col].set_title("Timestep {i} Latent Representation".format(i=i))
-            axs[1,col].imshow(tf.squeeze(decoder(nextImage)), cmap="Greys")
-            axs[1,col].set_title("Timestep {i} Decoded".format(i=i))
+            # Plotting to subplot
+            axs[col].imshow(tf.squeeze(nextImage), cmap="Greys")
+            axs[col].set_title("Timestep {i} Latent Representation".format(i=i))
+            axs[col].get_xaxis().set_visible(False)
+            axs[col].get_yaxis().set_visible(False)
+
             col += 1
 
-    
-
     nextImage = np.array(np.clip((x[0] + 1) * 127.5, 0, 255), np.uint8)
-    axs[0,col].imshow(tf.squeeze(nextImage), cmap="Greys")
-    axs[0,col].set_title("Timestep {i} Latent Representation".format(i=i))
-    axs[1,col].imshow(tf.squeeze(decoder(nextImage)), cmap="Greys")
-    axs[1,col].set_title("Timestep {i} Decoded".format(i=i))
+    axs[col].imshow(tf.squeeze(nextImage), cmap="Greys")
+    axs[col].set_title("Timestep {i} Latent Representation".format(i=i))
+
     plt.show()
     
