@@ -7,6 +7,7 @@ from keras import Sequential
 
 from utils import init_model
 from dataset import TrackCrop
+from modules import generate_patch
 
 def plot_preprocessing(test_case, preprocessed_test_case, image_size, preprocessed_image_size, image_dir, name):
     test_case = test_case[0]
@@ -94,18 +95,41 @@ def plot_examples(test_case, image_size, image_dir):
 
     plt.savefig(image_dir + "examples.png")
 
+def generate_patches_image(test_case, preprocessing, p):
+    test_case = tf.expand_dims(test_case, 0)
+    
+    patch_size = p.patch_size()
+
+    patches = preprocessing(test_case)
+
+    n_row = int(patches.shape[1] / patch_size)
+    n_col = int(patches.shape[2] / patch_size)
+
+    patches = generate_patch(patch_size)(patches)[0]
+
+    plt.figure(figsize=(1.0 * n_col, 1.0 * n_row))
+    plt.subplots_adjust(bottom=0.01, left=0.01, right=0.99, top=0.99)
+    for i in range(n_row*n_col):
+        plt.subplot(n_row, n_col, i + 1)
+        plt.imshow(tf.reshape(patches[i], (patch_size, patch_size)), cmap=plt.cm.gray)
+        plt.xticks(())
+        plt.yticks(())
+    plt.savefig(p.image_dir() + "patches.png")
+
 if __name__ == "__main__":
     train_ds, test_ds, valid_ds, preprocessing, model, p = init_model()
 
     model.load_weights(p.data_dir() + "checkpoints/my_checkpoint")
 
-    result = model.evaluate(test_ds)
+    """result = model.evaluate(test_ds)
     print("Test loss:", result[0])
-    print("Test Accuracy:", result[1])
+    print("Test Accuracy:", result[1])"""
 
     test_case, ground_truth = iter(test_ds).next()
 
     generate_preprocessing_images(test_case[0], p)
+
+    generate_patches_image(test_case[0], preprocessing, p)
 
     plot_examples(test_case, p.image_size(), p.image_dir())
 
