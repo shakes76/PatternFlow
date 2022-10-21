@@ -30,17 +30,11 @@ class VQVAE(nn.Module):
                                latent_dim=latent_dim
                                )
 
-    def forward(self, x, verbose=False):
+    def forward(self, x):
         z_e = self.encoder(x)
 
         z_e = self.pre_quantization_conv(z_e)
         embedding_loss, z_q, _, _ = self.vector_quantizer(z_e)
         x_hat = self.decoder(z_q)
-
-        if verbose:
-            print(f"Original data shape: {x.shape}")
-            print(f"Encoded data shape: {z_e.shape}")
-            print(f"Reconstructed data shape: {x_hat.shape}")
-            assert False
 
         return embedding_loss, x_hat

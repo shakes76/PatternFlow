@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import random
 
 EPOCHS = 2
 DEVICE = torch.device("mps" if torch.has_mps else "cuda" if torch.cuda.is_available() else "cpu")
@@ -26,13 +27,18 @@ def train_vqvae(dl, model, optim):
 
 def train_pixel_cnn(model, dl, criterion, n_embeddings, optimiser):
     train_loss = []
-    for batch_idx, (x, label) in enumerate(dl):
+    for batch_idx, (x, _) in enumerate(dl):
 
         x = (x[:, 0]).to(DEVICE)
 
         # Train PixelCNN with images
-        logits = model(x, label)
+        print('before')
+        logits = model(x, x)
+        print('after')
         logits = logits.permute(0, 2, 3, 1).contiguous()
+        
+        print(logits.view(-1, n_embeddings).shape)
+        print(x.view(-1).shape)
 
         loss = criterion(
             logits.view(-1, n_embeddings),

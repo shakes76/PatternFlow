@@ -81,14 +81,16 @@ class PixelCNN(nn.Module):
 
         self.embedding = nn.Embedding(input_dimension, dim)
 
-        self.layers = nn.ModuleList
+        self.layers = nn.ModuleList()
 
         for i in range(num_layers):
             mask_type = 'A' if i == 0 else 'B'
             kernel = 7 if i == 0 else 3
             residual = False if i == 0 else True
+            
+            layer = MaskedGatedConv2d(mask_type=mask_type, dim=dim, kernel=kernel, residual=residual, num_classes=num_classes)
 
-            self.layers.append(module=MaskedGatedConv2d(self, mask_type, dim, kernel, residual, num_classes))
+            self.layers.append(module=layer)
 
         self.out_conv = nn.Sequential(
             nn.Conv2d(dim, 512, 1),
@@ -100,7 +102,9 @@ class PixelCNN(nn.Module):
 
     def forward(self, x, label):
         shape = x.size() + (-1, )
+        print(shape)
         x = self.embedding(x.view(-1)).view(shape)
+        print('hello_world')
         x = x.permute(0, 3, 1, 2)
 
         x_vertical, x_horizontal = (x, x)
@@ -120,3 +124,9 @@ class PixelCNN(nn.Module):
                 x.data[:, i, j].copy_(probs.multinomial(1).squeeze().data)
 
         return x
+    
+# model = PixelCNN()
+# x = torch.randn(1,3,256,256)
+# x = x.type(torch.LongTensor)
+# y = model(x,x)
+    
