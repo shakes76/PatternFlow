@@ -30,8 +30,10 @@ def plot_metrics(model_fit, is_loss_plot):
     else: 
         type = 'dice_similarity'
 
+    #Plot
     plt.plot(model_fit.history[type], label= f'Training {type}')
     plt.plot(model_fit.history[f'val_{type}'], label=f'Validation {type}')
+    #Presentation
     plt.title(f'Test vs Validation {type}')
     plt.legend()
     plt.xlabel('Epochs')
@@ -56,14 +58,19 @@ def plot_predicted_masks(images, masks, model, number_of_samples):
 
     mask_plot, axs = plt.subplots(number_of_samples, 3)
 
+    #Labels
     axs[0,0].set_title("Original Image")
     axs[0,1].set_title("Given Mask")
     axs[0,2].set_title("Prediction")
     for number, i in enumerate(sample):
+        #Image
         axs[number, 0].imshow(images[i])                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+        #Mask
         axs[number, 1].imshow(tf.argmax(masks[i], axis = 2))
+        #Prediction
         axs[number, 2].imshow(tf.argmax(predicted_masks[i], axis = 2))
         
+        #Set all axes labels to null as images not graphs
         for a in [0, 1, 2]:
             axs[number, a].set_xticks([])
             axs[number, a].set_yticks([])
