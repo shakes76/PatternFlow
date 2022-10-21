@@ -13,14 +13,11 @@ class ModelPredictor():
     
     def __init__(self, model, test_dataset, batch_size=BATCH_SIZE):
         """
-        ???????
+        Create a new model predictor instance to make predictions using a trained model
 
         Parameters:
-            ?????? (??????): ??????
-            
-        Return:
-            ??????: ?????
-
+            model (tf.Model): Trained Improved UNET model
+            test_datset (tf.Dataset): A dataset containing all the image and mask test data
         """
         
         self.model = model
@@ -30,32 +27,25 @@ class ModelPredictor():
         
     def evaluateModel(self):
         """
-        ???????
+        Evaluate the test dataset Dice Similarity of the model 
 
         Parameters:
-            ?????? (??????): ??????
             
         Return:
-            ??????: ?????
-
         """
-
         
         test_batch = self.test_dataset.batch(self.batch_size)
         loss, coefficient = self.model.evaluate(test_batch)
 
-        print("Test Data Dice Coefficient: " + coefficient)
+        print("Test Data Dice Coefficient: ", coefficient)
         
     def makePredictions(self):
         """
-        ???????
+        Using the trained model make predictions on the testing dataset
 
         Parameters:
-            ?????? (??????): ??????
             
         Return:
-            ??????: ?????
-
         """
         
         test_batch = self.test_dataset.batch(self.batch_size)
@@ -85,6 +75,7 @@ class ModelPredictor():
             plt.title("Predicted Mask")
 
             plt.show()
+            
 
 def main():
 
@@ -97,7 +88,7 @@ def main():
     model = improvedUNETModel.modelArchitecture()
     
     # Train the model
-    t = ModelTrainer(epochs=1)
+    t = ModelTrainer()
     model = t.trainModel(train_dataset, test_dataset, validate_dataset, model)
     
     # Evaluate the model and make predictions

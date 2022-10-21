@@ -37,11 +37,11 @@ class ImprovedUNETModel():
         Leaky ReLU activations were used
 
         Parameters:
-            inputs (tf.Tensor): A () tensor inputted into the module
+            inputs (tf.Tensor): Tensor inputted into the module
             n_filters (int): Number of filters for this module
 
         Return:
-            tf.Tensor: A () tensor output from this module
+            tf.Tensor: Tensor output from this module
 
         """
         x = InstanceNormalization()(inputs)
@@ -64,11 +64,11 @@ class ImprovedUNETModel():
         twice in each spatial dimension, followed by a 3x3x3 convolution"
 
         Parameters:
-            inputs (tf.Tensor): A () tensor inputted into the module 
+            inputs (tf.Tensor): Tensor inputted into the module 
             n_filters (int): Number of filters for this module
 
         Return:
-            tf.Tensor: A () tensor output from this module
+            tf.Tensor: Tensor output from this module
 
         """
         x = UpSampling2D(interpolation='bilinear')(inputs)
@@ -85,11 +85,11 @@ class ImprovedUNETModel():
         by a 1x1x1 convolution"
 
         Parameters:
-            inputs (tf.Tensor): A () tensor inputted into the module 
+            inputs (tf.Tensor): Tensor inputted into the module 
             n_filters (int): Number of filters for this module
 
         Return:
-            tf.Tensor: A () tensor output from this module
+            tf.Tensor: Tensor output from this module
 
         """
         x = Conv2D(n_filters, (3,3), padding=self.padding)(inputs)
@@ -108,11 +108,11 @@ class ImprovedUNETModel():
         ""
 
         Parameters:
-            inputs (tf.Tensor): A () tensor inputted into the layer 
-            n_filters (int): Number of filters for this module
+            inputs (tf.Tensor): Tensor inputted into the layer 
+            n_filters (int): Number of filters for this layer
 
         Return:
-            tf.Tensor: A () tensor output from this module
+            tf.Tensor: Tensor output from this layer
 
         """
         x = Conv2D(n_filters, (1,1), padding=self.padding)(inputs)
@@ -126,12 +126,12 @@ class ImprovedUNETModel():
         1 convolution layer and 1 context module
 
         Parameters:
-            inputs (tf.Tensor): A () tensor inputted into the block 
+            inputs (tf.Tensor): Tensor inputted into the block 
             n_filters (int): Number of filters for this block
             strides ((int, int)): Strides for the convolution
 
         Return:
-            tf.Tensor: A () tensor output from this module
+            tf.Tensor: Tensor output from this block
 
         """
     
@@ -150,13 +150,13 @@ class ImprovedUNETModel():
         1 upsampling layer
 
         Parameters:
-            prev_layer_input (tf.Tensor): A () tensor input from the previous layer
-            skip_layer_input (tf.Tensor): A () tensor from the skip connection
+            prev_layer_input (tf.Tensor): Tensor input from the previous layer
+            skip_layer_input (tf.Tensor): Tensor from the skip connection
             n_filters (int): Number of filters for this block
 
         Return:
-            (tf.Tensor,tf.Tensor): A () tensor from the localisation layer 
-                and a () tensor output from this module
+            (tf.Tensor,tf.Tensor): Tensor from the localisation layer 
+                and a Tensor output from this module
 
         """
         x = Concatenate()([prev_layer_input, skip_layer_input])
@@ -167,12 +167,13 @@ class ImprovedUNETModel():
     
         
     def modelArchitecture(self):
-        """ Defines Improved UNET model network
+        """ 
+        Defines Improved UNET model network
         Described in the paper Brain Tumor Segmentation and Radiomics
         
 
         Return:
-            tf.keras.models.Model: CNN defined by Improved UNET architecture
+            tf.Model: Network defined by Improved UNET architecture
 
         """
         

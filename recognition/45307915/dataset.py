@@ -18,7 +18,8 @@ class DataLoader():
                  test_images_path=TEST_IMAGES_PATH, test_masks_path=TEST_MASKS_PATH,
                  validate_images_path=VALIDATE_IMAGES_PATH, validate_masks_path=VALIDATE_MASKS_PATH, 
                  img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
-        """ Create a new Data Loader instance to load in the training, testing and validation data
+        """ 
+        Create a new Data Loader instance to load in the training, testing and validation data
         
         Parameters:
             images_path (str): Path of the dataset images
@@ -46,7 +47,7 @@ class DataLoader():
             filenames (tf.string): names of all image files
 
         Return:
-            tf.Dataset: A (img_height, img_width, 1) tensor containing all the image file data
+            tf.Dataset: Dataset containing all the image file data
 
         """
         raw = tf.io.read_file(filenames)
@@ -69,7 +70,7 @@ class DataLoader():
             filenames (tf.string): names of all mask files
 
         Return:
-            tf.Dataset: A (img_height, img_width, 1) tensor containing all the mask file data
+            tf.Dataset: Dataset containing all the mask file data
 
         """
         raw = tf.io.read_file(filenames)
@@ -88,13 +89,10 @@ class DataLoader():
     
     def loadData(self):
         """
-        Loads and prepocesses all the image and mask data, 
-        for the training, testing and validation datasets
-
+        Loads and prepocesses all the image and mask data, for the training, testing and validation datasets
 
         Return:
-            (tf.Dataset, tf.Dataset, tf.Dataset): 3 (img_height, img_width, 1) tensors 
-                containing all the image and mask data
+            (tf.Dataset, tf.Dataset, tf.Dataset): 3 datasets containing all the image and mask data
         """
         
         #train

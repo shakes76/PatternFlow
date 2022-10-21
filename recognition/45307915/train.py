@@ -28,14 +28,12 @@ class ModelTrainer():
     
     def __init__(self, batch_size=BATCH_SIZE, learning_rate=INIT_LEARNING_RATE, epochs=EPOCHS):
         """
-        ???????
+        Create a new model trainer instance to train the model
 
         Parameters:
-            ?????? (??????): ??????
-            
-        Return:
-            ??????: ?????
-
+            batch_size (int): Batch size
+            learning_rate (int): Learning rate for training
+            epochs (int): Number of epochs for training
         """
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -104,16 +102,20 @@ class ModelTrainer():
         
     def trainModel(self, train_dataset, test_dataset, validate_dataset, model):
         """
-        ???????
+        Train the model using the training and validation datasets.
+        Using Dice Coefficient as the loss function.
 
         Parameters:
-            ?????? (??????): ??????
+            train_dataset (tf.Dataset): Dataset containing all the training data
+            test_dataset (tf.Dataset): Dataset containing all the test data
+            validate_dataset (tf.Dataset): Dataset containing all the validation data
+            model (tf.model): Untrained improved UNET model
             
         Return:
-            ??????: ?????
+            tf.Model: trained improved UNET model
 
         """
-
+        
         # Batch the data
         train_batch = train_dataset.batch(self.batch_size)
         test_batch = test_dataset.batch(self.batch_size)
