@@ -87,7 +87,7 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
     plt.figure(figsize=(4, num_tests*2), dpi=512)
     for test_image, reconstructed_image in zip(test_images, reconstructions):
         plt.subplot(num_tests, 2, 2*i + 1,)
-        plt.imshow(test_image.astype(np.float32).squeeze(), cmap='gray')
+        plt.imshow(test_image.squeeze(), cmap='gray')
         plt.title("Original")
         plt.axis("off")
 
@@ -110,7 +110,7 @@ def main():
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     vqvae_trainer.vqvae.save(f"out/{time}/vqvae_model")
 
-    history = vqvae_trainer.fit(train_data, epochs=10, batch_size=4)
+    history = vqvae_trainer.fit(train_data, epochs=10, batch_size=32)
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
     plot_losses(history, time)
