@@ -15,6 +15,8 @@ img_h = dataset.img_h
 img_w = dataset.img_w
 b_size = dataset.b_size
 
+#Convolutional 'block' with two layers - four of these pairs go in a U-Net, and they are split into these pairs so 
+# snapshots can be taken for upsampling 
 def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"):
     block = Conv2D(filters=nfilters, kernel_size=(size, size), padding=padding, kernel_initializer=initializer)(tensor)
     block = BatchNormalization()(block)
@@ -24,13 +26,14 @@ def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"
     block = Activation("relu")(block)
     return block
 
-
+#Upsampling blocks that replace pooling and 'undo' the above convolutions
 def deconv_block(tensor, residual, nfilters, size=3, padding='same', strides=(2, 2)):
     block = Conv2DTranspose(nfilters, kernel_size=(size, size), strides=strides, padding=padding)(tensor)
     block = concatenate([block, residual], axis=3)
     block = conv_block(block, nfilters)
     return block
 
+#Dice similarity coefficient calculator - Metric for the model
 def dice_similarity(x, y):
     """
     Returns:
@@ -39,7 +42,7 @@ def dice_similarity(x, y):
     return 2 * (tf.keras.backend.sum(tf.keras.backend.flatten(x) * tf.keras.backend.flatten(y)) + 1) / \
            (tf.keras.backend.sum(tf.keras.backend.flatten(x) + tf.keras.backend.flatten(y)) + 1)
 
-
+#The inverse of the above function to be used as a loss function for the model
 def dice_loss(x, y):
     """
     Returns:
@@ -47,6 +50,7 @@ def dice_loss(x, y):
     """
     return 1 - dice_similarity(x, y)
 
+#The overarching U-Net structure
 def Unet(h, w, filters):
 # down
     input = Input(shape=(h, w, 3), name='image_input')
@@ -73,4 +77,5 @@ def Unet(h, w, filters):
     model = Model(inputs=input, outputs=output_layer, name='Unet')
     return model
 
+#Make the Model
 model = Unet(img_w,img_h, 64)

@@ -10,10 +10,14 @@ import tensorflow as tf
 import dataset
 import modules
 
+#Make and train the model
+
 modules.model.compile(tf.keras.optimizers.Adam(learning_rate= 0.00003),loss=[modules.dice_loss],metrics=[modules.dice_similarity, 'accuracy'])
 
 history = modules.model.fit(dataset.train_generator , steps_per_epoch=dataset.train_steps ,epochs=15,
                               validation_data=dataset.val_generator,validation_steps=dataset.val_steps, verbose=1)
+
+#Plot the results
 
 #Accuracy
 plt.plot(history.history['accuracy'])
@@ -23,7 +27,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 plt.show()
-#dice similarity
+#Dice similarity
 plt.plot(history.history['dice_similarity'])
 plt.plot(history.history['val_dice_similarity'])
 plt.title('model dice_similarity')
@@ -40,7 +44,9 @@ plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 plt.show()
 
-loss, dice_similarity, acc = model.evaluate(test_generator,batch_size=b_size)
+#Evaluate the model on the test set
+
+loss, dice_similarity, acc = modules.model.evaluate(dataset.test_generator,batch_size=dataset.b_size)
 
 print('Test loss:', loss)
 print('Test dice_similarity:', dice_similarity)

@@ -21,7 +21,7 @@ img_w = 288
 b_size = 32
 
 
-im_root = Path(os.path.join(os.getcwd(), "recognition\AA_VQVAE_Mine\DataSets\ISIC"))
+im_root = Path(os.path.join(os.getcwd(), "recognition\s46413587_Improved_Unet_on_ISIC\DataSets\ISIC"))
 
 paths = [
     "ISIC-2017_Training_Data",
@@ -31,7 +31,7 @@ paths = [
     "ISIC-2017_Validation_Data",
     "ISIC-2017_Validation_Truth"
 ]
-
+#Import data into lists
 train_imgs = list((im_root / "ISIC-2017_Training_Data").glob("*.jpg"))
 train_labels = list((im_root / "ISIC-2017_Training_Truth").glob("*.png"))
 test_imgs = list((im_root / "ISIC-2017_Test_Data").glob("*.jpg"))
@@ -41,6 +41,7 @@ val_labels = list((im_root / "ISIC-2017_Validation_Truth").glob("*.png"))
 
 (len(train_imgs),len(train_labels)), (len(test_imgs),len(test_labels)) , (len(val_imgs),len(val_labels))
 
+#Pair correct mask with correct image
 def make_pair(img,label,dataset):
     pairs = []
     for im in img:
@@ -52,6 +53,7 @@ train_pair = make_pair(train_imgs, "ISIC-2017_Training_Truth", im_root)
 test_pair = make_pair(test_imgs, "ISIC-2017_Test_Truth", im_root)
 val_pair = make_pair(val_imgs, "ISIC-2017_Validation_Truth", im_root)
 
+#Check this works by producing a random pair
 temp = choice(train_pair)
 img = img_to_array(load_img(temp[0], target_size=(img_w,img_h)))
 mask = img_to_array(load_img(temp[1], target_size = (img_w,img_h)))
@@ -65,12 +67,14 @@ plt.imshow(mask/255)
 
 class_map = [(255),(0)]
 
+#Correct Mask size
 def assert_map_range(mask,class_map):
     mask = mask.astype("uint8")
     for j in range(img_w):
         for k in range(img_h):
             assert mask[j][k] in class_map , tuple(mask[j][k])
 
+#Create 2D vector representing the pixels of the mask for comparison
 def form_2D_label(mask,class_map):
     mask = mask.astype("uint8")
     label = np.zeros(mask.shape[:2],dtype= np.uint8)
@@ -83,6 +87,7 @@ def form_2D_label(mask,class_map):
 lab = form_2D_label(mask,class_map)
 np.unique(lab,return_counts=True)
 
+#Keras Data generator (Very Generic for Segmentation problems)
 class DataGenerator(Sequence):
     'Generates data for Keras'
     
@@ -139,6 +144,7 @@ class DataGenerator(Sequence):
             
         return np.array(batch_imgs) ,np.array(batch_labels)
 
+#Correctly format all the data
 train_generator = DataGenerator(train_pair,class_map,b_size, dim=(img_w,img_h,3) ,shuffle=True)
 train_steps = train_generator.__len__()
 
