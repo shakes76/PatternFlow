@@ -16,37 +16,10 @@ data_variance = np.var(train_ds)
 # Train the VQ-VAE model
 vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-history = vqvae_trainer.fit(train_ds, epochs=30, batch_size=128)
+vqvae_history = vqvae_trainer.fit(train_ds, epochs=30, batch_size=128)
 
 # Save the model
 vqvae_trainer.save_weights(models_directory + vqvae_weights_filename)
-
-# Plot the training loss
-loss = history.history["loss"]
-r_loss = history.history["reconstruction_loss"]
-v_loss = history.history["vqvae_loss"]
-
-plt.figure(figsize=(8, 12))
-plt.subplot(3, 1, 1)
-plt.plot(r_loss)
-plt.ylabel('Reconstruction Loss')
-plt.title('Reconstruction Loss')
-plt.xlabel('Epoch')
-
-plt.subplot(3, 1, 2)
-plt.plot(v_loss)
-plt.ylabel('VQ-VAE Loss')
-plt.title('VQ-VAE Loss')
-plt.xlabel('Epoch')
-
-plt.subplot(3, 1, 3)
-plt.plot(loss)
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.title('Total Loss')
-
-plt.tight_layout()
-plt.show()
 
 # Set up the PixelCNN to generate images that imitate the code, to generate
 # new brains
@@ -79,7 +52,7 @@ pixel_cnn.compile(
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=["accuracy"],
 )
-history = pixel_cnn.fit(
+pixelcnn_history = pixel_cnn.fit(
     x=codebook_indices,
     y=codebook_indices,
     batch_size=128,
@@ -90,11 +63,37 @@ history = pixel_cnn.fit(
 # Save the PixelCNN model
 pixel_cnn.save_weights(models_directory + pixelcnn_weights_filename)
 
+# Plot the training loss of the VQ-VAE
+loss = vqvae_history.history["loss"]
+r_loss = vqvae_history.history["reconstruction_loss"]
+v_loss = vqvae_history.history["vqvae_loss"]
+
+plt.figure(figsize=(8, 12))
+plt.subplot(3, 1, 1)
+plt.plot(r_loss)
+plt.ylabel('Reconstruction Loss')
+plt.title('Reconstruction Loss')
+plt.xlabel('Epoch')
+
+plt.subplot(3, 1, 2)
+plt.plot(v_loss)
+plt.ylabel('VQ-VAE Loss')
+plt.title('VQ-VAE Loss')
+plt.xlabel('Epoch')
+
+plt.subplot(3, 1, 3)
+plt.plot(loss)
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.title('Total Loss')
+
+plt.tight_layout()
+
 # Plot the loss and accuracy of the PixelCNN
-training_loss = history.history["loss"]
-training_accuracy = history.history["accuracy"]
-val_loss = history.history["val_loss"]
-val_accuracy = history.history["val_accuracy"]
+training_loss = pixelcnn_history.history["loss"]
+training_accuracy = pixelcnn_history.history["accuracy"]
+val_loss = pixelcnn_history.history["val_loss"]
+val_accuracy = pixelcnn_history.history["val_accuracy"]
 
 plt.figure(figsize=(8, 12))
 plt.subplot(2, 1, 1)
