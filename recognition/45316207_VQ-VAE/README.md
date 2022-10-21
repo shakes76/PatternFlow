@@ -1,6 +1,5 @@
 # Synthetic Brain MRI Image Generation with VQ-VAE (COMP3710)
 
-
 by Alex Nicholson, 45316207
 
 ---
@@ -94,4 +93,4 @@ In addition to statistical losses, a more real world metric to track the quality
 
 ---
 
-<center>Made with ❤️</center>
+Made with ❤️
