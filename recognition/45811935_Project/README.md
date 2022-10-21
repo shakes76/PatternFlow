@@ -82,6 +82,22 @@ without Alzheimer's Disease.
 
 The data was obtained from this link: https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI
 
+The data is separated into a train and test folder (see below):
+
+```
+ADNI_AC_NC_2D
+    AD_NC
+        train
+            AD
+            NC
+        test
+            AD
+            NC
+```
+
+It should be noted however that one merely requires a train and test folder, as discussed in
+[Usage](#usage).
+
 ## Final Model Architectures
 
 ![VQ-VAE Model](ReducedResults/vqvaeModel.png)
@@ -115,6 +131,11 @@ The data was obtained from this link: https://cloudstor.aarnet.edu.au/plus/s/L6b
 ![VQ-VAE Reconstructions 0](ReducedResults/SSIMResults.png)
 
 ## Usage
+
+Essentially, all that is required to use this model is to specify the path to your dataset in 
+the constant `FILE_PATH`, located in `train.py`. Using `tf.Dataset` functions, the code will 
+automatically ignore all labels for Alzheimer's vs non-Alzheimer's. Hence, all that is required 
+is to ensure there exist separate folders already for training and testing data.
 
 ### Dependencies
 
