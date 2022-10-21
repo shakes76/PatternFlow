@@ -79,15 +79,17 @@ def get_encoder(latent_dim=16):
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
+    x = layers.Conv2D(128, 3, activation="relu", padding="same")(x)
     encoder_outputs = layers.Conv2D(latent_dim, 1, padding="same")(x)
     return keras.Model(encoder_inputs, encoder_outputs, name="encoder")
 
 # Decoder for the VQ-VAE
 def get_decoder(latent_dim=16):
     latent_inputs = keras.Input(shape=get_encoder(latent_dim).output.shape[1:])
-    x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(
+    x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same")(
         latent_inputs
     )
+    x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
