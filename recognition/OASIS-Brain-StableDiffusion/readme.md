@@ -9,7 +9,7 @@ Stable Diffusion is a deep learning image generation model. Unlike other diffusi
 
 Source: https://arxiv.org/pdf/2112.10752.pdf
 
-For the model implemented here, the conditioning part of the stable diffusion model was intentionally dismissed as unnecessary since the task is to only recreate one specific type of data set. The conditioning would be needed if we were trying to recreate many types of data from a given input. For example, creating an image from text, in this case, text is the conditioning element.
+For the model implemented here, the conditioning part of the Stable Diffusion Model was intentionally dismissed as unnecessary since the task is to only recreate one specific type of data set. The conditioning would be needed if we were trying to recreate many types of data from a given input. For example, creating an image from text, in this case, text is the conditioning element.
 
 ## How Stable Diffusion Works
 At a high level, diffusion models work by progressively altering the training data by adding noise, and then "learn" to recover the data by reversing this noising process. After training, this reversing of the noising process can be applied to random noise, hence generating new data. In other words, a complete diffusion model can produce coherent images from initial random noise. 
@@ -131,7 +131,7 @@ return  out
 ```
 
 ## Training `train.py`
-The training loop for this network is a standard pytorch training loop consisting of the main model, optimizer, and loss function.
+The training loop for this network is a standard PyTorch training loop consisting of the main model, optimizer, and loss function.
 ### Main Model
 The main model for this training loop is the U-Net outlined above in the modules section.
 ### Optimizer
