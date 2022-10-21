@@ -82,6 +82,6 @@ Pillow==9.2.0
 ### Training, Validation and Testing Splits
 - I have used the test/train/validation split from the original dataset provided, which contains the following counts:
 
-|                   | Train | Validate | Test |
-| ----------------- | ----- | -------- | ---- |
-| Number of Samples | 9,664 | 1,120    | 544  |
+|                   | Train       | Validate     | Test     |
+| ----------------- | ----------- | ------------ | -------- |
+| Number of Samples | 9,664 (86%) | 1,120  (10%) | 544 (4%) | 
