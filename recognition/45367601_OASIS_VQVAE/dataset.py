@@ -4,7 +4,6 @@ from tensorflow import keras
 import os
 
 def load_oasis(root_dir = r"C:\Users\jorda\Documents"):
-    root_dir = r"C:\Users\jorda\Documents"
     directories = ["keras_png_slices_data\keras_png_slices_test",
                 "keras_png_slices_data\keras_png_slices_train",
                 "keras_png_slices_data\keras_png_slices_validate"]
