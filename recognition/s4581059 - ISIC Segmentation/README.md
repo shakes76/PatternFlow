@@ -27,11 +27,11 @@ The encoder section of the improved unet architecture works by condensing the in
     - sklearn: Version 1.1.2
 
 ## Appropiate Addresses
-    - This project contains only one relevant address: the data set file address.
-    - This address should be locally stored and must contain two subfolders named
-        1. "ISIC-2017_Training_Data"
-        2. "ISIC-2017_Training_Part1_GroundTruth"
-    This file uses the address: "C:/Users/danie/Downloads/ISIC DATA/" which fits the above criteria but this can be edited using the _path variable in the train.py file
+This project contains only one relevant address: the data set file address.
+This address should be locally stored and must contain two subfolders named
+    1. "ISIC-2017_Training_Data"
+    2. "ISIC-2017_Training_Part1_GroundTruth"
+This file uses the address: "C:/Users/danie/Downloads/ISIC DATA/" which fits the above criteria but this can be edited using the _path variable in the train.py file
 
 ## Training Validation Split
 The training validation split method can be manipulated as the split ratio is a parameter to the method, however, a split of 0.2 was used (and is the default, if left unspecified) and thus 80% of the data was used for training. It is important to note the the split decimal is for equal parts validation and testing. This was used as this yielded good results in the training
@@ -41,31 +41,29 @@ The training validation split method can be manipulated as the split ratio is a 
 The training model uses 50 epoch to generate the model - the data for each can be found in epoch_data.txt
 The first 5 and the last 5 epochs data can be found below:
 
-Epoch 1/50
-12/12 [==============================] - 30s 2s/step - loss: 0.6256 - dice_similarity: 0.6508 - val_loss: 0.5168 - val_dice_similarity: 0.7049
-Epoch 2/50
-12/12 [==============================] - 32s 3s/step - loss: 0.4605 - dice_similarity: 0.7796 - val_loss: 0.4462 - val_dice_similarity: 0.7777
-Epoch 3/50
-12/12 [==============================] - 31s 3s/step - loss: 0.4510 - dice_similarity: 0.7699 - val_loss: 0.3956 - val_dice_similarity: 0.7892
-Epoch 4/50
-12/12 [==============================] - 31s 3s/step - loss: 0.4519 - dice_similarity: 0.7713 - val_loss: 0.3969 - val_dice_similarity: 0.8153
-Epoch 5/50
-12/12 [==============================] - 31s 3s/step - loss: 0.3791 - dice_similarity: 0.8116 - val_loss: 0.3200 - val_dice_similarity: 0.8494
+    Epoch 1/50 <br>
+    loss: 0.6256 - dice_similarity: 0.6508 - val_loss: 0.5168 - val_dice_similarity: 0.7049 <br>
+    Epoch 2/50 <br> 
+    loss: 0.4605 - dice_similarity: 0.7796 - val_loss: 0.4462 - val_dice_similarity: 0.7777 <br>
+    Epoch 3/50 <br>
+    loss: 0.4510 - dice_similarity: 0.7699 - val_loss: 0.3956 - val_dice_similarity: 0.7892 <br>
+    Epoch 4/50 <br> 
+    loss: 0.4519 - dice_similarity: 0.7713 - val_loss: 0.3969 - val_dice_similarity: 0.8153 <br>
+    Epoch 5/50 <br>
+    loss: 0.3791 - dice_similarity: 0.8116 - val_loss: 0.3200 - val_dice_similarity: 0.8494 <br>
 
-...
+    ...
 
-Epoch 45/50
-12/12 [==============================] - 29s 2s/step - loss: 0.1467 - dice_similarity: 0.9353 - val_loss: 0.1338 - val_dice_similarity: 0.9412
-Epoch 46/50
-12/12 [==============================] - 30s 3s/step - loss: 0.1481 - dice_similarity: 0.9350 - val_loss: 0.1293 - val_dice_similarity: 0.9453
-Epoch 47/50
-12/12 [==============================] - 30s 3s/step - loss: 0.1207 - dice_similarity: 0.9446 - val_loss: 0.1285 - val_dice_similarity: 0.9459
-Epoch 48/50
-12/12 [==============================] - 31s 3s/step - loss: 0.1119 - dice_similarity: 0.9503 - val_loss: 0.1291 - val_dice_similarity: 0.9447
-Epoch 49/50
-12/12 [==============================] - 32s 3s/step - loss: 0.1357 - dice_similarity: 0.9399 - val_loss: 0.1290 - val_dice_similarity: 0.9458
-Epoch 50/50
-12/12 [==============================] - 32s 3s/step - loss: 0.1361 - dice_similarity: 0.9406 - val_loss: 0.1264 - val_dice_similarity: 0.9455
+    Epoch 46/50 <br>
+    loss: 0.1481 - dice_similarity: 0.9350 - val_loss: 0.1293 - val_dice_similarity: 0.9453 <br>
+    Epoch 47/50 <br>
+    loss: 0.1207 - dice_similarity: 0.9446 - val_loss: 0.1285 - val_dice_similarity: 0.9459 <br>
+    Epoch 48/50 <br>
+    loss: 0.1119 - dice_similarity: 0.9503 - val_loss: 0.1291 - val_dice_similarity: 0.9447 <br>
+    Epoch 49/50 <br>
+    loss: 0.1357 - dice_similarity: 0.9399 - val_loss: 0.1290 - val_dice_similarity: 0.9458 <br>
+    Epoch 50/50 <br>
+    loss: 0.1361 - dice_similarity: 0.9406 - val_loss: 0.1264 - val_dice_similarity: 0.9455 <br>
 
 It is evident from the results above that the dice_similarity of the model well exceeds the target of 80% as it consistently holds and improves on 80% from epoch 5
 
@@ -83,17 +81,17 @@ For mask comparison predictions see ./imgs/mask.png (shows 4 random samples)
 
 ## Example Use:
 This repository contains the saved file for the model of which's data is shown to load the file. Add the follow to the predict.py file: 
-if __name__ == "__main__":
-    saved_model = load_saved_model()
-    saved_model.summary() <- will show the model summary
+    if __name__ == "__main__":
+        saved_model = load_saved_model()
+        saved_model.summary() <- will show the model summary
 These can be run using the bash equivalent from terminal, however, will not be able to allow change to private variables such as _path
 
 Analagously, to train the network, the following can be added to the train.py file:
-if __name__ == "__main__":
-    train_model()
+    if __name__ == "__main__":
+        train_model()
 
 ## Bibliography
-[1] Fabian Isensee et al. (2018, February 28), Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge, available at: https://arxiv.org/pdf/1802.10508v1.pdf
-[2] Karan Jakhar (2019, October 19), Dice coefficient, IOU; for medium.com, available at: https://karan-jakhar.medium.com/100-days-of-code-day-7-84e4918cb72c
-[3] Angel Cummings, Nicholas Kurtansky (2017), Overview of the ISIC Collaboration, available at: https://www.isic-archive.com/#!/topWithHeader/tightContentTop/about/aboutIsicOverview
-[4] Chen-Yu Lee et al. (N.D) Deeply Supervised Nets, available at: https://pages.ucsd.edu/~ztu/publication/aistats15_dsn.pdf
+[1] Fabian Isensee et al. (2018, February 28), Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge, available at: https://arxiv.org/pdf/1802.10508v1.pdf <br>
+[2] Karan Jakhar (2019, October 19), Dice coefficient, IOU; for medium.com, available at: https://karan-jakhar.medium.com/100-days-of-code-day-7-84e4918cb72c <br>
+[3] Angel Cummings, Nicholas Kurtansky (2017), Overview of the ISIC Collaboration, available at: https://www.isic-archive.com/#!/topWithHeader/tightContentTop/about/aboutIsicOverview <br>
+[4] Chen-Yu Lee et al. (N.D) Deeply Supervised Nets, available at: https://pages.ucsd.edu/~ztu/publication/aistats15_dsn.pdf <br>
