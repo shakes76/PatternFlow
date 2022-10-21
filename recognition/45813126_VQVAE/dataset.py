@@ -1,3 +1,10 @@
+"""
+File: dataset.py
+Author: Georgia Spanevello
+Student ID: 45813126
+Description: Contains the class to load and process the OASIS dataset.
+"""
+
 from matplotlib import image
 import glob
 import numpy as np

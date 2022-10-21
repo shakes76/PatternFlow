@@ -1,3 +1,10 @@
+"""
+File: train.py
+Author: Georgia Spanevello
+Student ID: 45813126
+Description: Contains the classes required for training, validating, testing and saving the model.
+"""
+
 from dataset import Dataset
 from modules import VAE
 import tensorflow as tf

@@ -1,3 +1,10 @@
+"""
+File: modules.py
+Author: Georgia Spanevello
+Student ID: 45813126
+Description: Contains the classes required to create the model.
+"""
+
 import tensorflow as tf
 
 
