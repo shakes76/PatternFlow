@@ -4,11 +4,8 @@ from tensorflow.keras import Model
 import tensorflow_addons as tfa
 import numpy as np
 
-IMAGE_SIZE = 128 # latent space will have an encoding for every pixel
-CHANNELS = 3 #RGB
-BATCH_SIZE = 1
+IMAGE_SIZE = 128
 KERNEL_SIZE = 3
-STRIDE = 2
 FIRST_DEPTH = 16
 DROPOUT = 0.3
 activation_func = LeakyReLU(alpha=0.01)
@@ -66,7 +63,7 @@ def decoding_layer(input, add, depth):
 
     return loc
 
-def improved_uNET():
+def Improved_UNet():
     """
     Improved UNet Architecture build from block defined above.
     """

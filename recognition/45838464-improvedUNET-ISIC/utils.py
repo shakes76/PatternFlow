@@ -22,27 +22,27 @@ def dice_coefficient_loss(truth, predition):
     """
     return 1 - dice_coefficient(truth, predition)
 
-def plot_accuracy(history):
+def plot_metrics(history):
     """
-    Plots the accuracy of the model throughout the training process.
+    Plots the dice coefficient and the loss of the model throughout the training process.
     """
-    plt.plot(history.history['acc'], label='Training Accuracy')
-    plt.plot(history["val_acc"], label="Validation Accuracy")
-    plt.xlabel("Epochs")
-    plt.ylabel("Accuracy (%)")
-    plt.title("Test and Validation Accuracy")
-    plt.legend(loc='lower right')
-    plt.savefig("./images/accuracy.png")
-
-def plot_loss(history):
-    """
-    Plots the loss of the model throughout a training session.
-    """
+    plt.figure(1)
     plt.plot(history.history['loss'], label='Training Loss')
-    plt.plot(history["val_loss"], label="Validation Loss")
+    plt.plot(history.history['val_loss'], label="Validation Loss")
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
-    plt.title("Test and Validation Loss")
+    plt.title("Training and Validation Loss")
     plt.legend(loc='lower right')
-    plt.savefig("./images/loss.png")
+    plt.savefig("./report-images/loss.png")
+
+    plt.figure(2)
+    plt.plot(history.history['dice_coefficient'], label='Training Accuracy')
+    plt.plot(history.history['val_dice_coefficient'], label="Validation Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Dice Similarity")
+    plt.title("Training and Validation Accuracy")
+    plt.legend(loc='lower right')
+    plt.savefig("./report-images/dice_accuracy.png")
+
+   
 

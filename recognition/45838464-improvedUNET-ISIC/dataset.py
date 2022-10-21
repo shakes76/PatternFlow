@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import numpy as np
-import os
 import glob
 
 def preprocess_data(path):
@@ -42,6 +41,7 @@ def preprocess_masks(path):
         mask = mask / 255.0
         masks.append(mask)
 
+    # convert to one-hot encoding
     masks = np.array(masks) 
     masks = to_categorical(masks)  
     return masks

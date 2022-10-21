@@ -1,12 +1,12 @@
 from dataset import preprocess_data, preprocess_masks
 from modules import Improved_UNet
-from utils import plot_accuracy, plot_loss
+from utils import dice_coefficient, dice_coefficient_loss, plot_metrics
 from tensorflow.keras.optimizers import Adam
 import numpy as np
 import matplotlib.pyplot as plt 
 
 
-def training(datapaths, batch_size, epochs):
+def train(datapaths, batch_size, epochs):
     """
     Trains the Improved UNet model based on the given data.
     datapaths is a list in the form:
@@ -28,7 +28,7 @@ def training(datapaths, batch_size, epochs):
 
     # build up Improved UNet model
     model = Improved_UNet()
-    model.compile(optimizer = Adam(0.0005), loss = "cro", metrics=['accuracy', modules.DSC])
+    model.compile(optimizer = Adam(0.0005), loss=dice_coefficient_loss, metrics=[dice_coefficient])
 
     history = model.fit(x_train, y_train,  validation_data= (x_val, y_val),
                             batch_size=batch_size,shuffle='True',epochs=epochs)
@@ -36,6 +36,10 @@ def training(datapaths, batch_size, epochs):
     # save model
     model.save('./trained-model', include_optimizer=True, save_format='tf')
     # plot learning
-    plot_accuracy(history)
-    plot_loss(history)
-    plot_disc_scores()
+    plot_metrics(history)
+
+# if __name__ == "__main__":
+#     epochs = 30
+#     batch_size = 32
+    
+#     train()
