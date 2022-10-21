@@ -146,3 +146,10 @@ def dice_similarity(prediction, truth):
   denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
 
   return 2*numerator/denom
+
+#Calculates DICE loss:
+def dice_loss(prediction, truth):
+  numerator = torch.sum(torch.mul(prediction[0, 0, :, :], truth[0,0,:,:])).item()
+  denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
+
+  return 1 + -2*numerator/denom

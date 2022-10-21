@@ -1,6 +1,6 @@
 #Imports
 from dataset.py import ISIC_Dataset
-from modules.py import UNet, dice_similarity
+from modules.py import UNet, dice_loss
 import torch
 from torch.utils.data import DataLoader
 
@@ -22,35 +22,36 @@ valid_dataset = ISIC_Dataset(valid_image_path, valid_segmentation_path)
 
 trainloader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 
-#Load model from file
+#Create model to train
 model = UNet().to(device)
+save_path = "./Trained_Model.pth"
 
 #Optimiser as per paper
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.0001)
 
 #Training Loop that records metrics
-for epoch in range(EPOCHS):
+for epoch in range(epochs):
 
     #Training
-    train_loss = 0.0
     model.train()
-    for i, (imgs, truths) in enumerate(trainloader):
-      print(i)
 
+    for i, (imgs, truths) in enumerate(trainloader):
       imgs = imgs.to(device)
       truths = truths.to(device)
 
       #Zero the gradient
       optimizer.zero_grad()
 
-      #Forward (and backward) Pass
+      #Forward Pass
       outputs = model(imgs)
 
       #Calculate loss
-      similarity = dice_similarity(outputs, truths)
-      print("DICE Similarity Coefficient ", similarity)
+      loss = dice_loss(outputs, truths)
+      print("DICE Loss ", loss)
+      loss.backward()
       optimizer.step()
 
-    torch.save(model.state_dict(), save_path)
+      #Validation would go here
 
-#Save Trained weights
+    #Save Trained weights
+    torch.save(model.state_dict(), save_path)
