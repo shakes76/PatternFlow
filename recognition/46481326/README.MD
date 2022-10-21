@@ -41,6 +41,8 @@ The training and testing process are managed by the driver.py file and can be in
 2. `python driver.py` Run script to begin training and testing
 The driver file trains the model and generates required outputs.
 
+Note: If you would like to retrain the model and discard the existing training, run `rm state/*` to delete the saved model state(s).
+
 # Model
 ## Modules
 All models are defined in PyTorch in the models module:
