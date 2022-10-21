@@ -37,9 +37,10 @@ def get_mask(predicted, threshold):
 
 def evaluate_model(model, loader, limit, batch_size):
     """ 
-    Report average loss over validation dataset
+    Report average loss and DSC values over validation dataset
+    returns: Tuple(avg losses, avg DSC)
     """
-    model.eval()
+    model.eval() # disable setting model weights
     with torch.no_grad():
         losses = []
         dscs = []
@@ -56,7 +57,7 @@ def evaluate_model(model, loader, limit, batch_size):
 
             if batch_no >= limit/batch_size:
                 break
-    model.train()
+    model.train() # re-enable model learning
     return (sum(losses)/len(losses), sum(dscs)/len(dscs))
 
 
@@ -68,7 +69,10 @@ if __name__ == '__main__':
         print("CUDA not available for training! Aborting...")
     device = 'cuda'
 
+    # batch size set to 1 due to limited memory
     batch_size = 1
+
+    # load datasets, see README.md for expected folder structure
     dataset_train = Dataset(
         data_path='data/training/data', 
         truth_path='data/training/truth', 
@@ -79,15 +83,21 @@ if __name__ == '__main__':
         truth_path='data/validation/truth', 
         metadata_path='data/validation/data/ISIC-2017_Validation_Data_metadata.csv'
         )
+
+    # training loader set to shuffle in order to cover a wider set of the training set
     dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
     dataloader_validation = torch.utils.data.DataLoader(dataset_validation, batch_size=batch_size, shuffle=False)
     
 
+    # hyperparameters
     learning_rate = 5e-4
     decay = 0.985
     num_epochs = 15
 
     model = IUNET(3, 16).to(device)
+
+    # set optimizer and learning rate schedule according to Isensee et al.
+    # Adam optimizer + exponential learning rate scheduler
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
     sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=decay)
 
@@ -120,6 +130,8 @@ if __name__ == '__main__':
             model.zero_grad()
             loss.backward()
             optimizer.step()
+
+            # stop after 800 elements per epoch due to limited resources
             if batch_no == 800 / batch_size:
                 break
         sched.step()
