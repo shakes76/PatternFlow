@@ -11,7 +11,7 @@ from dataset import preprocess
 from modules import Net 
 import torch.optim as optim
 
-MODEL_PATH = '/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt'
+MODEL_PATH = './best_model.pt'
 N_EPOCHS = 300
 N_HID = 20
 N_OUTPUT = 4
