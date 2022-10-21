@@ -96,9 +96,6 @@ def plot_reconstructions(trained_vqvae_model, dataset, time):
         plt.title("Reconstructed")
         plt.axis("off")
 
-        print(test_image)
-        print(reconstructed_image)
-
         i += 1
 
     plt.savefig(f"out/{time}/reconstruction.png")
