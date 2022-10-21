@@ -58,7 +58,7 @@ For an illustration of the loss during the training process, see below:
 
 For an illustration of the denoising process occuring on the latent space, see below:
 <br>
-![LatentSpaceDenoising](Images/UNetLoss.png)
+![LatentSpaceDenoising](Images/DenoisingLatentSpace.png)
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
