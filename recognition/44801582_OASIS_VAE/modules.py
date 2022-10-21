@@ -83,3 +83,17 @@ class MaskedConvLayer(keras.layers.Layer):
     def call(self, inputs):
         self.convolution.kernel.assign(self.convolution.kernel * self.mask)
         return self.convolution(inputs)
+
+
+class ResidBlock(keras.layers.Layer):
+    def __init__(self, filters, **kwargs):
+        super(ResidBlock, self).__init__(**kwargs)
+        self.c1 = keras.layers.Conv2D(filters, 1, activation="relu")
+        self.mc = MaskedConvLayer(filters // 2, 3, activation="relu", padding="same")
+        self.c2 = keras.layers.Conv2D(filters, 1, activation="relu")
+
+    def call(self, inputs):
+        x = self.c1(inputs)
+        x = self.mc(x)
+        x = self.c2(x)
+        return keras.layers.add([inputs, x])
