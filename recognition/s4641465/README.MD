@@ -37,6 +37,12 @@ This graph shows the loss and the validation loss over the 100 epoch running tim
 - run train.py to train the model
 - run predict.py to output the first 32 test images, low res versions, and upscaled versions
 
+# Dependencies:
+- Tensorflow
+- matplotlib
+- numpy
+
+
 ***
 References:
 
