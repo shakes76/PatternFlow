@@ -24,6 +24,7 @@ The current best model trained reached 63% accuracy on the test set, with 75% te
 - `learning_rate` = 0.001
 - `weight_decay` = 0.0015
 - `batch_size` = 256
+- `patch_size` = 8
 - `num_epochs` = 50
 - `image_size` = 128
 - `transformer_layers` = 8
@@ -38,6 +39,29 @@ Loss:
 
 ![Accuracy](./images/lr001wd0015img128loss.png)
 
+Another configuration attempted to solve the fluctuating validation accuracy:
+- `learning_rate` = 0.0015
+- `weight_decay` = 0.0005
+- `batch_size` = 256
+- `patch_size` = 16
+- `num_epochs` = 100
+- `image_size` = 128
+- `transformer_layers` = 8
+
+Accuracy:
+
+![Accuracy](./images/largerpatchaccuracy.png)
+
+Loss:
+
+![Accuracy](./images/largerpatchloss.png)
+
+## Discussion, conclusions and future improvements
+Several other omitted attempts to improve the model performance were made, ranging from varying learning rate and weight decay combinations, to image, batch and patch sizes. None of these yielded meaningful results, and neither validation accuracy nor testing accuracy was above 0.8 for a substatial duration of the training process.
+
+While the task was to achieve greater than 80% accuracy on the test set, this proved quite difficult and would require fine tuning of each of the hyperparameters to see improvement. 
+
+A potential cause for this difficulty may be the nature of the train and test images being too different, preventing the model from drawing reasonable connections between features. A method of cropping the images to better fit the brains themselves may also benefit the model, and reduce computation time for smaller images.
 
 ## Requirements
 - tensorflow 2.10.0
