@@ -69,3 +69,22 @@ class PatchEncoder(layers.Layer):
     encoded = self.projection(patch) + self.position_embedding(positions)
     return encoded
 
+def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes):
+    inputs = layers.Input(shape=input_shape)
+    # Create patches.
+    patches = Patches(patch_size)(inputs)
+    # Encode patches.
+    encoded_patches = PatchEncoder(num_patches, projection_dim)(patches)
+
+    """
+    Feed transformer encoder from ViT paper:
+    embedded patches -> norm -> multi-head attention -> norm -> mlp
+
+    Classify with softmax:
+    mlp -> output(softmax)
+    """
+
+    output = layers.Dense(num_classes, activation="softmax")
+    # Create the Keras model.
+    model = keras.Model(inputs=inputs, outputs=output)
+    return model
