@@ -6,6 +6,7 @@ import tensorflow as tf
 from dataset import get_train_dataset, get_test_dataset
 import modules
 from modules import VQVAETrainer, get_pixelcnn
+from hyperparameters import *
 from utils import models_directory, vqvae_weights_filename, pixelcnn_weights_filename
 
 # Get the datasets
@@ -14,18 +15,19 @@ test_ds = get_test_dataset()
 data_variance = np.var(train_ds)
 
 # Train the VQ-VAE model
-vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
+vqvae_trainer = VQVAETrainer(
+        data_variance,
+        latent_dim=latent_dim,
+        num_embeddings=num_embeddings,
+)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_history = vqvae_trainer.fit(train_ds, epochs=30, batch_size=128)
+vqvae_history = vqvae_trainer.fit(train_ds, epochs=vqvae_epochs, batch_size=vqvae_batch_size)
 
 # Save the model
 vqvae_trainer.save_weights(models_directory + vqvae_weights_filename)
 
 # Set up the PixelCNN to generate images that imitate the code, to generate
 # new brains
-num_residual_blocks = 2
-num_pixelcnn_layers = 2
-
 encoder = vqvae_trainer.vqvae.get_layer("encoder")
 quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
 pixelcnn_input_shape = quantizer.output_shape[1:-1]
@@ -55,9 +57,9 @@ pixel_cnn.compile(
 pixelcnn_history = pixel_cnn.fit(
     x=codebook_indices,
     y=codebook_indices,
-    batch_size=128,
-    epochs=30,
-    validation_split=0.1,
+    batch_size=pixelcnn_batch_size,
+    epochs=pixelcnn_epochs,
+    validation_split=pixelcnn_validation_split,
 )
 
 # Save the PixelCNN model

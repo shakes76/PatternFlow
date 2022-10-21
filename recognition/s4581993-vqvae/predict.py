@@ -9,6 +9,7 @@ import tensorflow_probability as tfp
 
 from dataset import get_test_dataset, get_train_dataset, scale_image, image_size
 from modules import VQVAETrainer, get_pixelcnn
+from hyperparameters import *
 from utils import models_directory, vqvae_weights_filename, pixelcnn_weights_filename
 
 # Make sure the trained weights exist
@@ -25,7 +26,11 @@ test_ds = get_test_dataset()
 # Create the model and load the weights
 train_ds = get_train_dataset()
 data_variance = np.var(train_ds)
-vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
+vqvae_trainer = VQVAETrainer(
+        data_variance,
+        latent_dim=latent_dim,
+        num_embeddings=num_embeddings,
+)
 vqvae_trainer.load_weights(models_directory + vqvae_weights_filename)
 
 encoder = vqvae_trainer.vqvae.get_layer("encoder")
@@ -33,9 +38,6 @@ quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
 decoder = vqvae_trainer.vqvae.get_layer("decoder")
 
 # Load the PixelCNN model
-num_residual_blocks = 2
-num_pixelcnn_layers = 2
-
 pixelcnn_input_shape = quantizer.output_shape[1:-1]
 print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
 
