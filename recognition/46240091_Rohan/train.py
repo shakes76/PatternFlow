@@ -1,7 +1,7 @@
 from modules import *
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-VQVAE_EPOCHS = 25
+VQVAE_EPOCHS = 30
 VQVAE_BATCHSIZE = 64
 PCNN_EPOCHS = 100
 PCNN_BATCHSIZE = 128
@@ -14,16 +14,19 @@ def vqvae_training(training_data, data_variance, latent_dims = 16, num_embedding
 
 def pcnn_training(pixel_cnn_model, codebook_indices):
   pixel_cnn_model.compile(optimizer=keras.optimizers.Adam(3e-4),loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"],)
-  history = pixel_cnn_model.fit(x=codebook_indices, y=codebook_indices, batch_size=128, epochs=100, validation_split=0.1)
+  history = pixel_cnn_model.fit(x=codebook_indices, y=codebook_indices, batch_size=PCNN_BATCHSIZE, epochs=PCNN_EPOCHS, validation_split=0.1)
   return pixel_cnn_model, history
 
 
 def VQVAE_training_plot(vqvae_history):
   plt.plot(vqvae_history.history['reconstruction_loss'])
+  plt.plot(vqvae_history.history['total_loss'])
+  plt.plot(vqvae_history.history['vqvae_loss'])
   plt.title('VQVAE Training Loss')
   plt.ylabel('Loss')
   plt.xlabel('Epoch')
-  plt.legend(['Reconstruction Loss'])
+  plt.legend(['Reconstruction Loss', 'Total Loss', 'VQVAE loss'])
+  plt.ylim([0, 1])
   plt.show()
 
 

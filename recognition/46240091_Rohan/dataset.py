@@ -2,7 +2,9 @@ from tensorflow import keras
 import numpy as np
 import glob
 
+#Reducing size due to memory constraints
 SHAPE = (64,64)
+
 
 def data_loader(dir_path, scale_flag):
   """

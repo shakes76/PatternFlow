@@ -244,3 +244,30 @@ def pcnn_model_maker(input_shape, existing_vqvae):
     l = keras.layers.Conv2D(filters=existing_vqvae.num_embeddings, kernel_size=1, strides=1)(l)
 
     return keras.Model(inputs=pixelcnn_inputs, outputs=l, name = 'pixelcnn')
+
+
+def generate_new_images(pcnn, vq, vqvaemodel, enc_output_shape):
+  """
+  Generates new images using the trained pixelcnn model
+  Reference: https://keras.io/examples/generative/vq_vae/#codebook-sampling
+  """
+
+  # Ininitialising priors
+  priors = np.zeros(shape=(50,) + (pcnn.input_shape)[1:])
+
+  # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+  for row in range(priors.shape[1]):
+      for col in range(priors.shape[2]):
+          logits = pcnn.predict(priors)
+          next = tfp.distributions.Categorical(logits).sample()
+          priors[:, row, col] = next[:, row, col]
+
+  # Perform an embedding lookup.
+  pretrained_embeddings = vq.embeddings
+  priors_ohe = tf.one_hot(priors.astype("int32"), vqvaemodel.num_embeddings).numpy()
+  quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
+  quantized = tf.reshape(quantized, (-1, *(enc_output_shape[1:])))
+
+  # Generate novel images.
+  decoder = vqvaemodel.vqvae1.get_layer("decoder")
+  return decoder.predict(quantized)

@@ -1,19 +1,14 @@
-import os
 from dataset import *
 from modules import *
 from train import *
 
-OASIS_TRAIN_DIR = os.path.join(os.curdir, "keras_png_slices_data", "keras_png_slices_train")
-OASIS_TEST_DIR = os.path.join(os.curdir, "keras_png_slices_data", "keras_png_slices_test")
-
-
-NUM_LATENT_DIMS = 16
-NUM_EMBEDDINGS = 128
+TRAIN = "./keras_png_slices_data/keras_png_slices_train"
+TEST = "./keras_png_slices_data/keras_png_slices_test"
 
 #Loading and preprocesing the data 
-xnotscaled = data_loader(OASIS_TRAIN_DIR, scale_flag=False)
-x = data_loader(OASIS_TRAIN_DIR,scale_flag=True)
-xt = data_loader(OASIS_TEST_DIR, scale_flag=True)
+xnotscaled = data_loader(TRAIN, scale_flag=False)
+x = data_loader(TRAIN,scale_flag=True)
+xt = data_loader(TEST, scale_flag=True)
 
 #Variance in training images
 data_variance = np.var(xnotscaled / 255.0)
@@ -30,26 +25,53 @@ VQVAE_training_plot(history)
 #Plotting the actual images with reconstructed ones along with ssim
 print("Showing actual images with reconstructed images")
 trained_vqvae_model = vqvae.vqvae1
-# 10 random test images
-idx = np.random.choice(len(xt), 10)
-test_images = xt[idx]
-# Perform predictions on test images
+#Plotting first 10 images from test data
+test_images = xt[:10]
+# Prediction
 reconstructions_test = trained_vqvae_model.predict(test_images)
-total = 0
-for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-  plt.subplot(1, 2, 1)
-  plt.imshow(test_image.squeeze(), cmap=plt.cm.gray)
-  plt.title("Test Image")
-  plt.axis("off")
+#Plotting the reconstructed images
+average_ssim = plot_vqvae_recons(test_images, reconstructions_test)
+print("Average SSIM = ", average_ssim)  
 
-  plt.subplot(1, 2, 2)
-  plt.imshow(reconstructed_image.squeeze(), cmap=plt.cm.gray)
-  plt.title("Reconstructed Test Image")
-  plt.axis("off")
-  plt.show()
-  total += tf.image.ssim(test_image, reconstructed_image, max_val=1)
-print("Average SSIM = ", total/10)  
+#PixelCNN model initialization and training, from https://keras.io/examples/generative/vq_vae/#prepare-data-to-train-the-pixelcnn
 
+#Getting the models
+encoder = vqvae.vqvae1.get_layer("encoder")
+quantizer = vqvae.vqvae1.get_layer("vector_quantizer")
+
+# Flatten outputs from encoder
+encoded_outputs = encoder.predict(x)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+
+# Generating the codebook indices by passing encoder outputs to vqlayer
+codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+#Making the PixelCNN model
+pixelcnn = pcnn_model_maker(pixelcnn_input_shape, vqvae)
+
+#Training the model and plotting the loss
+trained_pcnn, pcnn_history = pcnn_training(pixelcnn, codebook_indices)
+PCNN_training_plot(pcnn_history)
+
+#Generating new images and plotting them to see their clarity
+new_images = generate_new_images(pixelcnn, quantizer, vqvae, encoded_outputs.shape)
+
+i1 ,i3, i5 = xt[:3] 
+i2, i4, i6 = new_images[:3]
+fig = plt.figure(figsize = (12,12))
+count = 0
+grid = ImageGrid(fig,111, nrows_ncols=(3,2), axes_pad=0.1)
+for ax, im in zip(grid, [i1,i2,i3,i4, i5, i6]):
+  if (count%2 != 0): 
+    ax.set_title('New Generated Image')
+  else:
+    ax.set_title('Original test image')
+  ax.axis("off")
+  ax.imshow(im.squeeze(),  cmap='gray')
+  count += 1
+plt.show()
 
 
 
