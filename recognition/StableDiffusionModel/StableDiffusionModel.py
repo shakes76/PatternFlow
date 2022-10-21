@@ -78,6 +78,69 @@ class Block(kr.layers.Layer):
 
         x = self.act(x)
         return x
+    
+class ResidualBlock(kr.layers.Layer):
+    def __init__(self, channelsIn, channelsOut, timeEmbeddingDim=None, groups=8):
+        super().__init__()
+
+        # Multilayer perceptron injecting embedding
+        self.mlp = kr.Sequential([
+            kr.nn.silu(),
+            kr.nn.Dense(units=timeEmbeddingDim * 2)
+        ]) if timeEmbeddingDim is not None else None
+
+        self.block1 = Block(channelsOut, groups=groups)
+        self.block2 = Block(channelsOut, groups=groups)
+        self.conv1 = kr.layers.Conv2D(filters=channelsOut, kernel_size=1, strides=1) if channelsIn != channelsOut else IdentityLayer()
+
+    def call(self, input, timeEmbedding=None, training = True):
+      gammaBeta = None
+
+      if (self.mlp is not None and timeEmbedding is not None) :
+        timeEmbedding = self.mlp(timeEmbedding)
+        timeEmbedding = rearrange(timeEmbedding, 'b c -> b 1 1 c')
+        gammaBeta = tf.split(timeEmbedding, num_or_size_splits=2, axis=-1)
+
+      x = self.block1(input, gamma_beta=gammaBeta, training=training)
+      x = self.block2(x, training=training)
+
+      return x + self.conv1(input)
+
+class LinearAttention(kr.layers.Layer):
+    def __init__(self, dim, heads=4, headDim=32):
+        super(LinearAttention, self).__init__()
+        self.scale = headDim ** -0.5
+        self.heads = heads
+        self.hiddenDim = headDim * heads
+
+        self.attend = kr.nn.Softmax()
+        self.ConvToQueryKeyVal = kr.layers.Conv2D(filters=self.hiddenDim * 3, kernel_size=1, strides=1, use_bias=False)
+
+        self.output = kr.Sequential([
+            kr.layers.Conv2D(filters=dim, kernel_size=1, strides=1),
+            kr.layers.LayerNormalization(dim)
+        ])
+
+
+    ## TODO: rewrite later, this is maybe a bit verbose.
+    def call(self, x, training=True):
+        b, h, w, c = x.shape
+        queryKeyVal = self.ConvToQueryKeyVal(x)
+        queryKeyVal = tf.split(queryKeyVal, num_or_size_splits=3, axis=-1)
+        query, key, val = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', h=self.heads), queryKeyVal)
+
+        query = tf.nn.softmax(query, axis=-2)
+        key = tf.nn.softmax(key, axis=-1)
+
+        query = query * self.scale
+        context = tf.einsum('b h d n, b h e n -> b h d e', key, val)
+
+        out = tf.einsum('b h d e, b h d n -> b h e n', context, query)
+        out = rearrange(out, 'b h c (x y) -> b x y (h c)', h=self.heads, x=h, y=w)
+        out = self.output(out, training=training)
+        return out
+
+
 
 
 
