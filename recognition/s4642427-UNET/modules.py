@@ -1,5 +1,5 @@
 
-from typing import Concatenate
+from keras.layers.merge import concatenate
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, MaxPool2D, BatchNormalization, Conv2DTranspose
 
@@ -55,22 +55,22 @@ class Unet(tf.keras.Model):
 
     def expansion(self, input):
         x = Conv2DTranspose(512, (3,3), strides=(2,2), padding='same')(input)
-        x = Concatenate([x, self.skip_connection_1], axis=3)
+        x = concatenate([x, self.skip_connection_1], axis=3)
         x = Conv2D(512, 3, **self.conv_args)(x)
         x = Conv2D(512, 3, **self.conv_args)(x)
 
         x = Conv2DTranspose(256, (3,3), strides=(2,2), padding='same')(input)
-        x = Concatenate([x, self.skip_connection_2], axis=3)
+        x = concatenate([x, self.skip_connection_2], axis=3)
         x = Conv2D(256, 3, **self.conv_args)(x)
         x = Conv2D(256, 3, **self.conv_args)(x)
 
         x = Conv2DTranspose(128, (3,3), strides=(2,2), padding='same')(input)
-        x = Concatenate([x, self.skip_connection_3], axis=3)
+        x = concatenate([x, self.skip_connection_3], axis=3)
         x = Conv2D(128, 3, **self.conv_args)(x)
         x = Conv2D(128, 3, **self.conv_args)(x)
 
         x = Conv2DTranspose(64, (3,3), strides=(2,2), padding='same')(input)
-        x = Concatenate([x, self.skip_connection_4], axis=3)
+        x = concatenate([x, self.skip_connection_4], axis=3)
         x = Conv2D(64, 3, **self.conv_args)(x)
         output = Conv2D(64, 3, **self.conv_args)(x)
         return output
