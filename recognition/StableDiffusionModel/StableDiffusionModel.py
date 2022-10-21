@@ -180,6 +180,36 @@ class UNetBlock(kr.layers.Layer) :
         #print(transformed)
 
         return (x,transformed)
+    
+class Attention(kr.layers.Layer):
+    def __init__(self, dim, heads=4, headDim=32):
+        super(Attention, self).__init__()
+        self.scale = headDim ** -0.5
+        self.heads = heads
+        self.hiddenDim = headDim * heads
+
+        self.convQueryKeyVal = kr.layers.Conv2D(filters=self.hiddenDim * 3, kernel_size=1, strides=1, use_bias=False)
+        self.conv = kr.layers.Conv2D(filters=dim, kernel_size=1, strides=1)
+
+    def call(self, x, training=True):
+        b, h, w, c = x.shape
+        queryKeyValue = self.convQueryKeyVal(x)
+        queryKeyValue = tf.split(queryKeyValue, num_or_size_splits=3, axis=-1)
+        query, key, value = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', h=self.heads), queryKeyValue)
+        query = query * self.scale
+
+        sim = tf.einsum('b h d i, b h d j -> b h i j', query, key)
+        sMax = tf.stop_gradient(tf.expand_dims(tf.argmax(sim, axis=-1), axis=-1))
+        sMax = tf.cast(sMax, tf.float32)
+        sim = sim - sMax
+        attn = tf.nn.softmax(sim, axis=-1)
+
+        o = tf.einsum('b h i j, b h d j -> b h i d', attn, value)
+        o = rearrange(o, 'b h (x y) d -> b x y (h d)', x = h, y = w)
+        o = self.conv(o, training=training)
+
+        return o
+
 
 def buildUnet(latentSpaceSize) :
     noisedImages = kr.Input(shape=(32, 32, 1))
