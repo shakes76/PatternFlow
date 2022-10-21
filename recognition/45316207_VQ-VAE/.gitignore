@@ -1,2 +1,6 @@
 # Ignore the dataset folder
 keras_png_slices_data/
+vqvae_saved_model/
+pixelcnn_saved_model/
+.DS_Store
+*/.DS_Store

@@ -9,15 +9,13 @@ by Alex Nicholson, 45316207
 
 ### The Algorithm and the Problem
 
-**Description of the algorithm and the problem that it solves (approximately a paragraph):**
-The algorithm implemented in this project is a [VQ-VAE](https://arxiv.org/abs/1711.00937) (Vector Quantised - Variational Auto-Encoder) model, which is an architecture that aims to encode data into a compressed format (embedding higher dimensional data into a lower dimenisional subspace) and then decode this compressed format to recreate the original image as closely as possible. What are we using it to do here...???
-
-...Dataset: [OASIS](https://www.oasis-brains.org/#data)...
+The algorithm implemented in this project is a [VQ-VAE](https://arxiv.org/abs/1711.00937) (Vector Quantised - Variational Auto-Encoder) model, which is an architecture that aims to encode data into a compressed format (embedding higher dimensional data into a lower dimenisional subspace) and then decode this compressed format to recreate the original image as closely as possible. For this project, we will be training the model on the OASIS brain MRI image datset so that we can use it to generate novel and realistic synthetic brain MRI images.
 
 ### How it Works
 
-**How it works (approximately a paragraph):**
-It works by transforming the image into a set of encoding vectors, using a CNN (convolutional neural network) encoder network, which are then quantised to fit the codebook vectors of the model. These quantised encodings are then passed to the decoder network which is made up of a transposed convolution (deconvolution) layers, which generated a synthetic reconstruction that is very similar to the original input image. ...???
+It works by transforming the image into a set of encoding vectors, using a CNN (convolutional neural network) encoder network, which are then quantised to fit the codebook vectors of the model. These quantised encodings are then passed to the decoder network which is made up of a transposed convolution (deconvolution) layers, which generated a synthetic reconstruction that is very similar to the original input image. This model is then trained until the VQVAE is very accurate at encoding the images into a condensed format while preserving the information held within.
+
+In addition to being able to reconstruct images, we also might want to generate novel brain images, so to do this we can also train a separate CNN, using the PixelCNN architechure that can generate brain images directly from samples of codebook vectors.
 
 ### Goals
 
@@ -55,10 +53,7 @@ The following dependancies were used in the project:
 
 ## Methods
 
-**Describe any specific pre-processing you have used with references if any.**
-
-**Justify your training, validation and testing splits of the data.**
-The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up 85%, 10%, and 5% respectively (total 11,328 images in dataset). This is in line with good standard practice for dataset partitioning ...???
+The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up 85%, 10%, and 5% respectively (total 11,328 images in dataset), in line with good standard practice for dataset partitioning. The data pixel values of the images were normalise to be within -1 to 1 by dividing by 255 and subtracting 1 to avoid data biases.
 
 ---
 
@@ -66,12 +61,14 @@ The training, validation and testing splits of the data were used as provided in
 
 ### Example Generations
 
-Below are some examples of the generations made by the VQ VQE model after 10 epochs of training over the full OASIS training dataset. These generations were produced by putting real MRI image examples from the test set into the model and then getting the reconstructed output from the model.
+Below are some examples of the generations made by the VQ VAE model after 20 epochs of training over the full OASIS training dataset. These generations were produced by putting real MRI image examples from the test set into the model and then getting the reconstructed output from the model.
 
-| ![alt text](./out/original_vs_reconstructed_0000.png)      | ![alt text](./out/original_vs_reconstructed_0001.png) |
-| ----------- | ----------- |
-| ![alt text](./out/original_vs_reconstructed_0002.png)      | ![alt text](./out/original_vs_reconstructed_0003.png)       |
-| ![alt text](./out/original_vs_reconstructed_0004.png)      | ![alt text](./out/original_vs_reconstructed_0005.png)       |
+![alt text](./out/original_vs_reconstructed_0000.png)
+![alt text](./out/original_vs_reconstructed_0001.png)
+![alt text](./out/original_vs_reconstructed_0002.png)
+![alt text](./out/original_vs_reconstructed_0003.png)
+![alt text](./out/original_vs_reconstructed_0004.png)
+![alt text](./out/original_vs_reconstructed_0005.png)
 
 ### Generation Quality Over Time
 

@@ -14,7 +14,7 @@ from tensorflow import keras
 import tensorflow_probability as tfp
 
 
-class VectorQuantizer(keras.layers.Layer):
+class CustomVectorQuantizer(keras.layers.Layer):
     """
     A Custom Vector Quantising Layer
 
@@ -24,7 +24,7 @@ class VectorQuantizer(keras.layers.Layer):
             age (int): age of the person
 
         Methods:
-            call(x): Calls the VectorQuantizer to quantise the input vector x???
+            call(x): Calls the CustomVectorQuantizer to quantise the input vector x???
             get_code_indices(flattened_inputs): Gets the indices of the codebook vectors???
     """
 
@@ -47,17 +47,8 @@ class VectorQuantizer(keras.layers.Layer):
         )
 
     def call(self, x):
-        """
-        Calls the VectorQuantizer to quantise the input vector x???
-
-            Parameters:
-                x (Tensorflow Tensor): An input vector to be quantised
-
-            Returns:
-                quantized (Tensorflow Tensor): The quantised version of the input vector???
-        """
-
-        # Calculate the input shape of the inputs and then flatten the inputs keeping `embedding_dim` intact.
+        # Calculate the input shape of the inputs and
+        # then flatten the inputs keeping `embedding_dim` intact.
         input_shape = tf.shape(x)
         flattened = tf.reshape(x, [-1, self.embedding_dim])
 
@@ -69,7 +60,10 @@ class VectorQuantizer(keras.layers.Layer):
         # Reshape the quantized values back to the original input shape
         quantized = tf.reshape(quantized, input_shape)
 
-        # Calculate vector quantization loss and add that to the layer
+        # Calculate vector quantization loss and add that to the layer. You can learn more
+        # about adding losses to different layers here:
+        # https://keras.io/guides/making_new_layers_and_models_via_subclassing/. Check
+        # the original paper to get a handle on the formulation of the loss function.
         commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
         self.add_loss(self.beta * commitment_loss + codebook_loss)
@@ -78,24 +72,18 @@ class VectorQuantizer(keras.layers.Layer):
         quantized = x + tf.stop_gradient(quantized - x)
         return quantized
 
-    # def get_code_indices(self, flattened_inputs):
-    #     """
-    #     Gets the indices of the codebook vectors???
+    def get_code_indices(self, flattened_inputs):
+        # Calculate L2-normalized distance between the inputs and the codes.
+        similarity = tf.matmul(flattened_inputs, self.embeddings)
+        distances = (
+            tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True)
+            + tf.reduce_sum(self.embeddings ** 2, axis=0)
+            - 2 * similarity
+        )
 
-    #         Parameters:
-    #             (Tensorflow Tensor): purpose???
-
-    #         Returns:
-    #             encoding_indices (Tensorflow Tensor): purpose???
-    #     """
-
-    #     # Calculate L2-normalized distance between the inputs and the codes.
-    #     similarity = tf.matmul(flattened_inputs, self.embeddings)
-    #     distances = (tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True) + tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * similarity)
-
-    #     # Derive the indices for minimum distances.
-    #     encoding_indices = tf.argmin(distances, axis=1)
-    #     return encoding_indices
+        # Derive the indices for minimum distances.
+        encoding_indices = tf.argmin(distances, axis=1)
+        return encoding_indices
 
 
 def get_encoder(latent_dim=16):
@@ -152,7 +140,7 @@ def get_vqvae(latent_dim=16, num_embeddings=64):
 
     print("Building model...")
 
-    vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+    vq_layer = CustomVectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = get_encoder(latent_dim)
     decoder = get_decoder(latent_dim)
     inputs = keras.Input(shape=(256, 256, 1))

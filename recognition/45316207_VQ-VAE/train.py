@@ -169,7 +169,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     NUM_TRAINING_EXAMPLES = None
 
-    TRAINING_EPOCHS = 10
+    TRAINING_EPOCHS = 20
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
@@ -191,7 +191,8 @@ if __name__ == "__main__":
     # Create the model (wrapped in the training class to handle performance metrics logging)
     vqvae_trainer = VQVAETrainer(data_variance, latent_dim=NUM_LATENT_DIMS, num_embeddings=NUM_EMBEDDINGS)
     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-
+    
+    vqvae_trainer.vqvae.summary()
 
     # ---------------------------------------------------------------------------- #
     #                                 RUN TRAINING                                 #
@@ -208,7 +209,7 @@ if __name__ == "__main__":
     trained_vqvae_model = vqvae_trainer.vqvae
 
     # Save the model to file as a tensorflow SavedModel
-    trained_vqvae_model.save("vqvae_saved_model")
+    trained_vqvae_model.save("./vqvae_saved_model")
 
 
     # ---------------------------------------------------------------------------- #
