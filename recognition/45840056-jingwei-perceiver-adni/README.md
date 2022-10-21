@@ -47,6 +47,11 @@ to see the test set accuracy.
 
 The `predict()` function in `predict.py` is an example of how to use the trained model.
 
+### Sample output of the `predict()` function
+![](figures/predict.png)
+
+![](figures/scans_sequence.png)
+
 [1]: https://arxiv.org/abs/2103.03206
 
 ## References
