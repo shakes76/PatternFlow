@@ -152,30 +152,37 @@ It is important to note that predict.py takes a random sample from the cropped (
 
 ---
 
-
 # Image Pre-processing
 
-   - Create new folder structure
+Image pre-processing consists of the following tasks:
+
+   - Create required folders
    - Create Validation Set
    - Crop the images
    - Augment the images
 
-The ADNI images are received in a zip format.  Extracted images are placed in the following file structure:
+All pre-processing tools are contained in utils.py.  This file contains the ADNI_dataset_utility class which possess the methods necessary to achieve the pre-processing steps.  As provided, utils.py is setup to perform all pre-processing steps at once by running "python utils.py".  This command should be run in the terminal from an active pre-processing environment (discsussed above) and in the same folder where utils.py exists.  
 
-```bash
-├───vit-transformer-s4630996
-│   ├───AD_NC
-│   │   ├───test
-│   │   │   ├───AD
-│   │   │   └───NC
-│   │   └───train
-│   │       ├───AD
-│   │       └───NC
-│   ├───images
-│   └───__pycache__
-```
+The instantiated ADNI_dataset_utility executes the following methods in this order: 
+1) create_directories(), 
+2) move_and_split_images(), 
+3) crop_and_save_images(), and 
+4) add_augmented_imges()
 
-The test set contains 9000 images of which 4460 are AD and 4540 are NC.  The training set contains 19360 images, of which 9360 are AD and 10000 are NC.  
+To customize which preprocessing steps are performed a user may enter utils.py and comment out one or more of the above steps, keeping in mind that doing may have implications for how and if the model runs.  At a minimum steps 1-3 need to be run in order but the addition of augmented images is optional.
+
+Each of the above steps will now be briefly explained.
+
+#### <u> Create required Folders</u>
+
+The ADNI_dataset_utility method create_directories() will create three directories in the project folder from where it is run:
+1) AD_NC_split (with subfolders)
+2) checkpoint (to save model weights)
+3) plots (to save plots of results)
+
+#### <u> Create the Validation Set</u>
+
+To understand the methodolgy for creating the validation set it is necessary to provide some background information on the images and their filenames.
 
 Here is image "218391_78.jpeg" from the AD folder:
 
@@ -191,23 +198,27 @@ The files names appear to be formatted such that the numbers separated by "_" ha
 
 This insight into the provenance of the filename has important implications for the selection of a method to generate a validation set.  If patient IDs are not taken into consideration and validation images are selected at random from the training set, then it would be possible for the images of one or more patients to appear in both the training and validation ("data leakage").  Thus a python script was created to generate the validation set taking into account the patient ID so that no images for any single patient are found in both the training and validation set.  
 
-#### Additional Observations Regarding Images
+The ADNI_dataset_utility method move_and_split_images() creates a new folder named "AD_NC_split that contains the following subfolders:
 
-Three additional observations regarding the images have implications for our pre-processing.  The first is that the images have the shape 256 x 240 (w x h).  The vision transformer requires square images from which to make patches so each image will need to be cropped.  Furthermore we can see that there is lots of empty space around each brain image.  Assuming the empty space will not play a role in classification performance, we can crop the images to a smaller size.  The benefit to the model is computational - for the same patch size, fewer patches will need to be processed for each image.  However, the brains will have variation in size and relative position on the image so care must be taken to select the minimum size that will reliably capture all brain images.  After some tinkering, an image size of 200 x 200 was found to significantly reduce empty space while also ensuring no brains were cropped.
+1) test
+2) training
+3) validation
 
-#### Mitigating The Impact of Dataset Size on ViT Performance
+The test folder contains the same test images from the original AD_NC/test folder.  The training folder contains those images from AD_NC/train that will be used for training and the validation folder contains those images from AD_NC/train that will be used for validation. 
 
+#### <u> Crop the Images</u>
 
+The ADNI images have dimensions of 256 x 240 (w x h).  The ViT needs square images as its inpu and it is therefore necessary to crop the original images.  The ADNI_dataset_utility method crop_and_save_images() images creates a new folder named "AD_NC_square" that contains the same sub-folders and images as AD_NC_split except that the images are cropped to 240 x 240 pixels.
 
+Assuming the empty space will not play a role in classification performance, we can crop the images to a smaller size.  The benefit to the model is computational - for the same patch size, fewer patches will need to be processed for each image.  However, the brains will have variation in size and relative position on the image so care must be taken to select the minimum size that will reliably capture all brain images.  After some tinkering, an image size of 200 x 200 was found to significantly reduce empty space while also ensuring no brains were cropped.  However, the downside to this approach is that very little room is left to allow robust image augmentation (discussed below).  Thus the base code retains the 240 x 240 image size.
 
-This is a grayscale image with the dimensions 256 x 240.   
-- lots of empty space
-- orientation
-- brightness
-- 
+#### <u> Augment the Images</u>
 
+Compared to other datasets used by Vision Transformers, the ADNI dataset is quite small.  Thus image augmentation was utilized in an attempt to improve training results.  
 
+Two approaches are taken with image augmentation.  The first is augmentaion within the model itself through the Keras layers RandomFlip, RandomRotation, RandomTranslation, RandomBrightness, and GaussianNoise.
 
+The second approach involves artificially enlarging the dataset with augmented image augmentations.  The Python package Augmentor was used to add augmented images.  The hyperparameter NUM_AUG_SAMPLES is set at a default value of 10,000 which is the number of augmented images to be added to the training set.  Thus when the ADNI_dataset_utility method add_augmented_images is called, the additional images are added to AD_NC_square/training.
 
 [Back to Top](#section-navigation)
 
