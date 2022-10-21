@@ -43,6 +43,9 @@ class ModelTrainer():
         """
         Dice Coefficient
 
+        Credit to Karan Jakhar for the following Dice Coefficient function
+        https://karan-jakhar.medium.com/100-days-of-code-day-7-84e4918cb72c
+
         Parameters:
             y_true (tf.Tensor): true output
             y_true (tf.Tensor): output predicted by model
@@ -60,6 +63,8 @@ class ModelTrainer():
     def diceLoss(self, y_true, y_pred):
         """
         Dice loss function
+
+        1 - Dice Coefficient
 
         Parameters:
             y_true (tf.Tensor): true output

@@ -43,6 +43,9 @@ class DataLoader():
         """
         Load and preprocess the image files.
 
+        Image loading code from TensorFlow
+        https://www.tensorflow.org/api_docs/python/tf/io/read_file
+
         Parameters:
             filenames (tf.string): names of all image files
 
@@ -65,6 +68,9 @@ class DataLoader():
     def preprocessMasks(self, filenames):
         """
         Load and preprocess the mask files.
+
+        Image loading code from TensorFlow
+        https://www.tensorflow.org/api_docs/python/tf/io/read_file
 
         Parameters:
             filenames (tf.string): names of all mask files
