@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from modules import get_model, ESPCNCallback
-from predict import predict
+from predict import displayPredictions
 from dataset import *
 
 def train(epochs=30):
@@ -39,15 +39,20 @@ def train(epochs=30):
         train, epochs=epochs, callbacks=callbacks, validation_data=valid, verbose=2
     )
 
+    # Plot fit
     historyPlot(history)
+    # Display some final predictions
+    displayPredictions(model, test)
     
 
-    def historyPlot(model):
-        """Plot training and validation loss of model after training"""
-        plt.plot(model.history['loss'])
-        plt.plot(model.history['val_loss'])
-        plt.title('Super-resolution CNN loss')
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['training', 'validation'], loc='upper left')
-        plt.show()
+def historyPlot(model):
+    """Plot training and validation loss of model after training"""
+    plt.plot(model.history['loss'])
+    plt.plot(model.history['val_loss'])
+    plt.title('Super-resolution CNN loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['training', 'validation'], loc='upper left')
+    plt.show()
+
+train()

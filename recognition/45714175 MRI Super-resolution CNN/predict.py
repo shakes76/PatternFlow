@@ -15,3 +15,16 @@ def predict(model, image):
 
     # Display predicted image
     display(tf.keras.preprocessing.image.array_to_img(output[0] / 255.0))
+
+def displayPredictions(model, testData):
+    """Function used to display the Original image, the low resolution image
+        and the upscaled image the model has predicted"""
+    for image in testData.take(5):
+        original = tf.keras.preprocessing.image.array_to_img(image[0])
+        downscaledImage = tf.image.resize(image[0], (240 // 4, 256 // 4), method="gaussian")
+
+        predict(model, downscaledImage)
+        print("[Upscaled Image]")
+        
+        display(original)
+        print("[Original Image]")
