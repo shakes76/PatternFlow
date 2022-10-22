@@ -7,9 +7,11 @@ Graph Convolutional Neural Networks aim to learn a pattern of signals in a given
 
 ### How it Works:
 GCNs work by having nodes pass features to their neighbours. To compile these features, they must be aggregated somehow in a way that captures the number of nodes that possess a given feature:
+
 <img width="503" alt="image" src="https://user-images.githubusercontent.com/86597504/197330143-d2798cb0-f27e-4366-928f-9c13abe7e301.png">
 
 This aggregation can be achieved through averaging neighbouring nodes' features. To calculate this, the feature values of each neighbouring node are required, along with the number of neighbouring nodes given a specific node to classify. Feature values can be obtained using the feature values matrix, while the number of neighbouring nodes can be obtained through using an adjacency matrix. GCN layers achieve this through the following computation, which will be explained in the next sections. 
+
 <img width="393" alt="image" src="https://user-images.githubusercontent.com/86597504/197330430-e2dee6b2-16bc-4671-9946-35311c3ecd52.png">
 
 
