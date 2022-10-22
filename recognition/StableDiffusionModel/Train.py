@@ -4,20 +4,12 @@
 """
 
 import tensorflow as tf 
-import pathlib
-import tarfile
 import numpy as np
 import matplotlib as plt
 import tensorflow.keras as kr
-import glob as gb
-
-from StableDiffusionModel import *
-from CustomLayers import *
-from AutoEncoder import *
 
 from modules import *
-
-
+from dataset import *
 
 def autoEncoderBuildCompile(inputSize = 128, 
                             normLayers = True, 
@@ -38,7 +30,7 @@ def autoEncoderBuildCompile(inputSize = 128,
     return autoEnc
     
 
-def trainAutoEncoder(dataSet, batch_size = 32, epochs = 600, saveModel = True, saveLoc = "./CheckPoints/autoEncChecpoint{Epoch}"):
+def trainAutoEncoder(dataSet, batch_size = 32, epochs = 600, saveModel = True, saveLoc = "./Weights/autoEncCheckpoint{epoch}"):
     """
         Trains the input autoencoder. Optionally saves checkpoints (enabled by default)
         
@@ -53,12 +45,12 @@ def trainAutoEncoder(dataSet, batch_size = 32, epochs = 600, saveModel = True, s
     else :
         callbacks = []
         
-        history = autoEnc.fit(dataSet, 
-                              dataSet, 
-                              epochs = epochs, 
-                              batch_size = batch_size, 
-                              callbacks=callbacks)
-        return history
+    history = autoEnc.fit(dataSet, 
+                          dataSet, 
+                          epochs = epochs, 
+                          batch_size = batch_size, 
+                          callbacks=callbacks)
+    return history
 
 def plotAutoEncoderExamples(autoEncoder, dataSet, inputDim=128, imagesShown = 3, fontSize = 10):
     """
@@ -108,16 +100,16 @@ def lossFunction(real, generated):
     loss = tf.math.reduce_mean((real - generated) ** 2)
     return loss
 
-def trainOnBatch(batch):
+def trainOnBatch(batch, model):
     """
     Trains the stable diffusion model on the input batch
     """
     rng, tsrng = np.random.randint(0, 100000, size=(2,))
-    timestep_values = createTimeStamp(tsrng, batch.shape[0])
+    timestepVal = createTimeStamp(tsrng, batch.shape[0])
 
-    noised_image, noise = addNoise(rng, batch, timestep_values)
+    noised_image, noise = addNoise(rng, batch, timestepVal)
     with tf.GradientTape() as tape:
-        prediction = unet(noised_image, timestep_values)
+        prediction = unet(noised_image, timestepVal)
         
         lossValue = lossFunction(noise, prediction)
     
@@ -142,14 +134,14 @@ def checkPointManager(model, path):
 
 
 
-def trainLoop(epochs, encoder, losses):
+def trainLoop(epochs, encoder, losses, model):
     for e in range(1, epochs+1):
         bar = tf.keras.utils.Progbar(len(trainingData)-1)
         for i, batch in enumerate(iter(trainingData)):
             # Reducing the image to its latent representation
             latent = encoder(batch)
     
-            loss = train_step(latent)
+            loss = trainOnBatch(latent, model)
             losses.append(loss)
             bar.update(i, values=[("loss", loss)])
     
@@ -161,31 +153,26 @@ def trainLoop(epochs, encoder, losses):
 
 if __name__ == "__main__":
     downloadOASIS()
-    trainDataRaw = loadTrainingData('/content/keras_png_slices_data/keras_png_slices_train')
+    trainDataRaw = loadTrainingData()
     trainData = processTrainingData(trainDataRaw)
 
-    autoEnc = autoEncoderBuildCompile(loadWeights = True, loadWeightsPath = "/content/FinalModel")
+    autoEnc = autoEncoderBuildCompile()
     
     # Training the AutoEncoder
-    history = trainAutoEncoder(trainData)
+    history = trainAutoEncoder(trainData, epochs = 100)
     plotHistory(history)
 
     # Plotting examples of autoEncoder reducing images to latent space
     plotAutoEncoderExamples(autoEnc, trainData, imagesShown = 3, fontSize = 8)
+    
+    #Save weights of autoEncoder
+    autoEnc.save_weights("./Weights/FinalAutoEncoder")
 
     # Initalising unet for diffusion model
     unet = Unet(channels=1, dim=64)
     
     # creating checkpoint manager
-    ckpt, ckpt_manager= checkPointManager(model, path)
-    
-    # load from a previous checkpoint if it exists, else initialize the model from scratch
-    if ckpt_manager.latest_checkpoint:
-        ckpt.restore(ckpt_manager.latest_checkpoint)
-        start_interation = int(ckpt_manager.latest_checkpoint.split("-")[-1])
-        print("Restored from checkpoint {}".format(ckpt_manager.latest_checkpoint))
-    else:
-        print("Creating new checkpoint sequence")
+    ckpt, ckpt_manager = checkPointManager(unet, "./Weights")
     
     # Optimizer used in training
     opt = kr.optimizers.Adam(learning_rate=1e-4)
@@ -195,13 +182,12 @@ if __name__ == "__main__":
     
     # Training diffusion model
     losses = []
-    trainLoop(epochs = 50, encoder = autoEnc.buildEncoder(), losses = losses)
+    trainLoop(model = unet, epochs = 1, encoder = autoEnc.buildEncoder(128), losses = losses)
+
+    # Saving Diffusion Model
+    unet.save_weights("./Weights/FinalDiffusionModel")
     
     # Printing loss at end of each epoch
     plt.pyplot.plot(losses[::150])
     plt.pyplot.title("Unet Architecture Loss")
-    
-    
-    
-    
     

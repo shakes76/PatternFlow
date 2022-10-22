@@ -304,8 +304,8 @@ class AutoEncoder(kr.Model) :
         """
         Returns a new model from the decoder inside the autoencoder
         """
-        newLatent = kr.Input(self.latentSpaceSize)
-        return kr.models.Model(newLatent, self.decoder((dims, dims, 1))) 
+        newLatent = kr.Input((dims, dims, 1))
+        return kr.models.Model(newLatent, self.decoder(newLatent)) 
     
     
 ################################################################################
@@ -650,12 +650,10 @@ class Unet(Model):
                 Upsample(dim_in) if not is_last else Identity()
             ])
         
-        defaultOutputDim = CHANNELS * (1 if not learningVar else 2)
-        self.outputDim = default(outputDim, defaultOutputDim)
         
         self.finalConv = Sequential([
             wrappedBlock(dim * 2, dim),
-            nn.Conv2D(filters=self.outputDim, kernel_size=1, strides=1)
+            nn.Conv2D(filters=1, kernel_size=1, strides=1)
         ], name="output")
         
     def call(self, x, time=None, training=True, **kwargs):

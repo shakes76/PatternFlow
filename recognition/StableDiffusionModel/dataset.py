@@ -4,6 +4,7 @@
 """
 
 import matplotlib as plt
+import zipfile
 import numpy as np
 import tensorflow as tf
 import pathlib
@@ -15,11 +16,24 @@ def downloadOASIS( destinationFolder = "./DataSets" ):
     Downloads the OASIS Brain MRI dataset.
     """
     dataURL = "https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download"
-    dataDirectory = tf.keras.utils.get_file(origin=dataURL,fname='oa-sis' ,untar=True)
+    dataDirectory = tf.keras.utils.get_file(origin=dataURL, fname='oa-sis' ,untar=True, extract = True)
     dataDirectory = pathlib.Path(dataDirectory)
-
-
-def loadTrainingData (path, dataType = np.float32):
+    dataDirectory = str(dataDirectory) + '.tar.gz'
+    print("--------------------------------------------------\n", 
+          "Zipped file downloaded to: \n        ", 
+          dataDirectory, 
+          "\n--------------------------------------------------\n")
+    
+    with zipfile.ZipFile(dataDirectory) as zipf:
+        zipf.extractall(path = destinationFolder)
+        
+    print("--------------------------------------------------\n", 
+          "File successfully unzipped to: \n        ", 
+          destinationFolder, 
+          "\n--------------------------------------------------\n")
+    
+def loadTrainingData (path = f"./DataSets/keras_png_slices_data/keras_png_slices_train", 
+                      dataType = np.float32):
     """
     Loads the OASIS Brain MRI dataset
     """
@@ -56,4 +70,3 @@ def processTrainingData(rawData, newImSize = 128):
     trainData = (1-trainData)   
     
     return trainData
-
