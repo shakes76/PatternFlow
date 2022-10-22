@@ -30,7 +30,7 @@ def train(epochs=30):
     loss_fn = keras.losses.MeanSquaredError()
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
 
-    #
+    # Compile and train
     model.compile(
     optimizer=optimizer, loss=loss_fn,
     )
@@ -38,3 +38,16 @@ def train(epochs=30):
     history = model.fit(
         train, epochs=epochs, callbacks=callbacks, validation_data=valid, verbose=2
     )
+
+    historyPlot(history)
+    
+
+    def historyPlot(model):
+        """Plot training and validation loss of model after training"""
+        plt.plot(model.history['loss'])
+        plt.plot(model.history['val_loss'])
+        plt.title('Super-resolution CNN loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['training', 'validation'], loc='upper left')
+        plt.show()
