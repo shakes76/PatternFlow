@@ -44,15 +44,42 @@ The following discribes each layer of the model:
 The following are some examples of images that were input into the model and their corresponding 
 output images that the model produced. 
 
+### Inputs
+Brain MRI images downscaled by a factor of 4
+![Input example 1](./figures/Input_image_1.PNG)
+![Input example 2](./figures/Input_image_2.PNG)
+
+### Outputs
+Brain MRI images output from SRCNN
+![Output example 1](./figures/Output_image_1.PNG)
+![Output example 2](./figures/Output_image_2.PNG)
+
 Here are a few final predictions from the model comparing the output upscaled image vs the original
 image. 
 
-![Upscale vs Original 1](./figures/Upscale vs Original 1.PNG)
+![Upscale vs Original 1](./figures/Upscale_vs_Original_1.PNG)
 
-![Upscale vs Original 2](./figures/Upscale vs Original 2.PNG)
+![Upscale vs Original 2](./figures/Upscale_vs_Original_2.PNG)
 
-![Upscale vs Original 3](./figures/Upscale vs Original 3.PNG)
+![Upscale vs Original 3](./figures/Upscale_vs_Original_3.PNG)
 
 ## Preprocessing
 The dataset is from the ADNI dataset for Alzheimer's disease. The version utilised for this model 
 was already preprocessed and downloaded from the UQ Blackboard site under COMP3710 Course help. 
+Additional preprocessing included normalising the images from the dataset. 
+
+This version of the dataset set was split into training and testing. For the purpsose of this 
+model this was not changed, using the training and validation for each epoch. 
+
+Accuracy plot
+![Accuracy](.figures/loss_plot.png)
+
+PSNR metric plot
+![PSNR](/figures/PSNR_plot.png)
+
+# References
+https://arxiv.org/pdf/1609.05158.pdf
+
+https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI
+
+https://keras.io/examples/vision/super_resolution_sub_pixel/
