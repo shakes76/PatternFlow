@@ -19,7 +19,7 @@ def get_model():
         "kernel_initializer": "Orthogonal",
         "padding": "same",
     }
-    input = tf.keras.layers.Input(shape=(width, height, 1))
+    input = tf.keras.layers.Input(shape=(height // 4, width // 4, 1))
     x = tf.keras.layers.Conv2D(64, 5, **conv_args)(input)
     x = tf.keras.layers.Conv2D(128, 3, **conv_args)(x)
     x = tf.keras.layers.Conv2D(128, 3, **conv_args)(x)
@@ -42,7 +42,7 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
         """Compute and display PSNR metric"""
         psnrMean = np.mean(self.psnr)
         print("Mean PSNR for epoch: %.2f" % (psnrMean))
-        predict(self.model, self.testImage, epoch)
+        predict(self.model, self.testImage)
 
     def on_test_batch_end(self, batch, logs=None):
         """Append psnr metrics to array"""

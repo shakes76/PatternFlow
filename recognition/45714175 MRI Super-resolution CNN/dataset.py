@@ -56,7 +56,7 @@ def getTest(datasetPath):
 def getTestImg(testDataset):
     """Retrieves an image from the test dataset"""
     for image in testDataset.take(1):
-        return image
+        return image[0]
 
 def preview_data(dataset):
     """Function to construct a matplotlib figure to preview 
