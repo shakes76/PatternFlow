@@ -3,14 +3,14 @@ from tensorflow import keras
 from tensorflow.keras import layers, models
 import numpy as np
 
-length = 256*256
+length = 256
 depth = 16
 kernel = 3
 
 def create_encoder(latent_dim=16):
     """ Create a simple encoder """
-    encoder = layers.Sequential(name="encoder")
-    encoder.add(layers.Conv2D(depth, kernel, activation="relu", strides=2, padding="same", input_shape=(length,)))
+    encoder = tf.keras.Sequential(name="encoder")
+    encoder.add(layers.Conv2D(depth, kernel, activation="relu", strides=2, padding="same", input_shape=(length, length, 1)))
     encoder.add(layers.Conv2D(depth*2, kernel, activation="relu", strides=2, padding="same"))
     encoder.add(layers.Conv2D(depth*4, kernel, activation="relu", strides=2, padding="same"))
     encoder.add(layers.Conv2D(depth*8, kernel, activation="relu", strides=2, padding="same"))
@@ -19,7 +19,7 @@ def create_encoder(latent_dim=16):
         
 def create_decoder():
     """ Create a simple decoder """
-    decoder = layers.Sequential(name="decoder")
+    decoder = tf.keras.Sequential(name="decoder")
     decoder.add(layers.Conv2D(depth*8, kernel, activation="relu", strides=2, padding="same"))
     decoder.add(layers.Conv2D(depth*4, kernel, activation="relu", strides=2, padding="same"))
     decoder.add(layers.Conv2D(depth*2, kernel, activation="relu", strides=2, padding="same"))
@@ -73,7 +73,7 @@ class VQLayer(layers.Layer):
         return encoding_indices
 
 
-class VQVAEModel(models.Sequential):
+class VQVAEModel(tf.keras.Sequential):
     def __init__(self, variance, latent_dim, n_embeddings, **kwargs):
         super(VQVAEModel, self).__init__(**kwargs)
         self.variance = variance
