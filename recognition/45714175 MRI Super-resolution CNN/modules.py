@@ -7,6 +7,7 @@ from turtle import width
 import tensorflow as tf
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 from predict import predict
 
 def get_model():
@@ -46,3 +47,12 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
     def on_test_batch_end(self, batch, logs=None):
         """Append psnr metrics to array"""
         self.psnr.append(10 * math.log10(1 / logs["loss"]))
+
+    def on_train_end(self, logs=None):
+        """Display psnr over epochs"""
+        plt.figure(figsize=(15, 10))
+        plt.plot(self.psnr)
+        plt.title("PSNR per epoch")
+        plt.xlabel("Epochs")
+        plt.ylabel("Mean PSNR")
+        plt.show()
