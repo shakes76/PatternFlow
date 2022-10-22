@@ -1,3 +1,12 @@
+### NOTE ON LATE PULL REQUEST AND MISSING COMMITS
+Due to me not knowing of the git file size limit, most of my commits included the zip files which are too large. Attempts were made over the enitirety of Saturday at editing the commits to remove the file using various online tools, however none proved successful.
+
+Due to this I have committed (the one before this commit) the files as they were on 11:56 on Friday Night, and I can show in person this is the case.
+
+I have also included my log history in the text file named original_git_log.txt, this may not be suffiecient evidence but I hope it will be.
+
+If any further evidence is required please email me.
+
 # Perceiver Model implementation for Classification of ADNI Alzheimer's Data
 ### Author: William Parker
 ### Student Number: s4637606
