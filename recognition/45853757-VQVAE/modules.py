@@ -1,12 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, models
-
 import numpy as np
-
-
-batch_size = 32
-epochs = 5
 
 length = 256*256
 depth = 16
@@ -118,10 +113,3 @@ class VQVAEModel(models.Sequential):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result()
         }
-
-
-class PixelCNN:
-    pass
-
-def do_training():
-    pass
