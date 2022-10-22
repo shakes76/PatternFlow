@@ -8,7 +8,7 @@ depth = 16
 kernel = 3
 
 def create_encoder(latent_dim=16):
-    """ Create a simple encoder """
+    """ Create a simple encoder sequential layer """
     encoder = tf.keras.Sequential(name="encoder")
     encoder.add(layers.Conv2D(depth, kernel, activation="relu", strides=2, padding="same", input_shape=(length, length, 1)))
     encoder.add(layers.Conv2D(depth*2, kernel, activation="relu", strides=2, padding="same"))
@@ -18,7 +18,7 @@ def create_encoder(latent_dim=16):
     return encoder
         
 def create_decoder():
-    """ Create a simple decoder """
+    """ Create a simple decoder sequential layer """
     decoder = tf.keras.Sequential(name="decoder")
     decoder.add(layers.Conv2D(depth*8, kernel, activation="relu", strides=2, padding="same"))
     decoder.add(layers.Conv2D(depth*4, kernel, activation="relu", strides=2, padding="same"))
@@ -69,6 +69,7 @@ class VQLayer(layers.Layer):
             + tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * similarity
         )
 
+        # Derive for min distances
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
 
@@ -95,15 +96,17 @@ class VQVAEModel(tf.keras.Sequential):
         return [self.total_loss_tracker, self.reconstruction_loss_tracker, self.vq_loss_tracker]
 
     def train_step(self, x):
+        # Calculates the losses from the VQ-VAE
         with tf.GradientTape() as tape:
             reconstructions = self.call(x)
-
             reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.variance)
             total_loss = reconstruction_loss + sum(self.losses)
 
+        # Backpropagates our values
         grads = tape.gradient(total_loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
 
+        # Implement loss tracking
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.vq_loss_tracker.update_state(sum(self.losses))
