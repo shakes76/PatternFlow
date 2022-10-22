@@ -15,24 +15,25 @@ def parsed_dataset(pathname):
     )
 
 
-x_test, y_test, x_train, y_train, x_validation, y_validation = map(
-    parsed_dataset,
-    [
-        "isic_dataset/ISIC-2017_Test_v2_Data/ISIC_*.jpg",
-        "isic_dataset/ISIC-2017_Test_v2_Part1_GroundTruth/ISIC_*.png",
-        "isic_dataset/ISIC-2017_Training_Data/ISIC_*.jpg",
-        "isic_dataset/ISIC-2017_Training_Part1_GroundTruth/ISIC_*.png",
-        "isic_dataset/ISIC-2017_Validation_Data/ISIC_*.jpg",
-        "isic_dataset/ISIC-2017_Validation_Part1_GroundTruth/ISIC_*.png",
-    ],
-)
+def binary_encode(img):
+    "For a normalised image, binary encodes each pixel in the image"
+    return tf.cast(img == 1.0, tf.uint8)
 
 
-def ground_truth_postprocess(dataset: tf.data.Dataset):
-    "For a dataset of images, binary encodes each pixel in the image"
-    return dataset.map(lambda img: tf.cast(img == 1.0, tf.uint8))
+# fmt: off
+x_test = parsed_dataset("isic_dataset/ISIC-2017_Test_v2_Data/ISIC_*.jpg")
+y_test = parsed_dataset("isic_dataset/ISIC-2017_Test_v2_Part1_GroundTruth/ISIC_*.png").map(binary_encode)
+
+x_train = parsed_dataset("isic_dataset/ISIC-2017_Training_Data/ISIC_*.jpg")
+y_train = parsed_dataset("isic_dataset/ISIC-2017_Training_Part1_GroundTruth/ISIC_*.png").map(binary_encode)
+
+x_validation = parsed_dataset("isic_dataset/ISIC-2017_Validation_Data/ISIC_*.jpg")
+y_validation = parsed_dataset("isic_dataset/ISIC-2017_Validation_Part1_GroundTruth/ISIC_*.png").map(binary_encode)
+# fmt: on
 
 
-y_test, y_train, y_validation = map(
-    ground_truth_postprocess, [y_test, y_train, y_validation]
-)
+from itertools import islice as take
+from utils import DSC
+
+for x in take(y_validation, 1):
+    print(x)
