@@ -96,7 +96,7 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 | -------------               | -------------      |-------------   |------------- 
 | Dimension of latent vector  | 200                | 512            | Original model trains 1024x1024 images, mine 256x256, reduced for simplification.
 | Image channel               | 1                  | 3              | The training images are in grayscale.
-| Target resolution           | 256 x 256          | 1024 x 1024    | The training images are in 256x256 or similar scale.
+| Target resolution           | 256x256            | 1024x1024      | The training images are in 256x256 or similar scale.
 | Number of filters           | 256, ..., 32       | 512, ..., 32   | Reduced unnecessary complexity.
 | Number of FC layers         | depth of model (6) | 8              | Reduced unnecessary complexity.
 | Upsampling method           | Upsample2D         | Bilinear       | Reduced unnecessary complexity.
