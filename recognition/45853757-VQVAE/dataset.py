@@ -4,11 +4,23 @@ from tensorflow.keras.utils import load_img, img_to_array
 
 
 def preprocess_data(training_data, validation_data, testing_data):
-    " Normalises each data set and finds the variance of training data "
+    """ 
+    Normalises each data set and finds the variance of training data
+    
+    Parameters:
+        training_data (list): list of arrays representing the images to train the model on  
+        validation_data (list): list of arrays representing the images to validate the model on  
+        testing_data (list): list of arrays representing the images to test the model on  
 
+    Returns:
+        training_data (list): normalised list of arrays
+        validation_data (list): normalised list of arrays  
+        testing_data (list): normalised list of arrays
+        variance (float): variance of the training data
+    """
     training_data = np.array(training_data)
     training_data = training_data.astype('float16') / 255.
-
+  
     validation_data = np.array(validation_data)
     validation_data = validation_data.astype('float16') / 255.
    
@@ -26,7 +38,9 @@ def load_data():
 
     Params: None
 
-    Returns: Three normalised data sets of images for training, validation and testing and the variance of the training dataset.
+    Returns: 
+        Three normalised data sets of images for training, 
+        validation and testing and the variance of the training dataset.
     """
     # Initialise three empty lists for our data to be stored appropriately
     training_data = []
