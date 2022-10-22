@@ -24,7 +24,7 @@ def train(epochs=30):
     model = get_model()
     model.summary()
 
-    test_image = Null
+    test_image = getTestImg(test)
 
     callbacks = [ESPCNCallback(test_image)]
     loss_fn = keras.losses.MeanSquaredError()

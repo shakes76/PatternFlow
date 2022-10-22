@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from IPython.display import display
 
-def predict(model, image, epoch):
+def predict(model, image):
     """Use the model to predict the image from the lowres image and plot results"""
     # input image is downscaled test image
     input = tf.expand_dims(image, axis=0)
