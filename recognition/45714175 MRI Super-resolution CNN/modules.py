@@ -32,7 +32,7 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
     def __init__(self, testImage):
         super(ESPCNCallback, self).__init__()
         # downsample image
-        self.testImage = testImage.resize((240 // 4, 256 // 4), method="gaussian")
+        self.testImage = tf.image.resize(testImage, size=(240 // 4, 256 // 4), method="gaussian")
 
     def on_epoch_begin(self, epoch, logs=None):
         """Initialise PSNR array"""
