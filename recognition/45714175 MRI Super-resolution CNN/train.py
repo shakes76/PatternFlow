@@ -1,6 +1,7 @@
 """
 train.py
-Used for training the model
+Functions used for training the Super-Resolution CNN. By executing this file the train function 
+will run and start to train the model. 
 """
 
 import matplotlib.pyplot as plt
@@ -10,8 +11,9 @@ from tensorflow import keras
 from modules import get_model, ESPCNCallback
 from predict import displayPredictions
 from dataset import *
+from constants import EPOCHS
 
-def train(epochs=30):
+def train(epochs=EPOCHS):
     """Download the dataset and train the super-resolution CNN"""
 
     # Get datasets
@@ -55,4 +57,5 @@ def historyPlot(model):
     plt.legend(['training', 'validation'], loc='upper left')
     plt.show()
 
+# Will run the model and consequently plot the results and prediction images
 train()

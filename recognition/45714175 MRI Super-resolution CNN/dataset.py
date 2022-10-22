@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
+from constants import *
 
 from IPython.display import display
 
@@ -23,31 +24,38 @@ def downloadDataSet():
 def getTraining(datasetPath):
     """Returns normalised training set"""
     directory = os.path.join(datasetPath, "train")
-    training = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
-                validation_split=0.3, subset="training", color_mode="grayscale", label_mode=None, seed=1)
+    training = image_dataset_from_directory(directory, labels="inferred", 
+                image_size=(HEIGHT, WIDTH), batch_size=BATCH_SIZE,
+                validation_split=0.3, subset="training", color_mode="grayscale", label_mode=None,
+                seed=SEED)
 
     training = training.map(lambda x: x / 255.0)
 
     # Downsample and add targets
-    training = training.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="gaussian"), x))
+    training = training.map(lambda x: (tf.image.resize(x, 
+                (HEIGHT // DOWNSCALE_FACTOR, WIDTH // DOWNSCALE_FACTOR), method=RESIZE_METHOD), x))
     return training
 
 def getValidation(datasetPath):
     """Returns noramlised validation set"""
     directory = os.path.join(datasetPath, "train")
-    validation = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
-                validation_split=0.3, subset="validation", color_mode="grayscale", label_mode=None, seed=1)
+    validation = image_dataset_from_directory(directory, labels="inferred", 
+                image_size=(HEIGHT, WIDTH), batch_size=32,
+                validation_split=0.3, subset="validation", color_mode="grayscale", label_mode=None, 
+                seed=1)
 
     validation = validation.map(lambda x: x / 255.0)
     
     # Downsample and add targets
-    validation = validation.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="gaussian"), x))
+    validation = validation.map(lambda x: (tf.image.resize(x, 
+                (HEIGHT // DOWNSCALE_FACTOR, WIDTH // DOWNSCALE_FACTOR), method=RESIZE_METHOD), x))
     return validation
 
 def getTest(datasetPath):
     """Returns normalized test set"""
     directory = os.path.join(datasetPath, "test")
-    training = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
+    training = image_dataset_from_directory(directory, labels="inferred", 
+                image_size=(HEIGHT, WIDTH), batch_size=BATCH_SIZE,
                 color_mode="grayscale", label_mode=None)
 
     normalisedData = training.map(lambda x: x / 255.0)

@@ -1,6 +1,7 @@
 """
 modules.py
-Contains function to return the model of the super-resolution CNN
+Contains function to return the model of the super-resolution CNN as well as the training 
+callback function.
 """
 
 from turtle import width
@@ -9,22 +10,21 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from predict import predict
+from constants import *
 
 def get_model():
     """Returns super resolution CNN model"""
-    width, height = 256, 240
-    upscale_factor = 4
     conv_args = {
         "activation": "relu",
         "kernel_initializer": "Orthogonal",
         "padding": "same",
     }
-    input = tf.keras.layers.Input(shape=(height // 4, width // 4, 1))
+    input = tf.keras.layers.Input(shape=(HEIGHT // DOWNSCALE_FACTOR, WIDTH // DOWNSCALE_FACTOR, 1))
     x = tf.keras.layers.Conv2D(64, 5, **conv_args)(input)
     x = tf.keras.layers.Conv2D(128, 3, **conv_args)(x)
     x = tf.keras.layers.Conv2D(128, 3, **conv_args)(x)
-    x = tf.keras.layers.Conv2D(1 * (upscale_factor ** 2), 3, **conv_args)(x)
-    outputs = tf.nn.depth_to_space(x, upscale_factor)
+    x = tf.keras.layers.Conv2D(1 * (DOWNSCALE_FACTOR ** 2), 3, **conv_args)(x)
+    outputs = tf.nn.depth_to_space(x, DOWNSCALE_FACTOR)
 
     return tf.keras.Model(input, outputs)
 
@@ -32,7 +32,8 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
     def __init__(self, testImage):
         super(ESPCNCallback, self).__init__()
         # downsample image
-        self.testImage = tf.image.resize(testImage, size=(240 // 4, 256 // 4), method="gaussian")
+        self.testImage = tf.image.resize(testImage, 
+        size=(HEIGHT // DOWNSCALE_FACTOR, WIDTH // DOWNSCALE_FACTOR), method=RESIZE_METHOD)
 
     def on_epoch_begin(self, epoch, logs=None):
         """Initialise PSNR array"""

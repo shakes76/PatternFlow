@@ -6,6 +6,7 @@ Used for model predictions of downsampled images
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from IPython.display import display
+from constants import *
 
 def predict(model, image):
     """Use the model to predict the image from the lowres image and plot results"""
@@ -21,7 +22,9 @@ def displayPredictions(model, testData):
         and the upscaled image the model has predicted"""
     for image in testData.take(5):
         original = tf.keras.preprocessing.image.array_to_img(image[0])
-        downscaledImage = tf.image.resize(image[0], (240 // 4, 256 // 4), method="gaussian")
+        downscaledImage = tf.image.resize(image[0], 
+                            (HEIGHT // DOWNSCALE_FACTOR, WIDTH // DOWNSCALE_FACTOR), 
+                            method="gaussian")
 
         predict(model, downscaledImage)
         print("[Upscaled Image]")
