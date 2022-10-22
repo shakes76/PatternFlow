@@ -8,7 +8,9 @@ def DataProcess():
        VALIDDATA: This is the validation data set
        TESTDATA:  This is the TESTDATA
        DATALOADER: This is the data loader constructed over the training dataset
- """   
+ """
+ from torch.utils.data.sampler import SubsetRandomSampler
+ from torch.utils.data import DataLoader   
  import numpy as np
  import torch
  import torchvision.transforms as transforms
@@ -99,9 +101,24 @@ def DataProcess():
     tensor=torch.tensor(img)/255 #converting the array so that pixels assume values between 0 and 1
     TRAINDATA[i,:,:,:]=tensor.float()
     TRAINDATA[9664+i,:,:,:]=torch.flipud(tensor).float() #adding the flipped version of the image to the dataset
+ TRAINDATA=TRAINDATA.float()
+ TRAINDATA=TRAINDATA.permute(0, 3, 2, 1).contiguous() #This re-arranges the train dataset into the form: number of images*channels*height*width 
  
+ num_workers =0
+ batch_size = 25 #setting Batch size
+ num_train = len(TRAINDATA)
+ indices = list(range(num_train))
+
+ np.random.shuffle(indices) #randomly shuffling the data
+
+ train_index= indices
+
+ train_sampler = SubsetRandomSampler(train_index) #creating sampler for the training data
+
+ DATALOADER = torch.utils.data.DataLoader(TRAINDATA, batch_size = batch_size,
+                                           sampler = train_sampler, num_workers = num_workers) #setting up the data loader
     
-    import torchvision.transforms as transforms
+ import torchvision.transforms as transforms
  from PIL import Image
  VALIDDATA=np.empty((1120,256,256,3),dtype='float16') #initializing array to hold Training data. It is in Float 16 due to memory issues
  VALIDDATA=torch.tensor(VALIDDATA)
@@ -126,8 +143,9 @@ def DataProcess():
   
     tensor=torch.tensor(img)/255 #converting the array so that pixels assume values between 0 and 1
     VALIDDATA[i,:,:,:]=tensor 
-
-    import torchvision.transforms as transforms
+ VALIDDATA=VALIDDATA.permute(0, 3, 2, 1).contiguous() #This re-arranges the validation dataset into the form: number of images*channels*height*width 
+ 
+ import torchvision.transforms as transforms
  from PIL import Image
  TESTDATA=np.empty((544,256,256,3),dtype='float16') #initializing array to hold Testdata.It is in Float 16 due to memory issues.
  TESTDATA=torch.tensor(TESTDATA)
@@ -144,4 +162,5 @@ def DataProcess():
     
     tensor=torch.tensor(img)/255 #converting the array so that pixels assume values between 0 and 1
     TESTDATA[i,:,:,:]=tensor
- return TRAINDATA,VALIDDATA,TESTDATA   
+ TESTDATA=TESTDATA.permute(0,3,2,1).contiguous()  #This re-arranges the test dataset into the form: number of images*channels*height*width 
+ return TRAINDATA,VALIDDATA,TESTDATA,DATALOADER   
