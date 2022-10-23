@@ -1,4 +1,4 @@
-# StyleGAN Implementation
+# Progressive Growing GAN/StyleGAN Implementation
 :wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 in semester 2, 2022. 
 
 The task is "generative model of one of the OASIS brain, ADNI brain or the OAI AKOA knee data set using a variant of StyleGAN".
