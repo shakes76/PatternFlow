@@ -6,7 +6,7 @@ The dataset used is the partially processed Facebook Large Page-Page Network dat
 Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices. Multiclass node classification refers to when GCNs use this information and learn a mapping of nodes to an embedding space that resembles similarity in the graph, eventually outputting the predicted classes of the input nodes. Node information is averaged across nodes and their neighbours before feeding them into a neural network that returns a vector of probabilities. This problem is semi-supervised, as only a portion of the nodes that the model learns on are labelled.  
 
 ### How it Works:
-GCNs work by having nodes pass features to their neighbours. To compile these features, they must be aggregated somehow in a way that captures the number of nodes that possess a given feature:
+GCNs work by having nodes pass features to their neighbours. These features must be aggregated in a way that captures the number of nodes that possess a given feature:
 
 <img width="503" alt="image" src="https://user-images.githubusercontent.com/86597504/197330143-d2798cb0-f27e-4366-928f-9c13abe7e301.png">
 
