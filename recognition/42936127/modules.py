@@ -27,6 +27,19 @@ class VectorQuantizer(layers.Layer):
             name = "embeddings_vqvae",
         )
 
+    def get_code_indices(self, flattened_inputs):
+        #Calculate L2-normalized distance between the inputs and the codes.
+        similarity = tf.matmul(flattened_inputs, self.embeddings)
+        distances = (
+            tf.reduce_sum(flattened_inputs ** 2, axis = 1, keepdims = True)
+            + tf.reduce_sum(self.embeddings ** 2, axis = 0)
+            - 2 * similarity
+        )
+
+        # Derive the indices for minimum distance
+        encoding_indices = tf.argmin(distances, axis = 1)
+        return encoding_indices
+
     def call(self, x):
         # Calculate the input shape of the inputs and
         # then flatten the inputs keeping `embedding_dim` intact.
@@ -48,19 +61,6 @@ class VectorQuantizer(layers.Layer):
         # Straight-through estimator.
         quantized = x + tf.stop_gradient(quantized - x)
         return quantized
-
-    def get_code_indices(self, flattened_inputs):
-        #Calculate L2-normalized distance between the inputs and the codes.
-        similarity = tf.matmul(flattened_inputs, self.embeddings)
-        distances = (
-            tf.reduce_sum(flattened_inputs ** 2, axis = 1, keepdims = True)
-            + tf.reduce_sum(self.embeddings ** 2, axis = 0)
-            - 2 * similarity
-        )
-
-        # Derive the indices for minimum distance
-        encoding_indices = tf.argmin(distances, axis = 1)
-        return encoding_indices
 
 def get_encoder(latent_dim=16, input_image_shape=(256,256,3)):
 
@@ -100,7 +100,7 @@ class VQVAE(keras.models.Model):
         self.num_embeddings = num_embeddings
         self.image_shape = image_shape
         self.normalization_layer = tf.keras.layers.Rescaling(1./255.)
-        self.vq_layer = VectorQuantizer(self.num_embeddings, self.latent_dim, name='vector_quant')
+        self.vq_layer = VectorQuantizer(self.num_embeddings, self.latent_dim, name='vector_quantizer')
         self.encoder = get_encoder(self.latent_dim,  self.image_shape)
         self.decoder = get_decoder(self.latent_dim)
     
@@ -151,7 +151,7 @@ class VQVAETrainer(keras.models.Model):
 
             # Outputs from the VQ-VAE.
             reconstructions = self.vqvae(x)
-            print(reconstructions)
+            #print(reconstructions)
             # Calculate the losses.
             reconstruction_loss = (
                 tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance
@@ -219,6 +219,7 @@ class ResidualBlock(keras.layers.Layer):
         return keras.layers.add([inputs, x])
 
 def get_pixel_cnn(vqvae_trainer, pixelcnn_input_shape, num_pixelcnn_layers, num_residual_blocks):
+    
     pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
     ohe = tf.one_hot(pixelcnn_inputs, vqvae_trainer.num_embeddings)
     x = PixelConvLayer(

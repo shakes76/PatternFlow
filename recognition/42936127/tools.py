@@ -18,13 +18,13 @@ def show_original_vs_reconstructed(original, reconstructed):
     plt.show()
 
 def show_history(history):
-    total_loss = history['total_loss']
-    vq_loss = history['vq_loss']
+    loss = history['loss']
+    reconstruction_loss = history['reconstruction_loss']
 
-    epochs = range(1, len(total_loss) + 1)
+    epochs = range(1, len(loss) + 1)
 
-    plt.plot(epochs, total_loss, 'bo', label='Training loss')
-    plt.plot(epochs, vq_loss, 'b', label='Validation loss')
+    plt.plot(epochs, loss, 'b', label='Loss')
+    plt.plot(epochs, reconstruction_loss, 'r', label='Reconstruction loss')
     plt.title('Training and validation loss')
     plt.legend()
 

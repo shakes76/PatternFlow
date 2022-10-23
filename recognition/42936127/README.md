@@ -48,12 +48,24 @@ All images were rescaled to from the range of 0 - 255 to 0 - 1 using a Rescale l
 
 ## Training
 
+![alt text](training_output.png "original vs reconstruction 2")
+Here we can see the a number of training metrics converging as the model was trained.
 
 ![alt text](comparison1.png "original vs reconstruction 1")
 ![alt text](comparison2.png "original vs reconstruction 2")
+![alt text](comparison3.png "original vs reconstruction 3")
+
 
 We can see the quality of the reconstruction growing over time.
 
+![alt text](originalVcode.png "original vs codebook")
 
-Here we can see the a number of training metrics converging as the model was trained.
+The codebook activation for an image can also be visualized to see how the network has captured regularities. 
+
+![alt text](CNNoutput0.png "pixelCNN training progress1")
+![alt text](CNNoutput1.png "pixelCNN training progress2")
+![alt text](CNNoutput2.png "pixelCNN training progress3")
+![alt text](CNNoutput3.png "pixelCNN training progress4")
+
+We can also observe the PixelCNN generated sample improving with more training
 
