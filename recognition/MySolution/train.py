@@ -65,6 +65,7 @@ class Train:
         plt.plot(xs, history.history["val_loss"], label="val_loss")
         plt.xlabel('Epoch')
         plt.ylabel('loss')
+        plt.legend(loc='lower right')
         plt.savefig("Loss.jpg")
         plt.show()
 
@@ -74,6 +75,7 @@ class Train:
         plt.plot(xs, history.history["val_Accuracy"], label="val_Accuracy")
         plt.xlabel('Epoch')
         plt.ylabel('accuracy')
+        plt.legend(loc='lower right')
         plt.savefig("Accuracy.jpg")
         plt.show()
 
