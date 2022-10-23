@@ -1,3 +1,8 @@
+'''
+Author_name: Arsh Upadhyaya
+roll_no.4753993
+assigning accuracy and losses to all 3 datasets, by training over n_epoch
+'''
 import numpy as np
 import torch
 import torch.nn.functional as F
