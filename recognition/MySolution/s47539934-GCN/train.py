@@ -52,7 +52,11 @@ def train_model(n_epochs):
               'Validation loss: {:.4f}'.format(validation_loss.item()),
               'Validation accuracy: {:.4f}'.format(validation_accuracy.item()))
     torch.save(model.state_dict(),'train_model.pth')#this random file just used as buffer
-  return train_accuracies,validation_accuracies
+    np.save('train_losses', train_losses)
+    np.save('train_accuracies', train_accuracies)
+    np.save('validation_losses', validation_losses)
+    np.save('validation_accuracies', validation_accuracies)
+  
 #test
 def test_mode():
   model.load_state_dict(torch.load('train_mode.pth'))
