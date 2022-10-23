@@ -48,7 +48,4 @@ def load_data(file_path):
     labels = torch.LongTensor(labels)
 
     return adj_trans, features, labels
-    #split the data into train, validation and test in 20:20:60 ratio
-    train_set = torch.LongTensor(range(int(num_nodes*0.2)))
-    val_set = torch.LongTensor(range(int(num_nodes*0.2),int(num_nodes*0.4)))
-    test_set = torch.LongTensor(range(int(num_nodes*0.4),num_nodes))
+   
