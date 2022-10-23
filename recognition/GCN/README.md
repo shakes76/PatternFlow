@@ -1,9 +1,9 @@
 ## Semi-Supervised Node Classification on Facebook Page-Page Using GCNs
 ### Dataset Background
-The dataset used is the partially processed Facebook Large Page-Page Network dataset, a page-page graph representation of Facebook websites; nodes model Facebook pages, while edges represent the likes intersecting sites. This GCN model uses semi-supervised node classification to determine the Facebook defined labels for each of the websites: (0) Politicians, (1) Governmental Organizations, (2) Television Shows and (3) Companies, based on 128 feature vectors taken from the website descriptions associated with the site's purpose. There are 22470 nodes, and 171002 edges, with nodes labels encoded between 0-3. Note that these were still passed through a label encoder in datasets.py.
+The dataset used is the partially processed Facebook Large Page-Page Network dataset, a page-page graph representation of Facebook websites; nodes model Facebook pages, while edges represent the likes intersecting sites. This GCN model uses semi-supervised node classification to determine the Facebook defined labels for each of the websites: (0) Politicians, (1) Governmental Organizations, (2) Television Shows and (3) Companies, based on 128 feature vectors taken from the website descriptions associated with the site's purpose. There are 22470 nodes, and 171002 edges, with nodes labels encoded between 0-3 [1]. Note that these were still passed through a label encoder in datasets.py.
 
 #### Algorithm Description & Problem it Solved
-Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices. Multiclass node classification refers to when GCNs use this information and learn a mapping of nodes to an embedding space that models similarity in the graph, eventually outputting the predicted classes of the input nodes. This problem is semi-supervised, as only a portion of the nodes that the model learns on are labelled.  
+Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices [0]. Multiclass node classification refers to when GCNs use this information and learn a mapping of nodes to an embedding space that models similarity in the graph, eventually outputting the predicted classes of the input nodes. This problem is semi-supervised, as only a portion of the nodes that the model learns on are labelled.  
 
 ### How it Works:
 GCNs work by having nodes pass features to their neighbours. These features must be aggregated in a way that captures the number of nodes that possess a given feature:
@@ -26,7 +26,7 @@ The resulting operation is shown below, with D representing the degree matrix an
 
 <img width="66" alt="image" src="https://user-images.githubusercontent.com/86597504/197324602-502366dd-e6ee-4fd2-a153-145530ad02f4.png">
 
-Multiplying this normalised matrix and the feature matrix during training is now mathematically equivalent to averaging a node's neighbours. Nodes that are only connected to one neighbour will have a stronger connection than nodes that are connected to multiple nodes in the graph. A problem with this approach is that it does not consider the number of neighbours that a given node's neighbour may have, which can be an issue if lower degree nodes represent more significant nodes in the problem. 
+Multiplying this normalised matrix and the feature matrix during training is now mathematically equivalent to averaging a node's neighbours. Nodes that are only connected to one neighbour will have a stronger connection than nodes that are connected to multiple nodes in the graph. A problem with this approach is that it does not consider the number of neighbours that a given node's neighbour may have, which can be an issue if lower degree nodes represent more significant nodes in the problem [2]. 
 
 Performing symmetric normalisation through taking the normalised Laplacian matrix of the graph can solve this issue, as it multiplies the adjacency matrix by both the row and column normalised degree matrices- resulting in the below operation:
 
@@ -47,7 +47,7 @@ The activation rule predominantly involves applying an activation function over 
 
 This corresponds to aggregating the feature information from the neighbours of each node in a sample neighbourhood. At each layer of the GCN, this aggregation is performed on each node. 
 
-The amount of layers dictates how far feature vectors can travel between nodes: a 1 layer GCN means that each node is passed features from its immedate neighbours-- adding an extra layer allows each node to retrieve feature information an extra node away from its current list of neighbours. Adding a greater number of layers increases the amount of feature information that each node learns: however, with a higher number (>5) of layers, each node receives the aggregated features of almost the entire graph, which is not useful when trying learn similarities between nodes. Generally, best model performance is seen with GCNs of 2-3 layers.
+The amount of layers dictates how far feature vectors can travel between nodes: a 1 layer GCN means that each node is passed features from its immedate neighbours-- adding an extra layer allows each node to retrieve feature information an extra node away from its current list of neighbours. Adding a greater number of layers increases the amount of feature information that each node learns: however, with a higher number (>5) of layers, each node receives the aggregated features of almost the entire graph, which is not useful when trying learn similarities between nodes. Generally, best model performance is seen with GCNs of 2-3 layers [3].
 
 A softmax function is applied over the final layer to return the probabilities of the number of classes passed. 
 
@@ -91,9 +91,9 @@ The following summary breaks down the model's structure.
 * 1 x GNNLayer (20, 4)
 * 1 X softmax activation function applied to last layer 
 
-The following breaks down a GNN Layer:
+The following summarises a GNN Layer:
 * input, output features as defined in Net class
-* Uniform Xavier initialisation of a weight matrix with same input output dimensions as GNNLayer, 
+* Uniform Xavier initialisation of a weight matrix with same input output dimensions as GNNLayer. Xavier initialisation initialises weights such that inputs and outputs from a layer have the same amount of variance, helping prevent exploding or vanishing gradients.
 * matrix multiplication of features and weight 
 * sparse multiplication of above product with adjacency matrix
 * activation function applied to output. 
@@ -103,31 +103,38 @@ The following breaks down a GNN Layer:
 Training sets were split into 60%, leaving 20% for testing, and 20% for validation. This helped ensure that the validation set used to select the best performing model was to be just as representative of the entire dataset as the subset used to test the data with. 
 
 #### Example Inputs 
-Example inputs include loading in a subset of the given dataset and adjacency matrix (must be square). The model will return the classification of the input nodes, along with a tSNE plot of the neighbourhood embeddings, coloured by their ground truth labels. 
+Example inputs include loading in a subset of the given dataset and adjacency matrix (must be square). The model will return the classification of the input nodes, along with a tSNE plot of the neighbourhood embeddings, coloured by their ground truth labels:
+
+<img width="683" alt="image" src="https://user-images.githubusercontent.com/86597504/197389764-dda2fe47-b85e-46ac-826c-125316271dbe.png">
+
 
 #### Experimentation 
 Hyperparameter tuning involved adjusting the number of hidden layers, and the amount of dropout performed in the network.
 
-To decide on the ideal number of layers, the values 10, 15, and 20 were trialled. 
+To decide on the ideal number of layers, the values 10, 15, and 20 were trialled. To prevent overfitting, two dropout layers were also interspersed between the fully connected layers, with dropout values of 0.3 (i.e.: 30% of the nodes at each layer are dropped). 
 
 The following experimental results were achieved by modifying the N_HID constant defined at the top of predict.py accordingly. 
 
 10 layers resulted in validation accuracy of 55%, and a training accuracy of 56%. The following figure indicate that no further changes in both training and validation accuracy were seen from roughly 125 epochs onwards, suggesting an increase in model complexity was likely required. 
+
 ![image](https://user-images.githubusercontent.com/86597504/197387284-69a0e3e0-8526-473f-b6f6-eeee723b7fae.png)
 
 15 layers resulted in validation accuracy of 74% and a training accuracy of 74%.
+
 ![image](https://user-images.githubusercontent.com/86597504/197388129-b4ad446d-faa8-4f1f-83ac-0cf428da19a0.png)
 
-20 resulted in the highest validation performance of 77%, resulting in an overall test accuracy of 76%. As interpreted from the tSNE plot of the model embeddings, this appears to result because Class 0 bears high feature similarity to the other 3 classes- Class 0 is also the smallest represented class in the dataset. This may suggest that there is not enough data for the model to properly distinguish this class with. 
-
-To prevent overfitting, two dropout layers were also interspersed, with dropout values of 0.3 (i.e.: 30% of the nodes at each layer are dropped). 
+20 resulted in the highest training and validation performance of 77%, resulting in an overall test accuracy of 76%. As interpreted from the tSNE plot of the model embeddings, this may result because Class 0 bears high feature similarity to the other 3 classes- Class 0 is also the smallest represented class in the dataset. This may suggest that there is not enough data for the model to properly distinguish this class with. 
 
 To perform the following experiments on dropout, modify the DROPOUT constant defined at the top of modules.py to the desired dropout value. 
-Changing DROPOUT to 0.2 causes validation accuracy to drop to 67%:
 
-Changing DROPOUT to 0.4 causes validation accuracy to drop to __%:
+DROPOUT was set to 0.5, a commonly used value in literature [4]. The following figure demonstrates that validation performance outperformed training performance, with a decline in model performance between 50-100 epochs, resulting in a 75% and a 76% training and validation accuracy. 
 
-Changing to one dropout layer (by commenting out a dropout layer of choosing) causes validation accuracy to drop to ___%:
+![image](https://user-images.githubusercontent.com/86597504/197391898-7ed55ce4-66cb-4b8e-9e57-822be8c028d4.png)
+
+Changing DROPOUT to 0.4  results in 74% and 76% training and validation accuracy, with validation accuracy outperforming training accuracy. Overall model performance is more stable than it is at DROPOUT = 0.5, consistently increasing with each epoch:
+![image](https://user-images.githubusercontent.com/86597504/197392963-5b8cee77-db63-4bd7-9365-f0df9cd70aee.png)
+
+It can be seen, however, that accuracy increases at a consistent rate between 50-150 epochs with DROPOUT = 0.3, while the rate of growth during these epochs in the model with DROPOUT = 0.4 appears to slow down. For this reason, the model with DROPOUT = 0.3 was chosen, even though the validation accuracy for both these models were almost equal. 
 
 #### Performance Plots 
 After 300 epochs of training, the following accuracy and loss curves are achieved. 
@@ -136,19 +143,23 @@ After 300 epochs of training, the following accuracy and loss curves are achieve
 
 ![Unknown-38](https://user-images.githubusercontent.com/86597504/197160334-ced94df3-c90b-45b9-9d43-88a223082ffb.png)
 
+
 #### Example Outputs
 When using predict.py on a subset of the data (not for testing purposes), the predicted classes of input nodes are returned, along with the tSNE plot of the model's embeddings: 
+
 <img width="401" alt="image" src="https://user-images.githubusercontent.com/86597504/197384946-005c6f4e-9fdd-4657-9bb4-5c6112a5f5eb.png">
 
 The training and validation loss and accuracy can be seen at each epoch when training the model: 
+
 <img width="1103" alt="image" src="https://user-images.githubusercontent.com/86597504/197385048-fee798a8-5adc-45c8-8858-d37edcdb8c71.png">
 
-
 The  output obtained from testing the model returns the overall test accuracy and loss:
+
 <img width="621" alt="image" src="https://user-images.githubusercontent.com/86597504/197384981-dee9004f-5516-4ea9-b7f4-d7f7677b9e98.png">
 
 ##### tSNE Output 
 The following result is achieved as a result of plotting the model embeddings via tSNE with 2 components, and colouring points with their ground truth labels:
+
 ![Unknown-40](https://user-images.githubusercontent.com/86597504/197188056-1b96fafd-60dd-4cc0-8c95-f3b04c76c835.png)
 
 tSNE works by mapping similarity between pairs of points to probability distributions in the original dimensions and a low dimensional space, then minimising the divergence between these two distributions to provide the optimal 2D representation of the similarities between points.
@@ -158,7 +169,8 @@ In this case, tSNE is displaying the learned embeddings of the GCN to a space th
 As seen from the tSNE embeddings, the algorithm is most effective at correctly classifying the similarity of the label 3- "Television Shows", although there appears to be some overlap between the classifications of 3 and 2 ("Television Shows"), and Classes 1 ("Governmental Organisations") and 2. Class 0 appears to be the worst separated- almost entirely obscured from view, suggesting that pages from this class may bear high feature similarity to other classes and are therefore listed as close in the embedding space. 
 
 #### Sources: 
-https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book-Chapter_5-GNNs.pdf
-https://snap.stanford.edu/data/facebook-large-page-page-network.html
-https://math.stackexchange.com/questions/3035968/interpretation-of-symmetric-normalised-graph-adjacency-matrix
-https://www.topbots.com/graph-convolutional-networks/
+[0] https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book-Chapter_5-GNNs.pdf
+[1] https://snap.stanford.edu/data/facebook-large-page-page-network.html
+[2] https://math.stackexchange.com/questions/3035968/interpretation-of-symmetric-normalised-graph-adjacency-matrix
+[3] https://www.topbots.com/graph-convolutional-networks/
+[4] https://machinelearningmastery.com/dropout-for-regularizing-deep-neural-networks/
