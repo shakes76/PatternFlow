@@ -21,7 +21,7 @@ The task is "generative model of one of the OASIS brain, ADNI brain or the OAI A
  - IDE: VSCode 1.71.2
 
 ## Training Dataset
-All three training image sets were black and white, preprocessed, provided by the lecturer, downloaded from UQ BlackBoard, detailed below：
+All three training image sets were in black and white, preprocessed, provided by the lecturer, downloaded from BlackBoard, detailed below：
  - OASIS brain, 11328 images, resolution 256 x 256.
  - ANDI brain (NC), 11120 images, resolution 256 x 240.
  - OAI AKOA knee, 18680 images, resolution 260 x 228.
@@ -53,7 +53,7 @@ A few parameters have to be specified in `config.py`.
 | NSAMPLES            | Number of images to generate when training.                 | 25
 | OUT_ROOT            | Root folder that contains training outputs.                 | D:\output
 
-> **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
+> **Note** `OUT_ROOT` folder must not exist before training. Training process will create `OUT_ROOT` folder and its 4 sub-folders as below,
  - **ckpts** for saving checkpoints
  - **images** for saving progressive images
  - **log** for saving los loss files
@@ -118,7 +118,6 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
 <p align="center">
     <kbd><img src="asset/training_process.gif" width="550"></kbd>
 </p>
-
 
 ### Loss plot
 Both discriminator and generator converged well in the lower dimensions, but fluctuated at higher dimensions. Most significant changes in loss were observed when model grew, as highlighted in below plot.
