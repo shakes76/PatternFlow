@@ -174,8 +174,8 @@ In this case, tSNE is displaying the learned embeddings of the GCN to a space th
 As seen from the tSNE embeddings, the algorithm is most effective at correctly classifying the similarity of the label 3- "Television Shows", although there appears to be some overlap between the classifications of 3 and 2 ("Television Shows"), and Classes 1 ("Governmental Organisations") and 2. Class 0 appears to be the worst separated- almost entirely obscured from view, suggesting that pages from this class may bear high feature similarity to other classes and are therefore listed as close in the embedding space. 
 
 #### Sources: 
-[0] https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book-Chapter_5-GNNs.pdf
-[1] https://snap.stanford.edu/data/facebook-large-page-page-network.html
-[2] https://math.stackexchange.com/questions/3035968/interpretation-of-symmetric-normalised-graph-adjacency-matrix
-[3] https://www.topbots.com/graph-convolutional-networks/
-[4] https://machinelearningmastery.com/dropout-for-regularizing-deep-neural-networks/
+* [0] https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book-Chapter_5-GNNs.pdf
+* [1] https://snap.stanford.edu/data/facebook-large-page-page-network.html
+* [2] https://math.stackexchange.com/questions/3035968/interpretation-of-symmetric-normalised-graph-adjacency-matrix
+* [3] https://www.topbots.com/graph-convolutional-networks/
+* [4] https://machinelearningmastery.com/dropout-for-regularizing-deep-neural-networks/
