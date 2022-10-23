@@ -46,7 +46,7 @@ A few parameters have to be specified in `config.py`.
 | SRES                | Starting resolution, 4 or 8 suggested.                      | 4
 | TRES                | Target resolution, must be the power of 2.                  | 256
 | BSIZE               | Batch size of each resolution training.                     | (32, 32, 32, 32, 16, 8, 4)
-| FILTERS             | Number of filters of each resolution.       | (256, 256, 256, 256, 128, 64, 32)
+| FILTERS             | Number of filters of each resolution.                       | (256, 256, 256, 256, 128, 64, 32)
 | STAB                | Whether to stabilize-train the model after fade-in.         | False
 | EPOCHS              | Number of epochs to train for each resolution.              | {0:50, 1:(40,10), 2:(40,10), 3:(40,10), 4:(40,20), 5:(40,20), 6:(40,20)}
 | INPUT_IMAGE_FOLDER  | Folder of training images.                                  | D:\ADNI_AD_NC_2D
@@ -80,14 +80,14 @@ The structure of the model is given below.
 
 A few points to note,
 
- - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](modules.py#L184) and [<ins>here</ins>](modules.py#L213)).
- - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L127) and [<ins>here</ins>](modules.py#L133)).
- - number of fully connected layers is 8, w and z have the same dimension.
- - Input of 'Synthesis network' is constant (see [<ins>here</ins>](modules.py#L177)).
- - a noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
- - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
+ - latent vector **z** is passed through fully connected layers to generate **w** (see [<ins>here</ins>](modules.py#L184) and [<ins>here</ins>](modules.py#L213)).
+ - **w** is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L127) and [<ins>here</ins>](modules.py#L133)).
+ - number of fully connected layers is 8, **w** and **z** have the same dimension.
+ - input of 'Synthesis network' is constant (see [<ins>here</ins>](modules.py#L177)).
+ - a noise vector **B** is injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
+ - layer 'AdaIN' takes 2 inputs, result of conv3x3 + noise **B** and a style vector **A** (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
  - used loss function [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability (see [<ins>here</ins>](modules.py#L196)).
- - Model is trained progressively.
+ - model is trained progressively.
 
 ### Model Variations
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 appox.) and is in grayscale so my model is a simplified version (in terms of training configurations, not model structure) of StyleGAN, to avoid unnecessary complication, which saves training time.
@@ -103,16 +103,16 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 
 ## A Training Example
 
-Below is a training trail in my experiment. Out of the three datasets, the OASIS is the easiest to train, but the model is also the easiest to collapse. While AKOA is relatively difficult to train since the trianing images are quite noisy.
+Below is one of training trials in my experiment. Out of the three datasets, the OASIS is the easiest to train, but the model is also the easiest to collapse in contrast AKOA is relatively difficult to train since the trianing images are quite noisy.
 
 ### Settings
- - Starting resolution: 4x4.
- - Target resolution: 256x256.
- - Latent vector dimemsion: 200.
- - Batch size: 16, 16, 8, 8, 8, 4, 4.
- - Epochs: 10, 15, 15, 15, 15, 15, 15.
- - Training images: 4800 selected.
- - Model not stabilized after fade in.
+ - starting resolution: 4x4.
+ - target resolution: 256x256.
+ - latent vector dimemsion: 200.
+ - batch size: 16, 16, 8, 8, 8, 4, 4.
+ - epochs: 10, 15, 15, 15, 15, 15, 15.
+ - training images: 4800 from data set.
+ - model not stabilized after fade in.
 
 ### Model Evolution
 <p align="center">
@@ -120,14 +120,14 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
 </p>
 
 ### Loss plot
-Both discriminator and generator converged well in the lower dimensions, but fluctuated at higher dimensions. Most significant changes in loss were observed when model grew, as highlighted in below plot.
+Both discriminator and generator converged well in the low resolution blocks, but fluctuated at high resolution blocks. Most significant suddent changes in loss were observed when model grew, as highlighted in below plot.
 
 <p align="center">
     <kbd><img src="asset/loss_plot.png" width="550">
 </p>
 
 ## How to play with `predict.py`?
-Once trained, `predict.py` can be used to load trained models and generate above images by running **`python predict.py`**. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly configured. 
+Once trained, `predict.py` can be used to load trained models and generate above images by running **`python predict.py`**. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly configured before running the command. 
 
 When then program finishes running, the generated images can be found in the specified folder.
 
