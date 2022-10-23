@@ -24,3 +24,6 @@
     plt.plot(range(200),validation_losses,'r')
     plt.legend(['train_loss', 'validation_loss'])
     plt.show()
+    #for plotting tsne map
+    outputs = model.gcn_conv_1(features, adj).detach().numpy()
+    plot_tsne(labels, outputs )
