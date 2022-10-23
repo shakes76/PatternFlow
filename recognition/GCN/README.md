@@ -39,8 +39,6 @@ The activation rule predominantly involves applying an activation function over 
 
 <img width="127" alt="image" src="https://user-images.githubusercontent.com/86597504/197328760-23ab84a4-7766-4820-8d99-3802ae028946.png">
 
-<img width="200" alt="image" src="https://user-images.githubusercontent.com/86597504/197328813-91fa874b-df45-4f49-8924-af1a262315ea.png">
-
 This corresponds to aggregating the feature information from the neighbours of each node in a sample neighbourhood. 
 
 The amount of layers dictates how far feature vectors can travel between nodes: a 1 layer GCN means that each node is passed features from its immedate neighbours-- adding an extra layer allows each node to retrieve feature information an extra node away from its current list of neighbours. Adding a greater number of layers increases the amount of feature information that each node learns: however, with a higher number (>5) of layers, each node receives the aggregated features of the entire graph, which is not useful when trying learn similarities between nodes. Generally, best model performance is seen with GCNs of 2-3 layers.
