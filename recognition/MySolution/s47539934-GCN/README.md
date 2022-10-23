@@ -3,8 +3,18 @@
 ### By: Arsh Upadhyaya
 ### roll_no: s4753993
 ## Goal 
-node classification
+
+The objective is to accurately classify nodes into there respective categories(total 4)
+as per the facebook.npz dataset
 ## Why GCN
+
+GCN and a conventional CNN are similar in there objectives, they both take some features 
+from existing/given data and perform some operation on it, be it classification, recognition or even 
+creation(like in GANs). However the difference lies in there flexibility. A CNN requires data in some 
+clear format(like in images). However in a lot of real world applications, this is not the case. In fact, 
+the internet itself is a graph with the websites themselves being the nodes and the edges being hyperlinks.
+Such is the case with the facebook dataset, and we have to classify the websites to certain classes.
+
 ## Working of GCN
 ## Process of solving problem
 ## results
