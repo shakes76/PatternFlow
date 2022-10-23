@@ -15,6 +15,7 @@ def DataProcess():
  import torch
  import torchvision.transforms as transforms
  from PIL import Image
+ torch.manual_seed(0)
  TRAINDATA=np.empty((9664*2,256,256,3),dtype='float16') #initializing array to hold Traindata- this includes the original Traindata as well as the Traindata flipped upside down. It is in Float 16 due to memory issues.
  TRAINDATA=torch.tensor(TRAINDATA)
  
@@ -94,7 +95,7 @@ def DataProcess():
     if j<100 and j>=10:
         h=f'0{j}'    
     z=int(i-32*np.floor(i/32)) # z determines the current image number within the current block of 32 images
-    img = Image.open(f'D:/Downloads/keras_png_slices_data/keras_png_slices_data/keras_png_slices_train/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
+    img = Image.open(f'path of folder containing train data/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
     img=np.array(img) #convert the image into an array
     #to_tensor = transforms.ToTensor()
     #tensor = to_tensor(img)
@@ -107,6 +108,7 @@ def DataProcess():
  num_workers =0
  batch_size = 25 #setting Batch size
  num_train = len(TRAINDATA)
+ 
  indices = list(range(num_train))
 
  np.random.shuffle(indices) #randomly shuffling the data
@@ -137,7 +139,7 @@ def DataProcess():
     
     h=f'{j}'       #h here is presenting the number j, corresponding to  which numbered block of 32 images is being dealt with.
     z=int(i-32*np.floor(i/32)) # z determines the current image number within the current block of 32 images
-    img = Image.open(f'D:/Downloads/keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
+    img = Image.open(f'path of folder containing validation data/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
     img=np.array(img) #convert the image into an array
    
   
@@ -157,7 +159,7 @@ def DataProcess():
     
     h=f'{j}'       #h here is presenting the number j, corresponding to  which numbered block of 32 images is being dealt with.
     z=int(i-32*np.floor(i/32)) # z determines the current image number within the current block of 32 images
-    img = Image.open(f'D:/Downloads/keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
+    img = Image.open(f'path of folder containing test data/case_{h}_slice_{z}.nii.png').convert('RGB') #loads the image
     img=np.array(img) #convert the image into an array
     
     tensor=torch.tensor(img)/255 #converting the array so that pixels assume values between 0 and 1

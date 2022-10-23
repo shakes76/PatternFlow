@@ -70,7 +70,7 @@ def VQVAE1(TRAINDATA,train_loader,dimlatent,noembeddings,learningrate,commitcost
         coded.scatter_(1,indexes, 1)
         quant=torch.mm(coded, self.embedding.weight).reshape(x.shape)# Array whose rows consist of the minimizing embedding vector for the corresponding sample.This is the latent space representation 
 
-        #quant=embedding.weight[indexes,:].reshape(x.shape)
+        
         loss = F.mse_loss(quant.detach(), x)+commitcost* F.mse_loss(quant, x.detach()) #non-reconstruction loss part of the loss function
         
         
@@ -78,11 +78,11 @@ def VQVAE1(TRAINDATA,train_loader,dimlatent,noembeddings,learningrate,commitcost
         return loss, quant.permute(0, 3, 1, 2).contiguous()
 
 
-   #def sampling(self,mu,logvariance):
+   
       
 
    
-        #self.fc2 = nn.Linear(in_features=100, out_features=10)
+        
    def forward(self, x):
         
         #This a function which implements the layers
@@ -126,17 +126,15 @@ def VQVAE1(TRAINDATA,train_loader,dimlatent,noembeddings,learningrate,commitcost
         opt.zero_grad()   #This line and the next two lines calculating the gradients and updating the weights
         loss.backward()
         opt.step()
-        # add the loss to the total training loss so far and
-        # calculate the number of correct predictions
+        
         totalbinaryentropyloss += len(x)*Loss2*256*256*3 #computing the sum of the reconstruction loss over the batch and adding it to reconstruction loss sum of the previous batches
         totalnonreconloss += len(x)*Loss1*256*256*dimlatent#computing the sum of the reconstruction loss over the batch and adding it to reconstruction loss sum of the previous batches
        
-        #m=nn.Softmax(dim=1)
-        #acc=acc+np.sum(np.array(torch.argmax(m(pred.cpu()),dim=1))==torch.argmax(x[:,3072:3082],dim=1).detach().numpy())/len(x)
+       
 
    
    
- #ACC[e]=acc/i
+
   
  
  
@@ -145,7 +143,7 @@ def VQVAE1(TRAINDATA,train_loader,dimlatent,noembeddings,learningrate,commitcost
   
   E[e]=totalnonreconloss/(np.int64(len(TRAINDATA))*256*256*dimlatent)+E1[e] # Computing the mean of the total loss
   
- #The remaining code plots the training loss versus the cpoch number
+ #The remaining code plots the training loss versus the epoch number
 
  import matplotlib.pyplot as plt
  from matplotlib.pyplot import figure
