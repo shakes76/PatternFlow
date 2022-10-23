@@ -8,9 +8,9 @@ from train import *
 
 VQVAE_DIR = "vqvae"
 PIXELCNN_DIR = "pixelcnn"
-LATENT_DIM = 16
-NUM_EMBEDDINGS = 64
-RESIDUAL_HIDDENS = 128
+LATENT_DIM = 32
+NUM_EMBEDDINGS = 128
+RESIDUAL_HIDDENS = 32
 EPOCHS = 50
 BATCH_SIZE = 64
 DATA_DIR = 'data/keras_png_slices_data'

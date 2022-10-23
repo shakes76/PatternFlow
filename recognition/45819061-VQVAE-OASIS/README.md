@@ -26,5 +26,17 @@ We train the model using the VQVAETrainer class which contains all the logic req
 
 ![](losses.png)
 ![](ssim.png)
+
+Here we have some example input, output pairs for the auto encoder
+![](fig1.png)
+![](fig2.png)
+
+And their representation in the codebook space in the bottleneck of the auto encoder
+![](embedding1.png)
+![](embedding2.png)
+
+And the results of a pixel cnn given the following codebook data.
+![](gen1.png)
+![](gen2.png)
 # Data
 The data we used was this preprocessed OS brain data available here [Link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). Since this data is already split into training, validation and testing sets we did not perform any dataset splitting. Before passing images to the model we normalised the encoding by loading as grayscale images and scaling all the values to be in the domain [-0.5, 0.5]. 

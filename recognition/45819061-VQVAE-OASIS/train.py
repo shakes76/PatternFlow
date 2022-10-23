@@ -133,12 +133,12 @@ def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30, batch_size=16,
 
 
     pixelcnn = get_pixelcnn(encoded_training.shape[1:-1], **kwargs)
-    pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(3e-4), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+    pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
     history = pixelcnn.fit(
         x=codebook_indices_training, 
         y=codebook_indices_training, 
-        batch_size=batch_size*4, 
-        epochs=epochs,
+        batch_size=batch_size*2, 
+        epochs=epochs*5,
         validation_data=(codebook_indices_validation, codebook_indices_validation)
     )
 

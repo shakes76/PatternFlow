@@ -90,12 +90,12 @@ class ResidualBlock(Layer):
         x = self.conv1(inputs)
         x = self.pixelcnn(x)
         x = self.conv2(x)
-        return tf.add(inputs, x)
+        return tf.keras.layers.add([inputs, x])
 
 def get_pixelcnn(input_shape, num_embeddings, filters=128, num_residual_blocks=2, num_pixelcnn_layers=2, **kwargs):
     pixelcnn_inputs = Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(pixelcnn_inputs, num_embeddings)
-    x = PixelCNN(mask_type='A', filters=filters, kernel_size=8, activation='leaky_relu', padding='same')(onehot)
+    x = PixelCNN(mask_type='A', filters=filters, kernel_size=32, activation='leaky_relu', padding='same')(onehot)
     for _ in range(num_residual_blocks):
         x = ResidualBlock(filters=filters)(x)
     for _ in range(num_pixelcnn_layers):
@@ -110,19 +110,15 @@ def get_vqvae(latent_dim=16, num_embeddings=64, input_shape=(256, 256, 1), resid
     
     # Build encoder
     encoder_in = Input(shape=input_shape)
-    x = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
-    x = Conv2D(residual_hiddens, 4, strides=2, activation='leaky_relu', padding='same')(x)
-    x = resblock(x, residual_hiddens)
-    x = resblock(x, residual_hiddens)
+    x = Conv2D(32, 3, strides=2, activation='leaky_relu', padding='same')(encoder_in)
+    x = Conv2D(64, 3, strides=2, activation='leaky_relu', padding='same')(x)
     encoder_out = Conv2D(latent_dim, 1, padding="same")(x)
     encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
 
     # Build decoder
     decoder_in = Input(shape=encoder.output.shape[1:])
-    y = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(decoder_in)
-    y = Conv2DTranspose(residual_hiddens, 4, strides=2, activation='leaky_relu', padding='same')(y)
-    y = resblock(y, residual_hiddens)
-    y = resblock(y, residual_hiddens)
+    y = Conv2DTranspose(64, 3, strides=2, activation='leaky_relu', padding='same')(decoder_in)
+    y = Conv2DTranspose(32, 3, strides=2, activation='leaky_relu', padding='same')(y)
     decoder_out = Conv2DTranspose(1, 3, strides=1, activation='leaky_relu', padding='same')(y)
     decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
