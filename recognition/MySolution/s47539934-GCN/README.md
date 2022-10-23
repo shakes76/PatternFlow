@@ -1,1 +1,0 @@
-#Graph Convolutional Layer on Facebook.npz dataset
