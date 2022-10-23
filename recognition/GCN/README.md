@@ -123,7 +123,12 @@ The following experimental results were achieved by modifying the N_HID constant
 
 ![image](https://user-images.githubusercontent.com/86597504/197388129-b4ad446d-faa8-4f1f-83ac-0cf428da19a0.png)
 
-20 resulted in the highest training and validation performance of 77%, resulting in an overall test accuracy of 76%. As interpreted from the tSNE plot of the model embeddings, this may result because Class 0 bears high feature similarity to the other 3 classes- Class 0 is also the smallest represented class in the dataset. This may suggest that there is not enough data for the model to properly distinguish this class with. 
+20 resulted in the highest training and validation performance of 77%, resulting in an overall test accuracy of 76%. As seen from the plot in the performance plots subheading, the accuracy declines from epochs 50-100, before consistently increasing. Training performance does not taper off after 300 epochs, suggesting that overall performance could improve with further training. Additionally, loss consistently decreases, suggesting that although accuracy fluctuates initially, the scale of these errors is not large. 
+
+![Unknown-39](https://user-images.githubusercontent.com/86597504/197160327-f9185887-62ae-46b0-bdaf-67049310353e.png)
+
+![Unknown-38](https://user-images.githubusercontent.com/86597504/197160334-ced94df3-c90b-45b9-9d43-88a223082ffb.png)
+
 
 To perform the following experiments on dropout, modify the DROPOUT constant defined at the top of modules.py to the desired dropout value. 
 
@@ -134,7 +139,7 @@ DROPOUT was set to 0.5, a commonly used value in literature [4]. The following f
 Changing DROPOUT to 0.4  results in 74% and 76% training and validation accuracy, with validation accuracy outperforming training accuracy. Overall model performance is more stable than it is at DROPOUT = 0.5, consistently increasing with each epoch:
 ![image](https://user-images.githubusercontent.com/86597504/197392963-5b8cee77-db63-4bd7-9365-f0df9cd70aee.png)
 
-It can be seen, however, that accuracy increases at a consistent rate between 50-150 epochs with DROPOUT = 0.3, while the rate of growth during these epochs in the model with DROPOUT = 0.4 appears to slow down. For this reason, the model with DROPOUT = 0.3 was chosen, even though the validation accuracy for both these models were almost equal. 
+Nevertheless, the model with DROPOUT = 0.3 was chosen, as the validation accuracy for this model was marginally higher. 
 
 #### Performance Plots 
 After 300 epochs of training, the following accuracy and loss curves are achieved. 
