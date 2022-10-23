@@ -73,7 +73,7 @@ class VIT:
 
         plt.savefig("Test.jpg")
 
-        # Data Augmentation used to improove model
+        # Data Augmentation used to improve model
         data_augmentation = keras.Sequential(
             [
                 layers.experimental.preprocessing.Normalization(),

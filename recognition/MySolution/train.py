@@ -25,7 +25,7 @@ class Train:
         self.learning_rate = 0.001
         self.weight_decay = 0.0001
         self.batch_size = 64
-        self.num_epochs = 10
+        self.num_epochs = 50
         self.model = model
         self.train(self.model)
 
