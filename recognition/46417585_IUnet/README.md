@@ -6,7 +6,7 @@ The goal of this project is to segment the ISIC dataset by identifying potential
 
 The source dataset used was the [2017 ISIC Challenge dataset](https://challenge.isic-archive.com/data/#2017), which consists of a training, validation and test datasets that contain images of skin lesions along with the ground truth segmentation results.
 
-This data was processed by an improved version of the [UNet](https://en.wikipedia.org/wiki/U-Net) neural network architecture, using the [Dice similarity coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) to determine the accuracy and validity of the model's results.
+This data was processed by an improved version of the [UNet](https://en.wikipedia.org/wiki/U-Net) neural network architecture, using the [Dice similarity coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) to determine the accuracy and validity of the model's results. The results showed a testing accuracy of >0.8 using this metric.
 
 ## Data preprocessing
 
@@ -37,6 +37,17 @@ Additionally, following the example architecture above, segmentation layers are 
 ## Results
 
 When training the model, a relatively small batch size of 8 was used, and the dataset was shuffled before training
+
+In the graph below, the model was used to predict segmentations of the test dataset, where the first row shows the predictions and the corresponding ground truths are shown below. The model predicted the ground truth segmentation relatively well, with an average DSC for this batch of 0.84, and an overall average DSC of 0.82.
+
+---
+
+**Prediction**
+<p align="center">
+  <img src="./prediction.png" width="100%" />
+</p>
+
+**Ground Truth**
 
 ## Setup and Replication
 
