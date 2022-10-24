@@ -71,17 +71,19 @@ With a `python3.10` virutal environment, run:
 
 Then, download the [ISIC Dataset](https://challenge.isic-archive.com/data/#2017), and extract the results into `isic_dataset/`
 
-To train the model, run:
-
-`python3.10 train.py`
-
-**Note: this will require at least 16GB of RAM to execute**
-
-Then, to visualise the performance of the model, run:
+To train the model and visualise its segmentation performance, run:
 
 `python3.10 predict.py`
 
+from the root folder.
+
+**Warning: this model was trained on Google Colab+, so performance may differ on less powerful machines**
+
 ## Appendix
+
+### Model summary
+
+[Model Summary](./model_summary.txt)
 
 ### Training results
 
