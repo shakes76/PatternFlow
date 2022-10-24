@@ -24,10 +24,4 @@ def train():
     plt.plot(history.history["val_DSC"], label="Validation dataset")
     plt.legend()
 
-    model.save("UNet.h5")
-
     return model
-
-
-if __name__ == "__main__":
-    train()

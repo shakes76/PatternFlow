@@ -8,8 +8,8 @@ from keras.layers import (
     Concatenate,
     Dropout,
 )
-from keras.models import Model
 from tensorflow_addons.layers import InstanceNormalization
+from keras.models import Model
 
 
 # fmt: off
