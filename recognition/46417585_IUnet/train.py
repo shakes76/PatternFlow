@@ -15,4 +15,6 @@ def train():
         epochs=EPOCHS,
     )
 
+    model.save("UNet.h5")
+
     return model, history
