@@ -36,9 +36,19 @@ Additionally, following the example architecture above, segmentation layers are 
 
 ## Results
 
-When training the model, a relatively small batch size of 8 was used, and the dataset was shuffled before training
+### Training
 
-In the graph below, the model was used to predict segmentations of the test dataset, where the first row shows the predictions and the corresponding ground truths are shown below. The model predicted the ground truth segmentation relatively well, with an average DSC for this batch of 0.84, and an overall average DSC of 0.82.
+When training the model, a relatively small batch size of 8 was used, and the dataset was shuffled before training. Over the 20 epochs that the model was trained, the DSC history is shown below:
+
+<p align="center">
+  <img src="./training.png" width="100%" />
+</p>
+
+The full history of this model while training is shown [here](#TrainingResults)
+
+### Prediction
+
+In the graph below, the model was used to predict segmentations of the test dataset, where the first row shows the predictions and the corresponding ground truths are shown below. 
 
 ---
 
@@ -48,6 +58,10 @@ In the graph below, the model was used to predict segmentations of the test data
 </p>
 
 **Ground Truth**
+
+---
+
+The model predicted the ground truth segmentation relatively well, with an average DSC for this batch of 0.84, and an overall average DSC of 0.82.
 
 ## Setup and Replication
 
@@ -68,3 +82,7 @@ Then, to visualise the performance of the model, run:
 `python3.10 predict.py`
 
 ## Appendix
+
+### Training results
+
+![TrainingResults](./training_results.png)
