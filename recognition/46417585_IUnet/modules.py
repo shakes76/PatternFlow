@@ -81,51 +81,45 @@ def Decoder(filters: int):
 from constants import IMG_DIM
 
 
-class UNet:
-    def __init__(self, image_shape=(IMG_DIM, IMG_DIM, 3), base_filters=16):
-        self.image_shape = image_shape
-        self.base_filters = base_filters
+def UNet():
+    base_filters = 16
+    inputs = Input(shape=(IMG_DIM, IMG_DIM, 3))
 
-    def __call__(self):
-        inputs = Input(shape=self.image_shape)
+    encoded_256 = Encoder(base_filters, strides=(1, 1))(inputs)
+    encoded_128 = Encoder(base_filters * 2)(encoded_256)
+    encoded_64 = Encoder(base_filters * 4)(encoded_128)
+    encoded_32 = Encoder(base_filters * 8)(encoded_64)
+    encoded_16 = Encoder(base_filters * 16)(encoded_32)
 
-        encoded_256 = Encoder(self.base_filters, strides=(1, 1))(inputs)
-        encoded_128 = Encoder(self.base_filters * 2)(encoded_256)
-        encoded_64 = Encoder(self.base_filters * 4)(encoded_128)
-        encoded_32 = Encoder(self.base_filters * 8)(encoded_64)
-        encoded_16 = Encoder(self.base_filters * 16)(encoded_32)
+    upsample_32 = UpSample(base_filters * 8)(encoded_16)
+    concat_32 = Concatenate()([upsample_32, encoded_32])
+    localisation_32 = Localisation(base_filters * 8)(concat_32)
 
-        upsample_32 = UpSample(self.base_filters * 8)(encoded_16)
-        concat_32 = Concatenate()([upsample_32, encoded_32])
-        localisation_32 = Localisation(self.base_filters * 8)(concat_32)
+    upsample_64 = UpSample(base_filters * 4)(localisation_32)
+    concat_64 = Concatenate()([upsample_64, encoded_64])
+    localisation_64 = Localisation(base_filters * 4)(concat_64)
 
-        upsample_64 = UpSample(self.base_filters * 4)(localisation_32)
-        concat_64 = Concatenate()([upsample_64, encoded_64])
-        localisation_64 = Localisation(self.base_filters * 4)(concat_64)
+    segmentation_64 = Segmentation(base_filters)(localisation_64)
+    segmentation_64 = UpSampling2D()(segmentation_64)
 
-        segmentation_64 = Segmentation(self.base_filters)(localisation_64)
-        segmentation_64 = UpSampling2D()(segmentation_64)
+    upsample_128 = UpSample(base_filters * 2)(localisation_64)
+    concat_128 = Concatenate()([upsample_128, encoded_128])
+    localisation_128 = Localisation(base_filters * 2)(concat_128)
 
-        upsample_128 = UpSample(self.base_filters * 2)(localisation_64)
-        concat_128 = Concatenate()([upsample_128, encoded_128])
-        localisation_128 = Localisation(self.base_filters * 2)(concat_128)
+    segmentation_128 = Segmentation(base_filters)(localisation_128)
+    segmentation_128 = Add()([segmentation_128, segmentation_64])
+    segmentation_128 = UpSampling2D()(segmentation_128)
 
-        segmentation_128 = Segmentation(self.base_filters)(localisation_128)
-        segmentation_128 = Add()([segmentation_128, segmentation_64])
-        segmentation_128 = UpSampling2D()(segmentation_128)
+    upsample_256 = UpSample(base_filters)(localisation_128)
+    concat_256 = Concatenate()([upsample_256, encoded_256])
+    conv_256 = Conv2D(base_filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(
+        concat_256
+    )
 
-        upsample_256 = UpSample(self.base_filters)(localisation_128)
-        concat_256 = Concatenate()([upsample_256, encoded_256])
-        conv_256 = Conv2D(
-            self.base_filters, (3, 3), padding="same", activation=LeakyReLU(0.01)
-        )(concat_256)
+    segmentation_256 = Segmentation(base_filters)(conv_256)
+    segmentation_256 = Add()([segmentation_256, segmentation_128])
 
-        segmentation_256 = Segmentation(self.base_filters)(conv_256)
-        segmentation_256 = Add()([segmentation_256, segmentation_128])
+    outputs = Conv2D(3, (3, 3), padding="same", activation="sigmoid")(segmentation_256)
+    model = Model(inputs, outputs)
 
-        outputs = Conv2D(3, (3, 3), padding="same", activation="sigmoid")(
-            segmentation_256
-        )
-        model = Model(inputs, outputs)
-
-        return model
+    return model
