@@ -1,3 +1,5 @@
+from keras.optimizers import Adam
+
 from constants import EPOCHS
 from dataset import train_data, validation_data
 from modules import UNet
@@ -7,7 +9,7 @@ from utils import DSC, DSC_loss
 def train():
     model = UNet()
 
-    model.compile(optimizer="adam", loss=DSC_loss, metrics=[DSC])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss=DSC_loss, metrics=[DSC])
 
     history = model.fit(
         train_data,
