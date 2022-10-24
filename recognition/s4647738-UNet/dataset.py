@@ -23,7 +23,7 @@ def load_dataset(path, seg_path):
     processed_seg_images = []
 
     images = sorted(glob.glob(path + '/*_???????.jpg'))
-    seg_images = sorted(glob.glob(path + '/*.png'))
+    seg_images = sorted(glob.glob(seg_path + '/*.png'))
 
     for image in images:
       processed_image = process_image(image)
