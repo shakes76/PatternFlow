@@ -1,75 +1,131 @@
 from keras.layers import (
     Input,
     Conv2D,
-    MaxPooling2D,
+    Add,
     UpSampling2D,
-    BatchNormalizationV2,
     Concatenate,
     LeakyReLU,
     Concatenate,
     Dropout,
 )
 from keras.models import Model
+from tensorflow_addons.layers import InstanceNormalization
 
 
+# fmt: off
 def ConvBlock(filters: int):
     def _create(inputs):
-        conv_layer_1 = Conv2D(filters, (3, 3), padding="same")(inputs)
-        batch_norm_1 = BatchNormalizationV2()(conv_layer_1)
-        activation_1 = LeakyReLU()(batch_norm_1)
+        normalized = InstanceNormalization()(inputs)
+        conv_layer_1 = Conv2D(filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(normalized)
 
-        dropout = Dropout(0.2)(activation_1)
+        dropout = Dropout(0.3)(conv_layer_1)
 
-        conv_layer_2 = Conv2D(filters, (3, 3), padding="same")(dropout)
-        batch_norm_2 = BatchNormalizationV2()(conv_layer_2)
-        activation_2 = LeakyReLU()(batch_norm_2)
-
-        return activation_2
+        normalized = InstanceNormalization()(dropout)
+        conv_layer_2 = Conv2D(filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(normalized)
+ 
+        return conv_layer_2
 
     return _create
 
 
-def Encoder(filters: int):
+def Encoder(filters: int, strides=(2,2)):
     def _create(inputs):
-        encoded = ConvBlock(filters)(inputs)
-        downsampled = MaxPooling2D(pool_size=(2, 2))(encoded)
-        return encoded, downsampled
+        conv = Conv2D(filters, (3, 3), padding="same", strides=strides)(inputs)
+        encoded = ConvBlock(filters)(conv)
+        element_sum = Add()([conv, encoded])
+        return element_sum
+
+    return _create
+
+
+def UpSample(filters: int):
+    def _create(inputs):
+        upsampled = UpSampling2D(size=(2, 2))(inputs)
+        conv = Conv2D(filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(upsampled)
+        return conv
+
+    return _create
+
+def Segmentation(filters: int):
+    def _create(inputs):
+        return Conv2D(filters, (1, 1), padding="same", activation=LeakyReLU(0.01))(inputs)
+
+    return _create
+
+def Localisation(filters: int):
+    def _create(inputs):
+        conv = Conv2D(filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(inputs)
+        conv = Conv2D(filters, (1, 1), padding="same", activation=LeakyReLU(0.01))(conv)
+        return conv
 
     return _create
 
 
 def Decoder(filters: int):
     def _create(inputs, skip):
+        # Upsample input
         upsampled = UpSampling2D(size=(2, 2))(inputs)
-        concatenated = Concatenate()([upsampled, skip])
-        conv = ConvBlock(filters)(concatenated)
-        return conv
+        conv = Conv2D(filters, (3, 3), padding="same", activation=LeakyReLU(0.01))(upsampled)
+
+        # Join skip
+        concatenated = Concatenate()([conv, skip])
+
+        # Localisation (halves features)
+        localisation = Localisation(filters)(concatenated)
+        
+        return localisation
 
     return _create
+# fmt: on
+
+from constants import IMG_DIM
 
 
 class UNet:
-    def __init__(self, image_shape=(256, 256, 1), base_filters=32):
+    def __init__(self, image_shape=(IMG_DIM, IMG_DIM, 3), base_filters=16):
         self.image_shape = image_shape
         self.base_filters = base_filters
 
     def __call__(self):
-        inputs = Input(self.image_shape)
+        inputs = Input(shape=self.image_shape)
 
-        encoded_256, downsampled_128 = Encoder(self.base_filters)(inputs)
-        encoded_128, downsampled_64 = Encoder(self.base_filters * 2)(downsampled_128)
-        encoded_64, downsampled_32 = Encoder(self.base_filters * 4)(downsampled_64)
-        encoded_32, downsampled_16 = Encoder(self.base_filters * 8)(downsampled_32)
+        encoded_256 = Encoder(self.base_filters, strides=(1, 1))(inputs)
+        encoded_128 = Encoder(self.base_filters * 2)(encoded_256)
+        encoded_64 = Encoder(self.base_filters * 4)(encoded_128)
+        encoded_32 = Encoder(self.base_filters * 8)(encoded_64)
+        encoded_16 = Encoder(self.base_filters * 16)(encoded_32)
 
-        encoded_16 = ConvBlock(self.base_filters * 16)(downsampled_16)
+        upsample_32 = UpSample(self.base_filters * 8)(encoded_16)
+        concat_32 = Concatenate()([upsample_32, encoded_32])
+        localisation_32 = Localisation(self.base_filters * 8)(concat_32)
 
-        decoded_32 = Decoder(self.base_filters * 8)(encoded_16, encoded_32)
-        decoded_64 = Decoder(self.base_filters * 4)(decoded_32, encoded_64)
-        decoded_128 = Decoder(self.base_filters * 2)(decoded_64, encoded_128)
-        decoded_256 = Decoder(self.base_filters)(decoded_128, encoded_256)
+        upsample_64 = UpSample(self.base_filters * 4)(localisation_32)
+        concat_64 = Concatenate()([upsample_64, encoded_64])
+        localisation_64 = Localisation(self.base_filters * 4)(concat_64)
 
-        outputs = Conv2D(1, (1, 1))(decoded_256)
+        segmentation_64 = Segmentation(self.base_filters)(localisation_64)
+        segmentation_64 = UpSampling2D()(segmentation_64)
 
+        upsample_128 = UpSample(self.base_filters * 2)(localisation_64)
+        concat_128 = Concatenate()([upsample_128, encoded_128])
+        localisation_128 = Localisation(self.base_filters * 2)(concat_128)
+
+        segmentation_128 = Segmentation(self.base_filters)(localisation_128)
+        segmentation_128 = Add()([segmentation_128, segmentation_64])
+        segmentation_128 = UpSampling2D()(segmentation_128)
+
+        upsample_256 = UpSample(self.base_filters)(localisation_128)
+        concat_256 = Concatenate()([upsample_256, encoded_256])
+        conv_256 = Conv2D(
+            self.base_filters, (3, 3), padding="same", activation=LeakyReLU(0.01)
+        )(concat_256)
+
+        segmentation_256 = Segmentation(self.base_filters)(conv_256)
+        segmentation_256 = Add()([segmentation_256, segmentation_128])
+
+        outputs = Conv2D(3, (3, 3), padding="same", activation="sigmoid")(
+            segmentation_256
+        )
         model = Model(inputs, outputs)
 
         return model
