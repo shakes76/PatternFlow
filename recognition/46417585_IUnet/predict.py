@@ -9,7 +9,9 @@ from train import train
 if __name__ == "__main__":
     model = train()
 
-    for x_test_batch, y_test_batch in test_data.shuffle(32).take(TEST_BATCHES):
+    total_dsc = 0
+
+    for x_test_batch, y_test_batch in test_data.shuffle(128).take(TEST_BATCHES):
         y_pred_batch = model.predict(x_test_batch)
 
         plt.figure(figsize=(64, 16), dpi=100)
@@ -23,11 +25,13 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.show()
 
-        avg_dsc = (
-            sum(
-                DSC(y_true, y_pred)
-                for y_true, y_pred in zip(y_test_batch, y_pred_batch)
-            )
-            / BATCH_SIZE
+        total_dsc_for_this_batch = sum(
+            DSC(y_true, y_pred) for y_true, y_pred in zip(y_test_batch, y_pred_batch)
         )
-        print(f"Average DSC for batch is {avg_dsc}")
+        total_dsc += total_dsc_for_this_batch
+
+        print(f"Average DSC for batch is {total_dsc_for_this_batch / BATCH_SIZE}")
+
+    print(
+        f"Average DSC across all test batches is {total_dsc / (TEST_BATCHES * BATCH_SIZE)}"
+    )
