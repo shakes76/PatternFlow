@@ -9,7 +9,6 @@ warnings.filterwarnings('ignore')
 DATADIR_train = './ADNI_AD_NC_2D/AD_NC/train'
 DATADIR_test = './ADNI_AD_NC_2D/AD_NC/test'
 classes = ['AD','NC']
-image_size = 150
 training_data = []
 testing_data = []
 
@@ -22,8 +21,7 @@ def createTrainData(img_size):
         class_num = classes.index(category)
         for img in os.listdir(path):
             img_array = cv2.imread(os.path.join(path,img))
-            resize_array = cv2.resize(img_array,(img_size,img_size))
-            training_data.append([resize_array,class_num])
+            training_data.append([img_array,class_num])
 
 def createTestData(img_size):
     for category in classes:
@@ -31,8 +29,7 @@ def createTestData(img_size):
         class_num = classes.index(category)
         for img in os.listdir(path):
             img_array = cv2.imread(os.path.join(path,img),cv2.IMREAD_GRAYSCALE)
-            resize_array = cv2.resize(img_array,(img_size,img_size))
-            testing_data.append([resize_array,class_num])
+            testing_data.append([img_array,class_num])
 
 def prepareData():
     createTrainData()
