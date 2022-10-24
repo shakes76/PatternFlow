@@ -52,12 +52,23 @@ In the graph below, the model was used to predict segmentations of the test data
 
 ---
 
-**Prediction**
+**Actual**
+
 <p align="center">
-  <img src="./prediction.png" width="100%" />
+  <img src="./actual_1.png" width="100%" />
+</p>
+
+**Prediction**
+
+<p align="center">
+  <img src="./predicted_1.png" width="100%" />
 </p>
 
 **Ground Truth**
+
+<p align="center">
+  <img src="./ground_truth_1.png" width="100%" />
+</p>
 
 ---
 
