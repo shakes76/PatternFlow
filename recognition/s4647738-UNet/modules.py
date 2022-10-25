@@ -61,7 +61,6 @@ class SegmentationModule(Layer):
     self.upscale = upscale
   def call(self, inputs):
     x = self.conv(inputs)
-    x = self.relu(x)
     if self.upscale:
       return self.up(x)
     else:
