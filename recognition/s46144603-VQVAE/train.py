@@ -54,7 +54,7 @@ class VQVAETrainer(tf.keras.models.Model):
 # Model 
 train_vqvae = VQVAETrainer(data_variance, latent_dim=64, num_embeddings=256)
 train_vqvae.compile(optimizer=tf.keras.optimizers.Adam(), metrics="loss")
-train_vqvae.fit(X, epochs=300, batch_size=2)
+train_vqvae.fit(X, epochs=200, batch_size=2)
 
 # Plot model loss
 plt.plot(train_vqvae.history.history['loss'])
