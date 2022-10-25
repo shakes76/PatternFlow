@@ -22,3 +22,58 @@ def decoder_net(latent_dim=32):
   network = tf.keras.layers.Conv2DTranspose(1, 3, padding='same')(net)
 
   return tf.keras.Model(inputs=decoder_in, outputs=network, name='decoder')
+
+
+# Build Vector Quantizer for a discrete latent space
+# Source: https://keras.io/examples/generative/vq_vae/
+class VectorQuantizer(tf.keras.layers.Layer):
+    def __init__(self, num_embeddings, embedding_dim, beta=0.3, **kwargs):
+        super().__init__(**kwargs)
+        self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
+        self.beta = beta
+
+        # Initialize embeddings for quantization 
+        w_init = tf.random_uniform_initializer()
+        self.embeddings = tf.Variable(
+            initial_value=w_init(
+                shape=(self.embedding_dim, self.num_embeddings), dtype="float32"
+            ),
+            trainable=True,
+            name="embeddings_vqvae",
+        )
+
+    def call(self, input):
+        # Calculate the input shape of the inputs and flatten inputs
+        input_shape = tf.shape(input)
+        flattened = tf.reshape(input, [-1, self.embedding_dim])
+
+        # Vector Quantization for building discrete latent space via one-hot
+        # encoding
+        encoding_indices = self.get_code_indices(flattened)
+        encodings = tf.one_hot(encoding_indices, self.num_embeddings)
+        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
+        quantized = tf.reshape(quantized, input_shape)
+
+        # Calculate vector quantization loss
+        commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - input) ** 2)
+        codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(input)) ** 2)
+        self.add_loss(self.beta * commitment_loss + codebook_loss)
+
+        # Straight-through estimator (ignores derivative of theshhold function
+        # and passes input gradient as an identity function)
+        quantized = input + tf.stop_gradient(quantized - input)
+        return quantized
+
+    def get_code_indices(self, flattened_inputs):
+        # Calculate L2-normalized distance between inputs and codes
+        similarity = tf.matmul(flattened_inputs, self.embeddings)
+        distances = (
+            tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True)
+            + tf.reduce_sum(self.embeddings ** 2, axis=0)
+            - 2 * similarity
+        )
+
+        # Calculate encoding indices for min distances
+        encoding_indices = tf.argmin(distances, axis=1)
+        return encoding_indices
