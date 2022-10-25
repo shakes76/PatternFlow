@@ -77,3 +77,16 @@ class VectorQuantizer(tf.keras.layers.Layer):
         # Calculate encoding indices for min distances
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
+
+# VQVAE model
+def vq_vae(latent_dim=32, embedding_num=128):
+  vq_layer = VectorQuantizer(embedding_num, latent_dim, name='vector_quantise')
+  encoder = encoder_net(latent_dim)
+  decoder = decoder_net(latent_dim)
+  inputs = tf.keras.Input(input_shape)
+  enc = encoder(inputs)
+  quantised_vae = vq_layer(enc)
+  recon = decoder(quantised_vae)
+  return tf.keras.Model(inputs, recon, name='vq_vae')
+
+vq_vae().summary()
