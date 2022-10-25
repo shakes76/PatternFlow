@@ -12,5 +12,5 @@ model = module.createModel()
 model.load_weights('./model.h5')
 
 # Re-evaluate the model
-_, accuracy = model.evaluate(test_ds)
-print(f"Test acc: {round(accuracy * 100, 2)}%")
+_, acc = model.evaluate(test_ds)
+print(f"Test acc: {round(acc * 100, 2)}%")
