@@ -14,7 +14,7 @@ def reconstruct_image(original, reconstructed):
 
 # Find random image and create model prediction on test set
 vqvae_model = train_vqvae.vqvae
-index = np.random.choice(len(X), 1)
+index = np.random.choice(len(X_test), 3)
 test_images = X_test[index]
 reconstructions_test = vqvae_model.predict(test_images)
 
