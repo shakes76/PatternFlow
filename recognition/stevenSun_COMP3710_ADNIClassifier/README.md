@@ -7,9 +7,11 @@
 Classify Alzheimer’s disease (normal and AD) of the ADNI brain dataset using a visual transformer.
 
 # Algorithm Description
+
 The model consists of three main modules. The first module is the Patch Encoders module. It consists of a patch layer which turns images into patches, followed by a patch encoder layer which encodes patches into vectors. The second is the transformer module, this module measure the relationships between pairs of input vectors. Finally, there is a multi-layer perceptron module which has 2 layers with 1024 x 512 neurons that act as a classifier. Combine all the modules together and they make up the Vision Transformer model.
 
 # Train Procedure
+
 The original image is 256 x 240 pixels. I resize the image into 256 X 256 pixels such that the input shape of the model is (256, 256, 3) in which 3 stands for RGB. The metric I used is Binary Accuracy, and the loss function I used is Binary Cross-entropy. The number of heads of the multi-head attension layer is 4. I used Adam optimizer and I set the learning rate to .0003 with the ReduceLROnPlateau function implemented such that when the loss remains unchanged, the learning rate will be reduced.
 
 I trained the model through 100 ephocs.
