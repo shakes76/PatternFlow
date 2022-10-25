@@ -12,27 +12,31 @@ warnings.filterwarnings('ignore')
 
 
 num_classes = 2
-image_size = dataset.img_size
-input_shape = (image_size, image_size, 3)
-learning_rate = 0.000021
+
+input_shape = (dataset.image_size, dataset.image_size, 3)
+image_size = module.image_size
+learning_rate = 0.00003
 weight_decay = 0.0001
-batch_size = 13
-num_epochs = 49
-patch_size = 6  # Size of the patches to be extract from the input images
+batch_size = 64
+num_epochs = 1  # We'll resize input images to this size 136
+patch_size = 20  # Size of the patches to be extract from the input images
 num_patches = (image_size // patch_size) ** 2
-projection_dim = 64
-num_heads = 4
+projection_dim = 126
+num_heads = 8
 transformer_units = [
     projection_dim * 2,
     projection_dim,
 ]  # Size of the transformer layers
 transformer_layers = 8
-mlp_head_units = [2048, 1024]  # Size of the dense layers of the final classifier
+mlp_head_units = [4096,2048]  # Size of the dense layers of the final classifier
 
-x_train, y_train, x_test, y_test = dataset.prepareData()
-module.dataAugmentation.layers[0].adapt(x_train)
-print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
-print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
+
+#x_train, y_train, x_test, y_test = dataset.prepareData()
+train_ds = dataset.createTrainData(image_size,batch_size)
+validate_ds = dataset.createTestData(image_size,batch_size)
+module.dataAugmentation.layers[0].adapt(train_ds)
+# print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
+# print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
 def run_experiment(model):
     optimizer = tfa.optimizers.AdamW(
@@ -44,7 +48,6 @@ def run_experiment(model):
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=[
             keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
-            keras.metrics.SparseTopKCategoricalAccuracy(5, name="top-5-accuracy"),
         ],
     )
 
@@ -57,20 +60,17 @@ def run_experiment(model):
     )
 
     history = model.fit(
-        x=x_train,
-        y=y_train,
+        train_ds,
         batch_size=batch_size,
         epochs=num_epochs,
         validation_split=0.1,
         callbacks=[checkpoint_callback],
-        validation_data=(x_test, y_test),
-
+        validation_data=validate_ds,
     )
 
     model.load_weights(checkpoint_filepath)
-    _, accuracy, top_5_accuracy = model.evaluate(x_test, y_test)
+    _, accuracy = model.evaluate(validate_ds)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
     model.save_weights("model.h5")
     return history
 
@@ -92,4 +92,11 @@ def run_experiment(model):
 
 transformer_model = module.createModel(input_shape,patch_size,num_patches,projection_dim,transformer_layers,num_heads,num_classes,transformer_units,mlp_head_units)
 model_history = run_experiment(transformer_model)
+
+
+
+hist_df = pd.DataFrame(model_history.history) 
+hist_csv_file = 'history.csv'
+with open(hist_csv_file, mode='w') as f:
+    hist_df.to_csv(f)
 # plot_loss()

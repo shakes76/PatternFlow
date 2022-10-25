@@ -4,7 +4,7 @@ from tensorflow.keras import layers
 import tensorflow_addons as tfa
 import dataset
 
-image_size = dataset.img_size ## must match train.py and dataset.py image size
+image_size = 256 ## must match train.py and dataset.py image size
 
 dataAugmentation = keras.Sequential(
     [
@@ -81,3 +81,4 @@ def createModel(input_shape,patch_size,num_patches,projection_dim,transformer_la
     logits = layers.Dense(num_classes)(features)
     model = keras.Model(inputs=inputs, outputs=logits)
     return model
+   
