@@ -45,7 +45,7 @@ into Colab. In train.py there are variables store the path for the ISIC data (se
 train_path, etc). Note that these paths are google drive paths to ensure easy compatability
 with Google Colab so the user should mount their google drive when attempting to run the code
 through Colab. If files are loaded locally this may involve slightly altering the code and
-importing the python os module.
+importing the python os module. To initiate training simply run all in train.py.
 ##### Note:
 The downloaded images (i.e. not masks) from ISIC will come with 'superpixels' images which
 were manually removed during implementation however dataset.py should account for this by
