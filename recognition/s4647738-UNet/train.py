@@ -16,21 +16,21 @@ import tensorflow as tf
 import dataset 
 import modules
 
-def train():
-  seg_train_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Training_Part1_GroundTruth'
-  train_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Training_Data'
-  seg_test_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Test_v2_Part1_GroundTruth'
-  test_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Test_v2_Data'
-  seg_val_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Validation_Part1_GroundTruth'
-  val_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Validation_Data'
-  print("checkpoint 1")
-  xtrain, ytrain = dataset.load_dataset(train_path, seg_train_path)
-  print("checkpoint 2")
-  xval, yval = dataset.load_dataset(val_path, seg_val_path)
-  print("checkpoint 3")
-  xtest, ytest = dataset.load_dataset(test_path, seg_test_path)
-  print("checkpoint 4")
-  model = modules.ImprovedUnet()
-  model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[modules.dice_similarity])
-  print("checkpoint 5")
-  model.summary()
+def train(xtrain, ytrain, xval, yval):
+  model = modules.improved_unet()
+  model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=[modules.dice_similarity])
+  history = model.fit(xtrain, ytrain, batch_size=2, epochs=50, validation_data=(xval, yval))
+  model.save('improved_unet.model', save_format='h5')
+  return model, history
+
+seg_train_path = '/content/drive/MyDrive/ISIC/test_train_segmented'
+train_path = '/content/drive/MyDrive/ISIC/test_train'
+#seg_test_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Test_v2_Part1_GroundTruth'
+#test_path = '/content/drive/MyDrive/ISIC/ISIC-2017_Test_v2_Data'
+seg_val_path = '/content/drive/MyDrive/ISIC/test_val_segmented'
+val_path = '/content/drive/MyDrive/ISIC/test_val'
+xtrain, ytrain = dataset.load_dataset(train_path, seg_train_path)
+xval, yval = dataset.load_dataset(val_path, seg_val_path)
+#xtest, ytest = dataset.load_dataset(test_path, seg_test_path)
+
+train(xtrain, ytrain, xval, yval)

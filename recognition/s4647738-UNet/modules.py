@@ -26,6 +26,9 @@ class ContextModule(Layer):
     x = self.convA(inputs)
     x = self.convB(x)
     return self.dropout(x)
+  def get_config(self):
+    cfg = super().get_config()
+    return cfg
 
 class LocalizationModule(Layer):
   def __init__(self, filters):
@@ -39,19 +42,29 @@ class LocalizationModule(Layer):
   def call(self, inputs):
     x = self.convA(inputs)
     return self.convB(x)
+  def get_config(self):
+    cfg = super().get_config()
+    return cfg
 
 class SegmentationModule(Layer):
-  def __init__(self, filters):
+  def __init__(self, filters, upscale = True):
     super(SegmentationModule, self).__init__()
     self.conv = Conv2D(filters = filters, 
                        kernel_size = (3, 3), 
                        padding='same')
     self.relu = LeakyReLU(alpha = 0.01)
     self.up = UpSampling2D(size = (2, 2))
+    self.upscale = upscale
   def call(self, inputs):
     x = self.conv(inputs)
     x = self.relu(x)
-    return self.up(x)
+    if self.upscale:
+      return self.up(x)
+    else:
+      return x
+  def get_config(self):
+    cfg = super().get_config()
+    return cfg
 
 def improved_unet():
   ### ENCODER ###
@@ -105,16 +118,18 @@ def improved_unet():
   # layer 1
   concat4 = Concatenate()([up4, add1])
   conv2 = Conv2D(filters = 32, kernel_size = (3,3), padding='same')(concat4)
-  seg3 = SegmentationModule(2)(conv2)
-  add6up = UpSampling2D((2,2))(seg2) #Upsample add6 to match seg3 shape
-  add7 = Add()([seg3, add6up])
+  seg3 = SegmentationModule(2, upscale=False)(conv2)
+  add7 = Add()([seg3, add6])
   outputs = Conv2D(filters = 2, kernel_size = (3, 3), padding='same', activation='softmax')(add7)
   model = Model(inputs, outputs)
   return model
 
-def dice_similarity(x, y):
-    x = k.flatten(x)
-    y = k.flatten(y)
-    intersect = k.sum(x * y)
-    union = k.sum(x) + k.sum(y)
+def dice_similarity(y, x):
+    #print(x.shape)
+    xim = tf.where(x[:, :, :, 1] >= x[:, :, :, 0], [1.0], [0.0])
+    #print(xim.shape)
+    xc = k.flatten(xim)
+    yc = k.flatten(y)
+    intersect = k.sum(xc * yc)
+    union = k.sum(xc) + k.sum(yc)
     return 2 * intersect / union

@@ -34,6 +34,5 @@ def load_dataset(path, seg_path):
       processed_seg_images.append(processed_image)
 
     processed_images = np.array(processed_images)
-    processed_seg_images = np.array(processed_seg_images)
-
+    processed_seg_images = np.expand_dims(np.array(processed_seg_images), -1)
     return processed_images, processed_seg_images
