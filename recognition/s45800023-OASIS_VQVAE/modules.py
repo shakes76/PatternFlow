@@ -10,7 +10,7 @@ with main scripts.
 
 import torch
 import torch.nn as nn
-import torch.nn.Functional as F
+import torch.nn.functional as F
 import torchvision
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
@@ -115,6 +115,8 @@ class Hyperparameters():
         self.optimizer = torch.optim.Adam()
         self.batch_size = 128
         self.lr = 0.99
+        
+## VQ-VAE ##
         
 class Residual(nn.Module):
     """
@@ -283,7 +285,107 @@ class VectorQuantizer(nn.Module):
         # convert quantized from BHWC -> BCHW
         return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings
 
+class VQVAE(nn.Module):
+    """
+    Class combining sub-modules into the full VQ-VAE model.
+    """
+    def __init__(self):
+        super(VQVAE, self).__init__()
     
+## DCGAN ##
 
+class Discriminator(nn.Module):
+    """
+    Class implementing the discriminator for DCGAN
+    """
+    def __init__(self, channels, features):
+        super(Discriminator, self).__init__()
+        # 64 x 64 - input
+        self.conv1 = nn.Conv2D(channels, features, kernel_size=4, stride=2, padding=1)
+        self.leaky1 = nn.LeakyReLU(0.2)
+        
+        # Block 1 - 32x32 input
+        self.conv2 = nn.Conv2D(features, features*2, kernel_size=4, stride=2, padding=1)
+        self.batch1 = nn.BatchNorm2d(features*2)
+        self.leaky2 = nn.LeakyReLU(0.2)
+        
+        # Block 2 - reduce to 1
+        self.conv3 = nn.Conv2D(features*2, features*4, kernel_size=4, stride=2, padding=1)
+        self.batch2 = nn.BatchNorm2d(features*4)
+        self.leaky3 = nn.LeakyReLU(0.2)
+        
+        # Block 3 - reduce to 32x32
+        self.conv4 = nn.Conv2D(features*4, features*8, kernel_size=4, stride=2, padding=1)
+        self.batch3 = nn.BatchNorm2d(features*4)
+        self.leaky4 = nn.LeakyReLU(0.2)
+        
+        
+        # Out - reduces to 1 dimension
+        self.out = nn.Conv2D(features*8, 1, kernel_size=4, stride=2, padding=0)
+        self.sigmoid = nn.Sigmoid()
+        
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.leaky1(out)
+        out = self.conv2(out)
+        out = self.batch1(out)
+        out = self.leaky2(out)
+        out = self.conv3(out)
+        out = self.batch2(out)
+        out = self.leaky3(out)
+        out = self.conv4(out)
+        out = self.batch3(out)
+        out = self.leaky4(out)
+        out = self.out(out)
+        out = self.sigmoid(out)
+        return out
+        
+class Generator(nn.Module):
+    """
+    Class implementing the generator for DCGAN
+    """
+    def __init__(self, channels_noise, channels, features):
+        super(Generator, self).__init__()     
+        # Block 1 - input noise
+        self.convT1 = nn.ConvTranspose2d(channels_noise, features*16, kernel_size=4, stride=1, padding=0)
+        self.batch1 = nn.BatchNorm2d(features*16)
+        self.relu1 = nn.ReLU()
+        
+        # Block 2
+        self.convT2 = nn.ConvTranspose2d(features*16, features*8, kernel_size=4, stride=1, padding=1)
+        self.batch2 = nn.BatchNorm2d(features*8)
+        self.relu2 = nn.ReLU()
+        
+        # Block 3
+        self.convT3 = nn.ConvTranspose2d(features*8, features*4, kernel_size=4, stride=1, padding=1)
+        self.batch3 = nn.BatchNorm2d(features*4)
+        self.relu3 = nn.ReLU()
+        
+        # Block 4
+        self.convT4 = nn.ConvTranspose2d(features*4, features*2, kernel_size=4, stride=1, padding=1)
+        self.batch4 = nn.BatchNorm2d(features*8)
+        self.relu4 = nn.ReLU()
+        
+        self.convT5 = nn.ConvTranspose2d(features*2, features, kernel_size=4, stride=1, padding=1)
+        self.tanH = nn.Tanh()
+        
+    def forward(self, x):
+        out = self.convT1(x)
+        out = self.batch1(out)
+        out = self.relu1(out)
+        out = self.convT2(out)
+        out = self.batch2(out)
+        out = self.relu2(out)
+        out = self.convT3(out)
+        out = self.batch3(out)
+        out = self.relu3(out)
+        out = self.convT4(out)
+        out = self.batch4(out)
+        out = self.relu4(out)
+        out = self.convT5(out)
+        out = self.tanH(out)
+        return out
+        
+        
 
     

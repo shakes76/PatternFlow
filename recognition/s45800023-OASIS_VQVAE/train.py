@@ -21,10 +21,4 @@ import modules
 Code Block for sanity checking CUDA and setting the device. 
 
 """
-print("Is device available: ",torch.cuda.is_available())
-print("Current Device: ",torch.cuda.current_device())
-print("Name: ",torch.cuda.get_device_name(0))
-
-device = torch.cuda.device(0)
-
-train = datasets.train
+device = modules.check_cuda()
