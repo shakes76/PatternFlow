@@ -50,3 +50,18 @@ class VQVAETrainer(tf.keras.models.Model):
             "recon_loss": self.track_reconstructionloss.result(),
             "vqvae_loss": self.track_vqloss.result(),
         }
+
+# Model 
+train_vqvae = VQVAETrainer(data_variance, latent_dim=64, num_embeddings=256)
+train_vqvae.compile(optimizer=tf.keras.optimizers.Adam(), metrics="loss")
+train_vqvae.fit(X, epochs=300, batch_size=2)
+
+# Plot model loss
+plt.plot(train_vqvae.history.history['loss'])
+plt.plot(train_vqvae.history.history['recon_loss'])
+plt.plot(train_vqvae.history.history['vqvae_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['total loss', 'recon loss', 'vae loss'], loc='upper left')
+plt.show
