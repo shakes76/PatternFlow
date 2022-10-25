@@ -8,17 +8,16 @@ import pandas as pd
 import warnings
 import module
 import dataset
-
 warnings.filterwarnings('ignore')
 
 
-num_classes = 100
-input_shape = (150, 150, 3)
-learning_rate = 0.001
+num_classes = 2
+image_size = dataset.img_size
+input_shape = (image_size, image_size, 3)
+learning_rate = 0.000021
 weight_decay = 0.0001
-batch_size = 32
-num_epochs = 100
-image_size = 150  # We'll resize input images to this size
+batch_size = 13
+num_epochs = 49
 patch_size = 6  # Size of the patches to be extract from the input images
 num_patches = (image_size // patch_size) ** 2
 projection_dim = 64
@@ -30,7 +29,10 @@ transformer_units = [
 transformer_layers = 8
 mlp_head_units = [2048, 1024]  # Size of the dense layers of the final classifier
 
-
+x_train, y_train, x_test, y_test = dataset.prepareData()
+module.dataAugmentation.layers[0].adapt(x_train)
+print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
+print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
 def run_experiment(model):
     optimizer = tfa.optimizers.AdamW(
@@ -46,7 +48,7 @@ def run_experiment(model):
         ],
     )
 
-    checkpoint_filepath = "/tmp/checkpoint"
+    checkpoint_filepath = "./tmp/checkpoint"
     checkpoint_callback = keras.callbacks.ModelCheckpoint(
         checkpoint_filepath,
         monitor="val_accuracy",
@@ -61,15 +63,33 @@ def run_experiment(model):
         epochs=num_epochs,
         validation_split=0.1,
         callbacks=[checkpoint_callback],
+        validation_data=(x_test, y_test),
+
     )
 
     model.load_weights(checkpoint_filepath)
     _, accuracy, top_5_accuracy = model.evaluate(x_test, y_test)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
     print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
-
+    model.save_weights("model.h5")
     return history
 
+# def plot_loss(model_history):
+#     for k,v in model_history.items():
+#         loss = []
+#         val_loss = []
+#         loss.append(v.model_history['loss'][:])
+#         val_loss.append(v.model_history['val_loss'][:])
+#         plt.figure(figsize = (15, 6))
+#         plt.plot(np.mean(loss, axis=0))
+#         plt.plot(np.mean(val_loss, axis=0))
+#         plt.yscale('log')
+#         plt.yticks(ticks=[1,1e-1,1e-2])
+#         plt.xlabel('Epochs')
+#         plt.ylabel('Average Logloss')
+#         plt.legend(['Training','Validation'])
+#         plt.show()
 
-vit_classifier = create_vit_classifier()
-history = run_experiment(vit_classifier)
+transformer_model = module.createModel(input_shape,patch_size,num_patches,projection_dim,transformer_layers,num_heads,num_classes,transformer_units,mlp_head_units)
+model_history = run_experiment(transformer_model)
+# plot_loss()

@@ -2,8 +2,9 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
+import dataset
 
-image_size = 150
+image_size = dataset.img_size ## must match train.py and dataset.py image size
 
 dataAugmentation = keras.Sequential(
     [
