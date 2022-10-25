@@ -289,8 +289,34 @@ class VQVAE(nn.Module):
     """
     Class combining sub-modules into the full VQ-VAE model.
     """
-    def __init__(self):
+    def __init__(self, num_hiddens, num_residual_hiddens, 
+             num_embeddings, embedding_dim, commitment_cost):
         super(VQVAE, self).__init__()
+        
+        self.encoder = Encoder(3, num_hiddens,
+                                num_residual_hiddens)
+        self.conv = nn.Conv2d(in_channels=num_hiddens, 
+                                      out_channels=embedding_dim,
+                                      kernel_size=1, 
+                                      stride=1)
+
+        self.vq = VectorQuantizer(num_embeddings, 
+                                  embedding_dim,
+                                  commitment_cost)
+        
+        self.decoder = Decoder(embedding_dim,
+                               num_hiddens, 
+                               num_residual_hiddens)
+        
+    def forward(self, x):
+        out = self.encoder(x)
+        out = self.conv(out)
+        loss, quantized, perplexity, _ = self.vq(out)
+        out_reconstruction = self.decoder(quantized)
+
+        return loss, out_reconstruction
+        
+        
     
 ## DCGAN ##
 
@@ -387,5 +413,49 @@ class Generator(nn.Module):
         return out
         
         
-
+def trainDCGAN():
+    """
+    Class to hold hyper-parameters and implement the training process for 
+    DCGAN.
     
+    Returns
+    -------
+    None.
+
+    """
+    def __init__(self, Discriminator, Generator, data):
+        """
+        Initailize hyper-parameters and pass in models/data.
+        
+        Parameters
+        ----------
+        Discriminator : nn.Module
+            Discriminator network
+        Generator : nn.Module
+            Generator network
+        data : String
+            data path
+        Returns
+        -------
+        None.
+
+        """
+        self.Discriminator = Discriminator
+        self.Generator = Generator
+        self.data = data
+        self.batch_size = 32
+        self.epochs = 10
+        self.loss = nn.BCELoss()
+        self.lr = 0.0002
+        self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
+        self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
+    
+    def quantizeData(self):
+        """
+        We are using the DCGAN to generate codebooks indices in the latent space.
+        Thus when training the model we need to pass in 
+        """
+        return
+    
+    def train(self):
+        return
