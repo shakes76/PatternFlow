@@ -88,5 +88,3 @@ def vq_vae(latent_dim=32, embedding_num=128):
   quantised_vae = vq_layer(enc)
   recon = decoder(quantised_vae)
   return tf.keras.Model(inputs, recon, name='vq_vae')
-
-vq_vae().summary()
