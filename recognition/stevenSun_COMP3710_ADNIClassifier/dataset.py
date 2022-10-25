@@ -1,68 +1,37 @@
+# import packages
 import numpy as np
-import cv2
-import os 
-import sklearn
+
 from tensorflow import keras
 import warnings
+
+# ignore warning
 warnings.filterwarnings('ignore')
 
+train_data_dir = './ADNI_AD_NC_2D/AD_NC/train'  # train data directory
+test_data_dir = './ADNI_AD_NC_2D/AD_NC/test'  # test data directory
+class_name_list = ['AD', 'NC']  # list of class name
+img_size = 256
 
-DATADIR_train = './ADNI_AD_NC_2D/AD_NC/train'
-DATADIR_test = './ADNI_AD_NC_2D/AD_NC/test'
-classes = ['AD','NC']
-training_data = []
-testing_data = []
-image_size = 512
-
-
-
-
-
-
-
-def createTrainData(img_size,batch_size):
+# train and validation data loader
+def createTrainData(img_size, batch_size):
     train_ds = keras.utils.image_dataset_from_directory(
-    directory=DATADIR_train,
-    labels='inferred',
-    label_mode='categorical',
-    batch_size=batch_size,
-    image_size=(img_size, img_size)
+        directory=train_data_dir,  # target data directory
+        labels='inferred',  # data is tagged according to its directory
+        label_mode='binary',  # only 2 classes, tagged with value 0 or 1
+        batch_size=batch_size,
+        image_size=(img_size, img_size),  # the size after resize
+        subset = 'validation', ## create validation set
+        validation_split = 0.3 ## 30% of train data into validation
     )
     return train_ds
 
-
-    # for cur_class in classes:
-    #     path = os.path.join(DATADIR_train,cur_class) # path to AD or NC dir
-    #     class_num = classes.index(cur_class)
-    #     for img in os.listdir(path):
-    #         img_array = cv2.imread(os.path.join(path,img))
-    #         training_data.append([img_array,class_num])
-
-def createTestData(img_size,batch_size):
+# test data loader
+def createTestData(img_size, batch_size):
     test_ds = keras.utils.image_dataset_from_directory(
-    directory=DATADIR_test,
-    labels='inferred',
-    label_mode='categorical',
-    batch_size=batch_size,
-    image_size=(img_size, img_size)
+        directory=test_data_dir,
+        labels='inferred',
+        label_mode='binary',
+        batch_size=batch_size,
+        image_size=(img_size, img_size),
     )
     return test_ds
-    # for cur_class in classes:
-    #     path = os.path.join(DATADIR_test,cur_class) # path to AD or NC dir
-    #     class_num = classes.index(cur_class)
-    #     for img in os.listdir(path):
-    #         img_array = cv2.imread(os.path.join(path,img))
-    #         #resize_array = cv2.resize(img_array,(img_size,img_size))
-    #         testing_data.append([img_array,class_num])
-
-# def prepareData():
-#     createTrainData(img_size)
-#     createTestData(img_size)
-#     training = sklearn.utils.shuffle(training_data,random_state=77)
-#     testing = sklearn.utils.shuffle(testing_data,random_state=77)
-#     x_train = np.array([training[i][0] for i in range(len(training_data))])
-#     y_train = np.array([training[i][1] for i in range(len(training_data))])
-#     x_test = np.array([testing[i][0] for i in range(len(testing_data))])
-#     y_test = np.array([testing[i][1] for i in range(len(testing_data))])
-#     print(len(y_test))
-#     return x_train, y_train, x_test, y_test
