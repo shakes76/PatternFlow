@@ -7,7 +7,7 @@ The VQVAE is a variational autoencoder that operates on a discrete latent space 
 
 ## Implementation 
 ### Dataset 
-The OASIS RGB brain images have a dimension of (256, 256, 3) and the values of pixels were between 0 and 1 since they were normalised by a factor of 255 for efficiency - these are the inputs of the VQVAE. This data was obtained from the link: https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA. 
+The OASIS RGB brain images have a dimension of (256, 256, 3) and the values of pixels were between 0 and 1 since they were normalised by a factor of 255 for efficiency - these are the inputs of the VQVAE. This data was obtained from the link: https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA. A total of 11334 images are used with 9664 belonging to the train set, 1120 to the validation set and 544 to the test set.
 
 ### Dependencies
 - numpy==1.21.3
@@ -17,8 +17,8 @@ The OASIS RGB brain images have a dimension of (256, 256, 3) and the values of p
 ### Usage
 The OASIS dataset images were split into train, test and validate folders, each containing subfolders of the data named as keras_png_slices_train, keras_png_slices_test and keras_png_slices_validate, respectively. In order to reuse this algorithm with different data, a similar folder structure needs to be used and the dimensions of the images may have to be modified for the convolutional neural networks to function. Training images are used for the model fitting, as with validation images - however, the latter are for reducing overfitting. Test images are used for the model predictions and image reconstructions. 
 
-## Results
-The following plots show three side-by-side comparisons of the original test OASIS brain images against the reconstructed ones, each showing their structured similarity (SSIM). 
+## Results. 
+The following plots show three side-by-side comparisons of the original test OASIS brain images against the reconstructed ones. The first reconstruction has a SSIM of 0.84565616, second reconstruction with SSIM of 0.83053225, and 0.85235796 for the third reconstruction. Hence, observe that the average SSIM is greater than 0.6. Each image reconstruction has an SSIM to its original within a range of 0.8 to 0.9. 
 
 ![alt text](./images/originalvsreconstructed1.png)
 ![alt text](./images/originalvsreconstructed2.png)
