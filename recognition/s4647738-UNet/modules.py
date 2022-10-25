@@ -13,7 +13,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import backend as k
 
 class ContextModule(Layer):
-  def __init__(self, filters):
+  # Used during encoding, outputs context information to be passed to decoding
+  def __init__(self, filters, **kwargs):
     super(ContextModule, self).__init__()
     self.convA = Conv2D(filters = filters,
                         kernel_size = (3,3),
@@ -33,7 +34,8 @@ class ContextModule(Layer):
     return cfg
 
 class LocalizationModule(Layer):
-  def __init__(self, filters):
+  # Used during decoding, helps localise structures of interest in image
+  def __init__(self, filters, **kwargs):
     super(LocalizationModule, self).__init__()
     self.convA = Conv2D(filters = filters,
                         kernel_size = (3,3),
@@ -51,7 +53,8 @@ class LocalizationModule(Layer):
     return cfg
 
 class SegmentationModule(Layer):
-  def __init__(self, filters, upscale = True):
+  # Helps with passing information up decoding section of UNet
+  def __init__(self, filters, upscale = True, **kwargs):
     super(SegmentationModule, self).__init__()
     self.conv = Conv2D(filters = filters, 
                        kernel_size = (3, 3), 
@@ -128,11 +131,12 @@ def improved_unet():
   return model
 
 def dice_similarity(y, x):
-    #print(x.shape)
-    xim = tf.where(x[:, :, :, 1] >= x[:, :, :, 0], [1.0], [0.0])
-    #print(xim.shape)
-    xc = k.flatten(xim)
-    yc = k.flatten(y)
-    intersect = k.sum(xc * yc)
-    union = k.sum(xc) + k.sum(yc)
-    return 2 * intersect / union
+  """
+  Calculates dice similarity coefficient of the model's output
+  """
+  xim = tf.where(x[:, :, :, 1] >= x[:, :, :, 0], [1.0], [0.0])
+  xc = k.flatten(xim)
+  yc = k.flatten(y)
+  intersect = k.sum(xc * yc)
+  union = k.sum(xc) + k.sum(yc)
+  return 2 * intersect / union

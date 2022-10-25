@@ -13,26 +13,29 @@ import cv2
 import numpy as np
 
 def process_image(image):
+  # Processes image shape for use by the model
   processed_image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
   processed_image = cv2.resize(processed_image, (256, 256))
   processed_image = processed_image / 255.0
   return processed_image
 
 def load_dataset(path, seg_path):
-    processed_images = []
-    processed_seg_images = []
+  # Arrays to store images after processing
+  processed_images = []
+  processed_seg_images = []
 
-    images = sorted(glob.glob(path + '/*_???????.jpg'))
-    seg_images = sorted(glob.glob(seg_path + '/*.png'))
+  # Searches for correct images (i.e. no superpixels images or csv)
+  images = sorted(glob.glob(path + '/*_???????.jpg'))
+  seg_images = sorted(glob.glob(seg_path + '/*.png'))
 
-    for image in images:
-      processed_image = process_image(image)
-      processed_images.append(processed_image)
+  for image in images:
+    processed_image = process_image(image)
+    processed_images.append(processed_image)
+  for image in seg_images:
+    processed_image = process_image(image)
+    processed_seg_images.append(processed_image)
 
-    for image in seg_images:
-      processed_image = process_image(image)
-      processed_seg_images.append(processed_image)
-
-    processed_images = np.array(processed_images)
-    processed_seg_images = np.expand_dims(np.array(processed_seg_images), -1)
-    return processed_images, processed_seg_images
+  # Convert to numpy arrays to save memory
+  processed_images = np.array(processed_images)
+  processed_seg_images = np.expand_dims(np.array(processed_seg_images), -1)
+  return processed_images, processed_seg_images
