@@ -9,7 +9,7 @@ test_ds = dataset.createTestData()
 model = module.createModel()
 
 # Loads the weights
-model.load_weights('./model.h5')
+model.load_weights('./utils/model.h5')
 
 # Re-evaluate the model
 _, acc = model.evaluate(test_ds)
