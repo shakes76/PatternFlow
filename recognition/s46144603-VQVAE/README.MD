@@ -1,5 +1,5 @@
 # Vector Quantized Variational Autoencoder (VQVAE) using OASIS dataset of brain scans
-A generative model of the OASIS brain dataset using VQVAE to reconstruct a "reasonably clear images" with Structured Similarity (SSIM) of over 0.6. Examples of reconstructed images and a graph of loss rates are provided. 
+A generative model of the OASIS brain dataset using VQVAE to reconstruct a "reasonably clear images" with Structured Similarity (SSIM) of over 0.6. Examples of reconstructed images and a graph of loss rates are provided.
 
 ## Algorithm 
 ### VQVAE model
@@ -8,9 +8,12 @@ The VQVAE is a variational autoencoder that operates on a discrete latent space 
 
 ## Implementation 
 ### Dataset 
-The OASIS brain images have a dimension of (256, 256, 3). 
+The OASIS brain images have a dimension of (256, 256, 3) and the values of pixels were between 0 and 1 since they were normalised by a factor of 255 for efficiency. 
 
-
+### Dependencies
+- numpy==1.21.3
+- matplotlib==3.4.3
+- tensorflow==2.10.0
 
 ## Results
 
@@ -22,5 +25,5 @@ The OASIS brain images have a dimension of (256, 256, 3).
 
 
 ## References 
-
+https://keras.io/examples/generative/vq_vae/
 
