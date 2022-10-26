@@ -15,12 +15,12 @@ warnings.filterwarnings('ignore')
 
 class_n = 1 # number of classes 0,1
 input_shape = (256, 256, 3) # input shape of the model
-image_size = 256 # image size in data angumentation
+image_size = 256 
 lr = 0.0003  # learning rate
 weight_decay = 0.0001 # weight decay
-batch_size = 32 # batch size
+batch_size = 64 # batch size
 epoch_n = 100  # number of epochs
-patch_len = 40  # Size of the patches to be extract from the input images
+patch_len = 45  # Size of the patches to be extract from the input images
 patch_n = (image_size // patch_len) ** 2
 proj_vec_n = 16
 head_n = 4
