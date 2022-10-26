@@ -18,7 +18,7 @@ import datasets
 import modules
 
 """
-Code Block for sanity checking CUDA and setting the device. 
+Sanity checking CUDA and setting the device. 
 
 """
 device = modules.check_cuda()

@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 from skimage import color, io, transform
+from scipy.signal import savgol_filter
 import os, os.path
 import cv2
 
@@ -66,55 +67,25 @@ def check_cuda():
 
 #############################
 
-### Modules ###
-class OASIS_Loader(Dataset):
-    """
-    Custom Dataset class for the OASIS dataset. 
-    """
-    
-    def __init__(self, root_dir='D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_train/',
-                 transform = None):
-        """
-        Paramaters
-        ----------
-            root_dir (string): Path to directory containing images. 
-            transform (callable, optional): Optional transform to be applied to data.
-        """
-        self.root_dir = root_dir
-        self.transform = transform
-        
-        
-    def __len__(self):
-        return int(len([name for name in os.listdir(self.root_dir)]))
-    
-    def __getitem__(self, idx):
-        """
-        Custom getitem method to ensure image files can obtained correctly. 
-        """
-        img_names = get_filenames(self.root_dir) 
-        
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-            
-        img_name = os.path.join(self.root_dir, img_names[idx]) # Finds file path based on index
-        image = cv2.imread(img_name) # Reads image
-        sample = image    
-        
-        if self.transform: # Will apply image transform if required. 
-            sample = self.transform(sample)    
-            
-        return sample
-    
+### Modules ###   
 class Hyperparameters():
     """
     Class to initialize hyperparameters for use in training
     """
     def __init__(self):
         self.epochs = 10
-        self.loss = torch.nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam()
         self.batch_size = 128
-        self.lr = 0.99
+        self.lr = 0.0002
+        self.num_training_updates = 150000
+        self.num_hiddens = 128
+        self.num_residual_hiddens = 32
+        self.embedding_dim = 64
+        self.num_embeddings = 512
+        
+        self.channels_noise = 256
+        self.channels_image = 3
+        self.features_d = 16
+        self.features_g = 16
         
 ## VQ-VAE ##
         
@@ -241,6 +212,7 @@ class Decoder(torch.nn.Module):
 class VectorQuantizer(nn.Module):
     """
     Class implementing the Vector quantiser for the VQVAE
+    # CITATION: https://colab.research.google.com/github/zalandoresearch/pytorch-vq-vae/blob/master/vq-vae.ipynb#scrollTo=kgrlIKYlrEXl
     """
     def __init__(self, num_embeddings, embedding_dim, commitment_cost):
         super(VectorQuantizer, self).__init__()
@@ -315,8 +287,58 @@ class VQVAE(nn.Module):
         out_reconstruction = self.decoder(quantized)
 
         return loss, out_reconstruction
+    
+class VQVAEtrain():
+    """
+    Class to hold hyperparamters and implement the training method for 
+    VQVAE model.
+    """
+    def __init__(self, Hyperparameters, data):
+        self.Hyperparameters = Hyperparameters
+        self.VQVAE = VQVAE(self.Hyperparameters.num_hiddens, 
+                           self.Hyperparameters.num_residual_hiddens,
+                           self.Hyperparameters.num_embeddings,
+                           self.Hyperparameters.embedding_dim,
+                           self.Hyperparameters.commitment_cost)
+        self.data = data
+        self.lr = self.Hyperparameters.lr
+        self.optimizer = torch.optim.Adam(self.VQVAE.parameters(),
+                                          lr=self.lr,
+                                          amsgrad=False)
         
+    def train(self):
+        device = check_cuda()
+        self.VQVAE.to(device)
+        self.VQVAE.train()
+        train_res_recon_error = []
+        data_variance = np.var(self.data.data / 255.0)
+        for i in range(self.Hyperparameters.num_training_updates):
+            (data, _) = next(iter(self.data))
+            data = data.to(device)
+            self.optimizer.zero_grad()
         
+            vq_loss, data_recon, _  = self.VQVAE(data)
+            recon_error = F.mse_loss(data_recon, data) / data_variance
+            loss = recon_error + vq_loss
+            loss.backward()
+        
+            self.optimizer.step()
+            
+            train_res_recon_error.append(recon_error.item())
+        
+            if (i+1) % 100 == 0:
+                print('%d iterations' % (i+1))
+                print('recon_error: %.3f' % np.mean(train_res_recon_error[-100:]))
+                print()
+        
+        train_res_recon_error_smooth = savgol_filter(train_res_recon_error, 201, 7)
+        f = plt.figure(figsize=(16,8))
+        ax = f.add_subplot(1,2,1)
+        ax.plot(train_res_recon_error_smooth)
+        ax.set_yscale('log')
+        ax.set_title('Smoothed NMSE.')
+        ax.set_xlabel('iteration')
+                
     
 ## DCGAN ##
 
@@ -423,12 +445,14 @@ def trainDCGAN():
     None.
 
     """
-    def __init__(self, Discriminator, Generator, data):
+    def __init__(self, VQVAE, Discriminator, Generator, data):
         """
         Initailize hyper-parameters and pass in models/data.
         
         Parameters
         ----------
+        VQVAE : nn.Module
+            Trained VQVAE model for creating quantized data
         Discriminator : nn.Module
             Discriminator network
         Generator : nn.Module
@@ -445,7 +469,7 @@ def trainDCGAN():
         self.data = data
         self.batch_size = 32
         self.epochs = 10
-        self.loss = nn.BCELoss()
+        self.criterion = nn.BCELoss()
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
@@ -458,4 +482,13 @@ def trainDCGAN():
         return
     
     def train(self):
-        return
+        device = check_cuda()
+        self.Discriminator.to(device)
+        self.Generator.to(device)
+        self.Discriminator.train()
+        self.Generator.train()
+        
+        real_label = 1
+        fake_label = 0
+        fixed_noise = torch.randn(64, self.Hyperparameters.channel_noise, 1, 1).to(device)
+        

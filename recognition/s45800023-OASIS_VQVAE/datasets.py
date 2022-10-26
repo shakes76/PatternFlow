@@ -44,7 +44,43 @@ class OASISData():
         return train_loader, test_loader, val_loader
 
 
-
+class OASIS_Loader(Dataset):
+    """
+    Custom Dataset class for the OASIS dataset. 
+    """
+    
+    def __init__(self, root_dir='D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_train/',
+                 transform = None):
+        """
+        Paramaters
+        ----------
+            root_dir (string): Path to directory containing images. 
+            transform (callable, optional): Optional transform to be applied to data.
+        """
+        self.root_dir = root_dir
+        self.transform = transform
+        
+        
+    def __len__(self):
+        return int(len([name for name in os.listdir(self.root_dir)]))
+    
+    def __getitem__(self, idx):
+        """
+        Custom getitem method to ensure image files can obtained correctly. 
+        """
+        img_names = modules.get_filenames(self.root_dir) 
+        
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+            
+        img_name = os.path.join(self.root_dir, img_names[idx]) # Finds file path based on index
+        image = cv2.imread(img_name) # Reads image
+        sample = image    
+        
+        if self.transform: # Will apply image transform if required. 
+            sample = self.transform(sample)    
+            
+        return sample
 
 
 
