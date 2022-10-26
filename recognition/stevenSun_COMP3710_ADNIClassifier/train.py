@@ -96,6 +96,6 @@ if __name__ == '__main__':
     model_history = train(vision_transformer)
 
     # visualization
-    plot_acc()
-    plot_loss()
+    plot_acc(model_history)
+    plot_loss(model_history)
     
