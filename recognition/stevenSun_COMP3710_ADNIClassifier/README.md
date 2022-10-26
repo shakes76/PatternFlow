@@ -1,3 +1,5 @@
+# Yeheng_Sun_S4548085_COMP3710_ADNIClassifier
+
 ## The code is written to provide a solution for problem 6. The detailed description is listed below:
 
 # Problem Defination
