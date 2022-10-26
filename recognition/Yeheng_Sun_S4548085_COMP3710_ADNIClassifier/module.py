@@ -6,17 +6,6 @@ from keras.layers import Normalization, Resizing, RandomFlip, RandomRotation, Ra
 
 img_size = 256  # must match train.py and dataset.py image size
 
-# data augmentation flow
-dataAugmentation = keras.Sequential(
-    [
-        Normalization(),
-        Resizing(img_size, img_size),
-        RandomFlip("horizontal"),
-        RandomRotation(factor=0.02),
-        RandomZoom(height_factor=0.2, width_factor=0.2),
-    ],
-    name="dataAugmentation",
-)
 
 
 # define MLP given a list which record the number of nodes in each layer
@@ -68,8 +57,7 @@ def vision_transformer(input_shape, patch_len, patch_n, proj_vec_n, transformer_
 
     # data augmentation and patch operation
     input_img = Input(shape=input_shape)
-    aug_img = dataAugmentation(input_img)
-    patch_img = Patches(patch_len)(aug_img)
+    patch_img = Patches(patch_len)(input_img)
     patch_vec = Patch2Vec(patch_n, proj_vec_n)(patch_img)
 
     # transformer modules
