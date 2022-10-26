@@ -26,21 +26,20 @@ device = modules.check_cuda()
 # Initialize our training, test and validation sets. 
 
 class OASISData():
-    def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_test/',):
+    def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data'):
         data_transforms = [
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor()
+            transforms.ToTensor(),
         ]  
         data_transform = transforms.Compose(data_transforms)
-        self.train = modules.OASIS_Loader(transform=data_transform)
-        self.test = modules.OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_test/', transform=data_transform)
-        self.val = modules.OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_validation/', transform=data_transform)
-
+        self.train = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/train/', transform=data_transform)
+        self.test = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/test/', transform=data_transform)
+        self.val = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/val/', transform=data_transform)
+        
     # Initialize data loaders 
     def get_loaders(self):
-        train_loader = DataLoader(self.train, batch_size=128, shuffle=True, drop_last=True, pin_memory=True)
-        test_loader = DataLoader(self.test, batch_size=128, shuffle=False, drop_last=False)
-        val_loader = DataLoader(self.val, batch_size=128, shuffle=False, drop_last=False)
+        train_loader = DataLoader(self.train, batch_size=32, shuffle=True, drop_last=True, pin_memory=True)
+        test_loader = DataLoader(self.test, batch_size=32, shuffle=False, drop_last=False)
+        val_loader = DataLoader(self.val, batch_size=32, shuffle=False, drop_last=False)
         return train_loader, test_loader, val_loader
 
 
@@ -49,7 +48,7 @@ class OASIS_Loader(Dataset):
     Custom Dataset class for the OASIS dataset. 
     """
     
-    def __init__(self, root_dir='D:/Jacob Barrie/Documents/keras_png_slices_data/keras_png_slices_train/',
+    def __init__(self, root_dir='D:/Jacob Barrie/Documents/keras_png_slices_data/',
                  transform = None):
         """
         Paramaters

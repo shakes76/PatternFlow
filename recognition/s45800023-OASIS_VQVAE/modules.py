@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 from skimage import color, io, transform
-from scipy.signal import savgol_filter
 import os, os.path
 import cv2
 
@@ -74,13 +73,14 @@ class Hyperparameters():
     """
     def __init__(self):
         self.epochs = 10
-        self.batch_size = 128
+        self.batch_size = 32
         self.lr = 0.0002
         self.num_training_updates = 150000
         self.num_hiddens = 128
         self.num_residual_hiddens = 32
         self.embedding_dim = 64
         self.num_embeddings = 512
+        self.commitment_cost = 0.25
         
         self.channels_noise = 256
         self.channels_image = 3
@@ -136,7 +136,7 @@ class Encoder(torch.nn.Module):
     """
     Encoder class for VAE.
     """
-    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+    def __init__(self, in_channels, num_hiddens, num_residual_hiddens):
         super(Encoder, self).__init__()
 
         self.conv_1 = nn.Conv2d(in_channels=in_channels,
@@ -153,10 +153,10 @@ class Encoder(torch.nn.Module):
                                  out_channels=num_hiddens,
                                  kernel_size=3,
                                  stride=1, padding=1)
-        self.resBlock1 = ResidualBlock(in_channels=num_hiddens,
+        self.resBlock1 = Residual(in_channels=num_hiddens,
                                             num_hiddens=num_hiddens,
                                             num_residual_hiddens=num_residual_hiddens)
-        self.resBlock2 = ResidualBlock(in_channels=num_hiddens,
+        self.resBlock2 = Residual(in_channels=num_hiddens,
                                             num_hiddens=num_hiddens,
                                             num_residual_hiddens=num_residual_hiddens)
         self.relu3 = nn.ReLU()
@@ -178,7 +178,7 @@ class Decoder(torch.nn.Module):
     """
     Decoder class for VAE.
     """
-    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+    def __init__(self, in_channels, num_hiddens, num_residual_hiddens):
         super(Decoder, self).__init__()
         
         self.conv_1 = nn.Conv2d(in_channels=in_channels,
@@ -186,7 +186,7 @@ class Decoder(torch.nn.Module):
                                  kernel_size=3, 
                                  stride=1, padding=1)
         
-        self.resBlock1 = ResidualBlock(in_channels=num_hiddens,
+        self.resBlock1 = Residual(in_channels=num_hiddens,
                                              num_hiddens=num_hiddens,
                                              num_residual_hiddens=num_residual_hiddens)
         
@@ -261,11 +261,11 @@ class VQVAE(nn.Module):
     """
     Class combining sub-modules into the full VQ-VAE model.
     """
-    def __init__(self, num_hiddens, num_residual_hiddens, 
+    def __init__(self, channels_img, num_hiddens, num_residual_hiddens, 
              num_embeddings, embedding_dim, commitment_cost):
         super(VQVAE, self).__init__()
         
-        self.encoder = Encoder(3, num_hiddens,
+        self.encoder = Encoder(channels_img, num_hiddens,
                                 num_residual_hiddens)
         self.conv = nn.Conv2d(in_channels=num_hiddens, 
                                       out_channels=embedding_dim,
@@ -283,7 +283,7 @@ class VQVAE(nn.Module):
     def forward(self, x):
         out = self.encoder(x)
         out = self.conv(out)
-        loss, quantized, perplexity, _ = self.vq(out)
+        loss, quantized, _, _ = self.vq(out)
         out_reconstruction = self.decoder(quantized)
 
         return loss, out_reconstruction
@@ -293,31 +293,31 @@ class VQVAEtrain():
     Class to hold hyperparamters and implement the training method for 
     VQVAE model.
     """
-    def __init__(self, Hyperparameters, data):
+    def __init__(self, Hyperparameters, loader, data):
+        self.device = torch.device("cuda")
         self.Hyperparameters = Hyperparameters
-        self.VQVAE = VQVAE(self.Hyperparameters.num_hiddens, 
+        self.VQVAE = VQVAE(self.Hyperparameters.channels_image,
+                           self.Hyperparameters.num_hiddens, 
                            self.Hyperparameters.num_residual_hiddens,
                            self.Hyperparameters.num_embeddings,
                            self.Hyperparameters.embedding_dim,
                            self.Hyperparameters.commitment_cost)
+        self.loader = loader
         self.data = data
         self.lr = self.Hyperparameters.lr
         self.optimizer = torch.optim.Adam(self.VQVAE.parameters(),
                                           lr=self.lr,
                                           amsgrad=False)
+        self.VQVAE.to(self.device)
         
-    def train(self):
-        device = check_cuda()
-        self.VQVAE.to(device)
-        self.VQVAE.train()
-        train_res_recon_error = []
-        data_variance = np.var(self.data.data / 255.0)
-        for i in range(self.Hyperparameters.num_training_updates):
-            (data, _) = next(iter(self.data))
-            data = data.to(device)
+    def train(self, train_res_recon_error):
+        data_variance = 0.0338
+        i = 0
+        for batch, x in enumerate(self.loader):
+            data = x.to(self.device)
             self.optimizer.zero_grad()
         
-            vq_loss, data_recon, _  = self.VQVAE(data)
+            vq_loss, data_recon  = self.VQVAE(data)
             recon_error = F.mse_loss(data_recon, data) / data_variance
             loss = recon_error + vq_loss
             loss.backward()
@@ -330,14 +330,12 @@ class VQVAEtrain():
                 print('%d iterations' % (i+1))
                 print('recon_error: %.3f' % np.mean(train_res_recon_error[-100:]))
                 print()
-        
-        train_res_recon_error_smooth = savgol_filter(train_res_recon_error, 201, 7)
-        f = plt.figure(figsize=(16,8))
-        ax = f.add_subplot(1,2,1)
-        ax.plot(train_res_recon_error_smooth)
-        ax.set_yscale('log')
-        ax.set_title('Smoothed NMSE.')
-        ax.set_xlabel('iteration')
+            
+            i+=1
+            
+
+        # Save model
+        torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "vqvae.txt")
                 
     
 ## DCGAN ##
@@ -445,7 +443,7 @@ def trainDCGAN():
     None.
 
     """
-    def __init__(self, VQVAE, Discriminator, Generator, data):
+    def __init__(self, VQVAE, Discriminator, Generator, trainData):
         """
         Initailize hyper-parameters and pass in models/data.
         
@@ -464,9 +462,11 @@ def trainDCGAN():
         None.
 
         """
+        self.device = check_cuda()
+        self.VQVAE = VQVAE
         self.Discriminator = Discriminator
         self.Generator = Generator
-        self.data = data
+        self.trainData = trainData
         self.batch_size = 32
         self.epochs = 10
         self.criterion = nn.BCELoss()
@@ -479,16 +479,54 @@ def trainDCGAN():
         We are using the DCGAN to generate codebooks indices in the latent space.
         Thus when training the model we need to pass in 
         """
+        
         return
     
     def train(self):
-        device = check_cuda()
-        self.Discriminator.to(device)
-        self.Generator.to(device)
+        self.Discriminator.to(self.device)
+        self.Generator.to(self.device)
         self.Discriminator.train()
         self.Generator.train()
         
+        quantized = self.quantizeData()
         real_label = 1
         fake_label = 0
-        fixed_noise = torch.randn(64, self.Hyperparameters.channel_noise, 1, 1).to(device)
+        fixed_noise = torch.randn(64, self.Hyperparameters.channel_noise, 1, 1).to(self.device)
+        
+        for epoch in range(self.epochs):
+            print("Epoch: ", epoch + 1)
+            for batch, x in enumerate(quantized):
+                x = x.to(self.device)
+                batch_size = x.shape[0]
+                
+                ## Train discriminator
+                self.Discriminator.zero_grad()
+                label = (torch.ones(batch_size)*0.9).to(self.device)
+                output = Discriminator(x).reshape(-1)
+                lossD_real = self.criterion(output, label)
+                D_x = output.mean().item()
+                
+                # Generate noise and create fake
+                noise = torch.randn(batch_size, self.channels_noise,1,1).to(self.device)
+                fake = self.Generator(noise)
+                label = (torch.ones(batch_size)*0.1).to(self.device)
+                output = self.Discriminator(fake)
+                
+                # Find total loss of discriminator
+                lossD_fake = self.criterion(output, label)
+                lossD = lossD_real + lossD_fake
+                lossD.backward()
+                self.optimizer_d.step()
+                
+                # Train Generator
+                self.Generator.zero_grad()
+                label = torch.ones(batch_size).to(self.device)
+                lossG = self.criterion(output, label)
+                lossG.backward()
+                self.optimizer_g.step()
+                
+                if batch % 100 == 0:
+                    print("Loss D: {lossD:.4f}, loss G: {lossG:.4f}")
+                    
+                
         
