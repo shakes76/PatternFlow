@@ -11,7 +11,6 @@ import torch
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage import color
 import cv2
 import datasets
 import modules
@@ -29,6 +28,7 @@ train, test, val = data.get_loaders()
 hyperparameters = modules.Hyperparameters()
 epochs = 5
 
+"""
 ### Train VQVAE ###
 VQVAE = modules.VQVAEtrain(hyperparameters, train, data) 
 train_res_recon_error = []
@@ -45,5 +45,28 @@ ax.plot(train_res_recon_error_smooth)
 ax.set_yscale('log')
 ax.set_title('Loss over 5 Epochs.')
 ax.set_xlabel('iteration')
-
+"""
 ### Train DCGAN ###
+# Initialise data
+dataGan = datasets.DCGANLoader()
+train_gan, test_gan, val_gan = dataGan.get_loaders()
+d_loss = []
+g_loss = []
+
+# Initalise models
+Discriminator = modules.Discriminator(hyperparameters.channels_image,
+                                      hyperparameters.features_d)
+Generator = modules.Generator(hyperparameters.channels_noise,
+                              hyperparameters.channels_image,
+                              hyperparameters.features_g)
+
+# Initialise combined
+DCGAN = modules.trainDCGAN(Discriminator, Generator, train_gan)
+DCGAN.train(d_loss, g_loss)
+
+f = plt.figure(figsize=(16,8))
+ax = f.add_subplot(1,2,1)
+ax.plot(d_loss)
+ax.plot(g_loss)
+ax.set_title('Loss over 5 Epochs.')
+ax.set_xlabel('iteration')

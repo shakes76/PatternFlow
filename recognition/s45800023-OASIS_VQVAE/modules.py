@@ -16,7 +16,6 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from skimage import color, io, transform
 import os, os.path
 import cv2
 
@@ -72,7 +71,7 @@ class Hyperparameters():
     Class to initialize hyperparameters for use in training
     """
     def __init__(self):
-        self.epochs = 10
+        self.epochs = 20
         self.batch_size = 32
         self.lr = 0.0002
         self.num_training_updates = 150000
@@ -82,10 +81,10 @@ class Hyperparameters():
         self.num_embeddings = 512
         self.commitment_cost = 0.25
         
-        self.channels_noise = 256
+        self.channels_noise = 100
         self.channels_image = 3
-        self.features_d = 16
-        self.features_g = 16
+        self.features_d = 128
+        self.features_g = 128
         
 ## VQ-VAE ##
         
@@ -148,28 +147,19 @@ class Encoder(torch.nn.Module):
                                  out_channels=num_hiddens,
                                  kernel_size=4,
                                  stride=2, padding=1)
-        self.relu2 = nn.ReLU()
-        self.conv_3 = nn.Conv2d(in_channels=num_hiddens,
-                                 out_channels=num_hiddens,
-                                 kernel_size=3,
-                                 stride=1, padding=1)
         self.resBlock1 = Residual(in_channels=num_hiddens,
                                             num_hiddens=num_hiddens,
                                             num_residual_hiddens=num_residual_hiddens)
         self.resBlock2 = Residual(in_channels=num_hiddens,
                                             num_hiddens=num_hiddens,
                                             num_residual_hiddens=num_residual_hiddens)
-        self.relu3 = nn.ReLU()
         
     def forward(self, x):
         out = self.conv_1(x)
         out = self.relu1(out)
         out = self.conv_2(out)
-        out = self.relu2(out)
-        out = self.conv_3(out)
         out = self.resBlock1(out)
         out = self.resBlock2(out)
-        out = self.relu3(out)
         return out
 
     
@@ -255,7 +245,7 @@ class VectorQuantizer(nn.Module):
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
         
         # convert quantized from BHWC -> BCHW
-        return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings
+        return loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices
 
 class VQVAE(nn.Module):
     """
@@ -347,27 +337,27 @@ class Discriminator(nn.Module):
     def __init__(self, channels, features):
         super(Discriminator, self).__init__()
         # 64 x 64 - input
-        self.conv1 = nn.Conv2D(channels, features, kernel_size=4, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(channels, features, kernel_size=4, stride=2, padding=1)
         self.leaky1 = nn.LeakyReLU(0.2)
         
         # Block 1 - 32x32 input
-        self.conv2 = nn.Conv2D(features, features*2, kernel_size=4, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(features, features*2, kernel_size=4, stride=2, padding=1)
         self.batch1 = nn.BatchNorm2d(features*2)
         self.leaky2 = nn.LeakyReLU(0.2)
         
         # Block 2 - reduce to 1
-        self.conv3 = nn.Conv2D(features*2, features*4, kernel_size=4, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(features*2, features*4, kernel_size=4, stride=2, padding=1)
         self.batch2 = nn.BatchNorm2d(features*4)
         self.leaky3 = nn.LeakyReLU(0.2)
         
         # Block 3 - reduce to 32x32
-        self.conv4 = nn.Conv2D(features*4, features*8, kernel_size=4, stride=2, padding=1)
-        self.batch3 = nn.BatchNorm2d(features*4)
+        self.conv4 = nn.Conv2d(features*4, features*8, kernel_size=4, stride=2, padding=1)
+        self.batch3 = nn.BatchNorm2d(features*8)
         self.leaky4 = nn.LeakyReLU(0.2)
         
         
         # Out - reduces to 1 dimension
-        self.out = nn.Conv2D(features*8, 1, kernel_size=4, stride=2, padding=0)
+        self.out = nn.Conv2d(features*8, 1, kernel_size=4, stride=2, padding=0)
         self.sigmoid = nn.Sigmoid()
         
     def forward(self, x):
@@ -393,26 +383,26 @@ class Generator(nn.Module):
     def __init__(self, channels_noise, channels, features):
         super(Generator, self).__init__()     
         # Block 1 - input noise
-        self.convT1 = nn.ConvTranspose2d(channels_noise, features*16, kernel_size=4, stride=1, padding=0)
+        self.convT1 = nn.ConvTranspose2d(channels_noise, features*16, kernel_size=4, stride=2, padding=0)
         self.batch1 = nn.BatchNorm2d(features*16)
         self.relu1 = nn.ReLU()
         
         # Block 2
-        self.convT2 = nn.ConvTranspose2d(features*16, features*8, kernel_size=4, stride=1, padding=1)
+        self.convT2 = nn.ConvTranspose2d(features*16, features*8, kernel_size=4, stride=2, padding=1)
         self.batch2 = nn.BatchNorm2d(features*8)
         self.relu2 = nn.ReLU()
         
         # Block 3
-        self.convT3 = nn.ConvTranspose2d(features*8, features*4, kernel_size=4, stride=1, padding=1)
+        self.convT3 = nn.ConvTranspose2d(features*8, features*4, kernel_size=4, stride=2, padding=1)
         self.batch3 = nn.BatchNorm2d(features*4)
         self.relu3 = nn.ReLU()
         
         # Block 4
-        self.convT4 = nn.ConvTranspose2d(features*4, features*2, kernel_size=4, stride=1, padding=1)
-        self.batch4 = nn.BatchNorm2d(features*8)
+        self.convT4 = nn.ConvTranspose2d(features*4, features*2, kernel_size=4, stride=2, padding=1)
+        self.batch4 = nn.BatchNorm2d(features*2)
         self.relu4 = nn.ReLU()
         
-        self.convT5 = nn.ConvTranspose2d(features*2, features, kernel_size=4, stride=1, padding=1)
+        self.convT5 = nn.ConvTranspose2d(features*2, channels, kernel_size=4, stride=2, padding=1)
         self.tanH = nn.Tanh()
         
     def forward(self, x):
@@ -432,8 +422,8 @@ class Generator(nn.Module):
         out = self.tanH(out)
         return out
         
-        
-def trainDCGAN():
+
+class trainDCGAN():
     """
     Class to hold hyper-parameters and implement the training process for 
     DCGAN.
@@ -443,7 +433,7 @@ def trainDCGAN():
     None.
 
     """
-    def __init__(self, VQVAE, Discriminator, Generator, trainData):
+    def __init__(self, Discriminator, Generator, trainData):
         """
         Initailize hyper-parameters and pass in models/data.
         
@@ -462,71 +452,59 @@ def trainDCGAN():
         None.
 
         """
-        self.device = check_cuda()
-        self.VQVAE = VQVAE
+        self.Hyperparameters = Hyperparameters()
+        self.device = torch.device("cuda")
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
         self.batch_size = 32
-        self.epochs = 10
-        self.criterion = nn.BCELoss()
+        self.epochs = 5
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
+
     
-    def quantizeData(self):
-        """
-        We are using the DCGAN to generate codebooks indices in the latent space.
-        Thus when training the model we need to pass in 
-        """
-        
-        return
-    
-    def train(self):
+    def train(self, dlosses, glosses):
         self.Discriminator.to(self.device)
         self.Generator.to(self.device)
-        self.Discriminator.train()
-        self.Generator.train()
+        loss = nn.BCELoss()
         
-        quantized = self.quantizeData()
         real_label = 1
         fake_label = 0
-        fixed_noise = torch.randn(64, self.Hyperparameters.channel_noise, 1, 1).to(self.device)
+        fixed_noise = torch.randn(64, self.Hyperparameters.channels_noise, 1, 1).to(self.device)
         
         for epoch in range(self.epochs):
             print("Epoch: ", epoch + 1)
-            for batch, x in enumerate(quantized):
-                x = x.to(self.device)
-                batch_size = x.shape[0]
-                
+            for batch, x in enumerate(self.trainData):
+                data = x.to(self.device)
+                batch_size = data.shape[0]
                 ## Train discriminator
-                self.Discriminator.zero_grad()
-                label = (torch.ones(batch_size)*0.9).to(self.device)
-                output = Discriminator(x).reshape(-1)
-                lossD_real = self.criterion(output, label)
-                D_x = output.mean().item()
-                
-                # Generate noise and create fake
-                noise = torch.randn(batch_size, self.channels_noise,1,1).to(self.device)
+                noise = torch.randn(batch_size, 100, 1, 1).to(self.device)
                 fake = self.Generator(noise)
-                label = (torch.ones(batch_size)*0.1).to(self.device)
-                output = self.Discriminator(fake)
                 
-                # Find total loss of discriminator
-                lossD_fake = self.criterion(output, label)
-                lossD = lossD_real + lossD_fake
+                # Getting discriminator loss
+                d_real = self.Discriminator(data).reshape(-1)
+                d_loss_real = loss(d_real, torch.ones_like(d_real))
+                d_fake = self.Discriminator(fake.detach()).reshape(-1)
+                d_loss_fake = loss(d_fake, torch.zeros_like(d_fake))
+                lossD = (d_loss_real + d_loss_fake) / 2
+                dlosses.append(lossD)
+                self.Discriminator.zero_grad()
                 lossD.backward()
                 self.optimizer_d.step()
                 
                 # Train Generator
                 self.Generator.zero_grad()
-                label = torch.ones(batch_size).to(self.device)
-                lossG = self.criterion(output, label)
+                output = self.Discriminator(fake).reshape(-1)
+                lossG = loss(output, torch.ones_like(output))
+                glosses.append(lossG)
                 lossG.backward()
                 self.optimizer_g.step()
                 
                 if batch % 100 == 0:
-                    print("Loss D: {lossD:.4f}, loss G: {lossG:.4f}")
+                    print("Loss D: ", dlosses[-1], "Loss G: ", glosses[-1])
                     
-                
+        # Save models            
+        torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "discriminator.txt")
+        torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "generator.txt")
         
