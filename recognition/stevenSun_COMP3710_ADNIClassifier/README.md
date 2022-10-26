@@ -1,6 +1,4 @@
 ## The code is written to provide a solution for problem 6. The detailed description is listed below:
-<br/>
-
 
 # Problem Defination
 
@@ -60,7 +58,16 @@ The original dataset have train and test directories. The images in train direct
 After train and save the weights of the model, we are able to use it for prediction. Load the file "model.h5", the corresponding model weights will be loaded into the model. We use the test set for evalution and having 83.27% accuracy.
 
 ### Train Accuracy
-[![accuracy.png](https://i.postimg.cc/T3MqvL7w/accuracy.png)]
+![accuracy.png](https://i.postimg.cc/T3MqvL7w/accuracy.png)
 
 ### Train Loss
-[![loss.png](https://i.postimg.cc/tC5ZJ1YM/loss.png)]
+![loss.png](https://i.postimg.cc/tC5ZJ1YM/loss.png)
+
+
+# Example of Dataset Image
+
+### Alzheimer’s disease image
+![218391-78.jpg](https://i.postimg.cc/2jLcjkKh/218391-78.jpg)
+
+### Normal image
+![808819-88.jpg](https://i.postimg.cc/Gh8CCnk5/808819-88.jpg)
