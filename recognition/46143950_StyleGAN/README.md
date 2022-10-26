@@ -7,12 +7,12 @@ The task is "generative model of one of the OASIS brain, ADNI brain or the OAI A
 
 ### Generated images of the three datasets
 <p align="center">
-    <kbd><img src="asset/samples.png"></dbd>
+    <kbd><img src="asset/samples.png"></kbd>
 </p>
 
 ### Bilinear interpolation
 <p align="center">
-    <kbd><img src="asset/bilinear_interpolation.png" width="800"></dbd>
+    <kbd><img src="asset/bilinear_interpolation.png" width="800"></kbd>
 </p>
 
 ## Development Environment
@@ -75,7 +75,7 @@ My model is based on [<ins>Progressive Growing GAN</ins>](https://arxiv.org/abs/
 The structure of the model is given below.
 
 <p align="center">
-    <kbd><img src="asset/StyleGAN_Structure.jpg" width="450"></dbd>
+    <kbd><img src="asset/StyleGAN_Structure.jpg" width="450"></kbd>
 </p>
 
 A few points to note,
@@ -123,7 +123,7 @@ Below is one of training trials in my experiment. Out of the three datasets, the
 Both discriminator and generator converged well in the low resolution blocks, but fluctuated at high resolution blocks. Most significant suddent changes in loss were observed when model grew, as highlighted in below plot.
 
 <p align="center">
-    <kbd><img src="asset/loss_plot.png" width="550">
+    <kbd><img src="asset/loss_plot.png" width="550"></kbd>
 </p>
 
 ## How to play with `predict.py`?
