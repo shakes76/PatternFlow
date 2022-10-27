@@ -1,4 +1,5 @@
 # import packages
+from random import seed
 import numpy as np
 
 from tensorflow import keras
@@ -21,7 +22,8 @@ def createTrainData(img_size, batch_size):
         batch_size=batch_size,
         image_size=(img_size, img_size),  # the size after resize
         subset = 'validation', ## create validation set
-        validation_split = 0.3 ## 30% of train data into validation
+        validation_split = 0.3, ## 30% of train data into validation
+        seed = 77
     )
     return train_ds
 

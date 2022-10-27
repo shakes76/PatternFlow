@@ -21,7 +21,6 @@ weight_decay = 0.0001 # weight decay
 batch_size = 64 # batch size
 epoch_n = 135  # number of epochs
 patch_len = 45  # Size of the patches to be extract from the input images
-patch_n = (image_size // patch_len) ** 2
 proj_vec_n = 16
 head_n = 4
 transformer_n = [
@@ -70,7 +69,7 @@ def train(model):
     )
 
     model.load_weights(checkpoint_filepath)
-    model.save_weights("model.h5")
+    model.save_weights("./utils/model.h5")
     return history
 
 def plot_loss(model):

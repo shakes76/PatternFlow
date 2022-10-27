@@ -6,7 +6,7 @@
 
 Classify Alzheimer’s disease (normal and AD) of the ADNI brain dataset using a visual transformer.
 
-# Algorithm Description
+# Algorithm Description(Concept)
 
 The model consists of three main modules. The first module is the Patch Encoders module. It consists of a patch layer which turns images into patches, followed by a patch encoder layer which encodes patches into vectors. The second is the transformer module, this module measure the relationships between pairs of input vectors. Finally, there is a multi-layer perceptron module which has 2 layers with 1024 x 512 neurons that act as a classifier. Combine all the modules together and they make up the Vision Transformer model.
 
@@ -55,6 +55,14 @@ ADNI_AD_NC_2D  #　a directory containing the ADNI brain image dataset
 # Preprocesssing
 The original dataset have train and test directories. The images in train directory is for training and validation. The images in test directory are for testing. I split the images in train directory into train data and validation data with the ratio 7:3 respectively.
 
+# Changes compared to original ViT model
+In module.py, I remove data augmentation layers such that original image data (256, 256, 3) will be directly split into patches and encoded into vectors. In this setting, it will increase the train accuracy and result in an acceptable test accuracy. In addition, I increase the patch size and reduce the number of patches, as the number of patches is equal to (image_size // patch_len) ** 2, such that the number of patches is reduced from 400+ to 20+. Furthermore, I implemented the ReduceLROnPlateau function such that when the loss remains unchanged, the learning rate will be reduced. Finally, to keep the model from becoming too complicated, I reduce the neurons in the MLP layers from \[2048,1024\] to \[1024,512\].
+
+# Experiment Reproducible Step
+- Download dataset from https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI/download and unzip it into the root directory.
+- Install all the dependencies in requirements.txt.
+- Make sure you cd to the root directory and the structure of dataset directory is ./ADNI_AD_NC_2D/AD_NC/.
+- Run the train.py file to start training, after the training run the predict.py file to evalute the model.
 
 # Output
 After train and save the weights of the model, we are able to use it for prediction. Load the file "model.h5", the corresponding model weights will be loaded into the model. We use the test set for evalution and having 83.27% accuracy.
