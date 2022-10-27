@@ -462,6 +462,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         # 64 x 64 - input
         self.conv1 = nn.Conv2d(channels, features, kernel_size=4, stride=2, padding=1)
+        self.batch = nn.BatchNorm2d(features)
         self.leaky1 = nn.LeakyReLU(0.2)
         
         # Block 1 - 32x32 input
@@ -487,6 +488,7 @@ class Discriminator(nn.Module):
     def forward(self, x):
         out = self.conv1(x)
         out = self.leaky1(out)
+        out = self.batch(out)
         out = self.conv2(out)
         out = self.batch1(out)
         out = self.leaky2(out)
@@ -581,7 +583,7 @@ class trainDCGAN():
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
-        self.epochs = 1
+        self.epochs = 3
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
@@ -679,7 +681,7 @@ class generateDCGAN():
         index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
         print(encoded.shape)
         print(index.shape)
-        index.scatter_(1, encoded, 1)
+        #index.scatter_(1, encoded, 1)
         quantized = torch.matmul(index, self.VQVAE.vq._embedding.weight).view(1, 64, 64, 64)
         return quantized.permute(0, 3, 1, 2).contiguous()
        
@@ -697,18 +699,19 @@ class generateDCGAN():
         fake_indice = fake_indice.to('cpu')
         fake_indice = fake_indice.detach().numpy()
         plt.imshow(fake_indice)
+
+        fake_indice =  fake[0][0]
+        fake_indice = torch.flatten(fake_indice)
+        fake_indice = fake_indice.long()
         
         """
-        generated_code_indice =  fake[0][0]
-        generated_code_indice = torch.flatten(generated_code_indice)
-        generated_code_indice = generated_code_indice.long()
-        generated_output = self.get_quantized(generated_code_indice)
-        generated_output = self.VQVAE.decoder(generated_output)
+        gen = self.get_quantized(fake_indice)
+
+        gen = self.VQVAE.decoder(gen)
         
         # Visualise
-        tt = generated_output[0]
-        tt = tt.to('cpu')
-        tt = tt.detach().numpy()
-        plt.imshow(tt)
-        """
-        
+        output = gen[0]
+        output = output.to('cpu')
+        output = output.detach().numpy()
+        plt.imshow(output)
+        """       

@@ -132,7 +132,7 @@ class dataDCGAN(Dataset):
         return embeddings
     
 class DCGANLoader():
-    def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data', VQVAE):
+    def __init__(self, VQVAE, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data'):
         data_transforms = [
             transforms.ToTensor()
         ]  
@@ -144,7 +144,7 @@ class DCGANLoader():
         
     # Initialize data loaders 
     def get_loaders(self):
-        train_loader = DataLoader(self.train, batch_size=128, shuffle=True)
+        train_loader = DataLoader(self.train, batch_size=8, shuffle=True)
         test_loader = DataLoader(self.test, batch_size=32, shuffle=False)
         val_loader = DataLoader(self.val, batch_size=32, shuffle=False)
         return train_loader, test_loader, val_loader

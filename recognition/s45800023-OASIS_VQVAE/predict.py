@@ -34,6 +34,6 @@ VQVAEpredict.reconstruction()
 VQVAEpredict.embedding_slice()
 
 ## DCGAN ##
-Generator = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/generator1.txt")
+Generator = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/generator.txt")
 generate = modules.generateDCGAN(Generator, VQVAE)
 generate.gen()

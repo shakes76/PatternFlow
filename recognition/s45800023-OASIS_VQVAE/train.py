@@ -42,10 +42,10 @@ ax.set_yscale('log')
 ax.set_title('Loss over 5 Epochs.')
 ax.set_xlabel('iteration')
 
-
+VQVAEtrain = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
 ### Train DCGAN ###
 # Initialise data
-dataGan = datasets.DCGANLoader(VQVAE)
+dataGan = datasets.DCGANLoader(VQVAEtrain)
 train_gan, test_gan, val_gan = dataGan.get_loaders()
 d_loss = []
 g_loss = []
