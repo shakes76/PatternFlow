@@ -27,7 +27,13 @@ VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
 data = datasets.OASISData()
 train, test, val = data.get_loaders()
 
+
 # Obtain reconstruction, embedded slices
 VQVAEpredict = modules.VQVAEpredict(VQVAE, test)
 VQVAEpredict.reconstruction()
 VQVAEpredict.embedding_slice()
+
+## DCGAN ##
+Generator = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/generator1.txt")
+generate = modules.generateDCGAN(Generator, VQVAE)
+generate.gen()

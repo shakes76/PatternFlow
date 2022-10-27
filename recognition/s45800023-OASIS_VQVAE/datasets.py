@@ -21,7 +21,9 @@ import PIL
 import modules
 
 device = modules.check_cuda()
-
+train_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/train/'
+test_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/test/'
+val_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/val/'
 # Initialize our training, test and validation sets. 
 
 class OASISData():
@@ -30,9 +32,9 @@ class OASISData():
             torchvision.transforms.ToTensor(),
         ]  
         data_transform = transforms.Compose(data_transforms)
-        self.train = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/train/', transform=data_transform)
-        self.test = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/test/', transform=data_transform)
-        self.val = OASIS_Loader(root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/val/', transform=data_transform)
+        self.train = OASIS_Loader(root_dir = train_dir, transform=data_transform)
+        self.test = OASIS_Loader(root_dir = test_dir, transform=data_transform)
+        self.val = OASIS_Loader(root_dir = val_dir, transform=data_transform)
         
     # Initialize data loaders 
     def get_loaders(self):
@@ -130,21 +132,21 @@ class dataDCGAN(Dataset):
         return embeddings
     
 class DCGANLoader():
-    def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data'):
+    def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data', VQVAE):
         data_transforms = [
             transforms.ToTensor()
         ]  
         data_transform = transforms.Compose(data_transforms)
-        self.VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvae.txt")
-        self.train = dataDCGAN(self.VQVAE, root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/train/', transform=data_transform)
-        self.test = dataDCGAN(self.VQVAE, root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/test/', transform=data_transform)
-        self.val = dataDCGAN(self.VQVAE, root_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/val/', transform=data_transform)
+        self.VQVAE = VQVAE
+        self.train = dataDCGAN(self.VQVAE, root_dir = train_dir, transform=data_transform)
+        self.test = dataDCGAN(self.VQVAE, root_dir = test_dir, transform=data_transform)
+        self.val = dataDCGAN(self.VQVAE, root_dir = val_dir, transform=data_transform)
         
     # Initialize data loaders 
     def get_loaders(self):
-        train_loader = DataLoader(self.train, batch_size=256, shuffle=True)
-        test_loader = DataLoader(self.test, batch_size=128, shuffle=False)
-        val_loader = DataLoader(self.val, batch_size=128, shuffle=False)
+        train_loader = DataLoader(self.train, batch_size=128, shuffle=True)
+        test_loader = DataLoader(self.test, batch_size=32, shuffle=False)
+        val_loader = DataLoader(self.val, batch_size=32, shuffle=False)
         return train_loader, test_loader, val_loader
 
 

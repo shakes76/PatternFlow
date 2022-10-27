@@ -81,13 +81,13 @@ class Hyperparameters():
         self.embedding_dim = 64
         self.num_embeddings = 512
         self.commitment_cost = 0.25
-        
         self.channels_noise = 100
         self.channels_image = 3
         self.features_d = 128
         self.features_g = 128
         
 ## VQ-VAE ##
+# CITATION: https://colab.research.google.com/github/zalandoresearch/pytorch-vq-vae/blob/master/vq-vae.ipynb#scrollTo=kgrlIKYlrEXl
         
 class Residual(nn.Module):
     """
@@ -134,11 +134,12 @@ class ResidualBlock(nn.Module):
         
 class Encoder(torch.nn.Module):
     """
-    Encoder class for VAE.
+    Encoder class for VAE. 
     """
     def __init__(self, in_channels, num_hiddens, num_residual_hiddens):
         super(Encoder, self).__init__()
-
+        
+        # Conv Block (downsample)
         self.conv_1 = nn.Conv2d(in_channels=in_channels,
                                  out_channels=num_hiddens//2,
                                  kernel_size=4,
@@ -148,6 +149,8 @@ class Encoder(torch.nn.Module):
                                  out_channels=num_hiddens,
                                  kernel_size=4,
                                  stride=2, padding=1)
+        
+        # Residual blocks
         self.resBlock1 = Residual(in_channels=num_hiddens,
                                             num_hiddens=num_hiddens,
                                             num_residual_hiddens=num_residual_hiddens)
@@ -172,15 +175,18 @@ class Decoder(torch.nn.Module):
     def __init__(self, in_channels, num_hiddens, num_residual_hiddens):
         super(Decoder, self).__init__()
         
+        # Input transform
         self.conv_1 = nn.Conv2d(in_channels=in_channels,
                                  out_channels=num_hiddens,
                                  kernel_size=3, 
                                  stride=1, padding=1)
         
+        # Residual block
         self.resBlock1 = Residual(in_channels=num_hiddens,
                                              num_hiddens=num_hiddens,
                                              num_residual_hiddens=num_residual_hiddens)
         
+        # Conv Transpose (upsample)
         self.convT1 = nn.ConvTranspose2d(in_channels=num_hiddens, 
                                                 out_channels=num_hiddens//2,
                                                 kernel_size=4, 
@@ -207,10 +213,8 @@ class VectorQuantizer(nn.Module):
     """
     def __init__(self, num_embeddings, embedding_dim, commitment_cost):
         super(VectorQuantizer, self).__init__()
-        
         self._embedding_dim = embedding_dim
         self._num_embeddings = num_embeddings
-        
         self._embedding = nn.Embedding(self._num_embeddings, self._embedding_dim)
         self._embedding.weight.data.uniform_(-1/self._num_embeddings, 1/self._num_embeddings)
         self._commitment_cost = commitment_cost
@@ -257,17 +261,22 @@ class VQVAE(nn.Module):
              num_embeddings, embedding_dim, commitment_cost):
         super(VQVAE, self).__init__()
         
+        # Pass input through encoder
         self.encoder = Encoder(channels_img, num_hiddens,
                                 num_residual_hiddens)
+        
+        # Conv layer to transform to correct dims
         self.conv = nn.Conv2d(in_channels=num_hiddens, 
                                       out_channels=embedding_dim,
                                       kernel_size=1, 
                                       stride=1)
-
+        
+        # Pass through quantizer
         self.vq = VectorQuantizer(num_embeddings, 
                                   embedding_dim,
                                   commitment_cost)
         
+        # Pass through decoder
         self.decoder = Decoder(embedding_dim,
                                num_hiddens, 
                                num_residual_hiddens)
@@ -275,8 +284,8 @@ class VQVAE(nn.Module):
     def forward(self, x):
         out = self.encoder(x)
         out = self.conv(out)
-        loss, quantized, _, _ = self.vq(out)
-        out_reconstruction = self.decoder(quantized)
+        loss, quantized, _, _ = self.vq(out) # extract loss and quantized outputs
+        out_reconstruction = self.decoder(quantized) # reconstruct
 
         return loss, out_reconstruction
     
@@ -303,12 +312,12 @@ class VQVAEtrain():
         self.VQVAE.to(self.device)
         
     def train(self, train_res_recon_error):
-        data_variance = 0.0338
+        data_variance = 0.0338 # variance calculated seperately
         i = 0
         for batch, x in enumerate(self.loader):
             data = x.to(self.device)
             self.optimizer.zero_grad()
-        
+            
             vq_loss, data_recon  = self.VQVAE(data)
             recon_error = F.mse_loss(data_recon, data) / data_variance
             loss = recon_error + vq_loss
@@ -341,11 +350,28 @@ class VQVAEpredict():
         self.device = torch.device("cuda")
         
     def get_quantized(self, x):
-       encoded = x.unsqueeze(1)
+       """
+        Method to return quantized data
+
+        Parameters
+        ----------
+        x : Tensor
+            embedding indices.
+
+        Returns
+        -------
+        quantized data
+
+        """ 
+       encoded = x
+       # Transform to embedding size
        index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
        print(encoded.shape)
        print(index.shape)
-       index.scatter_(1, encoded,1)
+       
+       # Transform for correct dim to matmul (VQVAE embedding space)
+       index.scatter_(1, encoded, 1)
+       
        quantized = torch.matmul(index, self.VQVAE.vq._embedding.weight).view(1, 64, 64, 64)
        return quantized.permute(0, 3, 1, 2).contiguous()
        
@@ -401,23 +427,23 @@ class VQVAEpredict():
         
         test = test[0].cpu().detach().numpy()
         
-        """
         # Obtain quanitzed data visualization
         quantized = self.get_quantized(indices)
         quantized_decoded = self.VQVAE.decoder(quantized)
         quantized_decoded_idx = quantized_decoded[0] 
         quantized_decoded_idx = quantized_decoded_idx.to('cpu')
         quantized_decoded_idx = quantized_decoded_idx.detach().numpy()
-        """
+        
       
         proj = umap.UMAP(n_neighbors=3,
                  min_dist=0.1,
                  metric='cosine').fit_transform(self.VQVAE.vq._embedding.weight.data.cpu())
         
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle('Real vs Codebook indice')
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        fig.suptitle('Real vs Codebook indice vs Quantized')
         ax1.imshow(test)
         ax2.imshow(index)
+        ax3.imshow(quantized_decoded_idx[1])
         
         """
         plt.scatter(proj[:,0], proj[:,1], alpha=0.3)
@@ -425,6 +451,8 @@ class VQVAEpredict():
         """
         
 ## DCGAN ##
+## CITATION: https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/Pytorch/GANs/2.%20DCGAN/train.py
+# Tutorial for DCGAN model/training
 
 class Discriminator(nn.Module):
     """
@@ -541,8 +569,8 @@ class trainDCGAN():
             Discriminator network
         Generator : nn.Module
             Generator network
-        data : String
-            data path
+        trainData : DataLoader
+            data loader containing training data
         Returns
         -------
         None.
@@ -553,17 +581,34 @@ class trainDCGAN():
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
-        self.epochs = 5
+        self.epochs = 1
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
 
     
     def train(self, dlosses, glosses):
+        """
+        Training method for dcgan
+
+        Parameters
+        ----------
+        dlosses : list
+            list storing discriminator loss
+        glosses : list
+            list storing generator loss
+
+        Returns
+        -------
+        None.
+
+        """
+        # Initialize
         self.Discriminator.to(self.device)
         self.Generator.to(self.device)
         loss = nn.BCELoss()
         
+        # Create noise and labels
         real_label = 1
         fake_label = 0
         fixed_noise = torch.randn(64, self.Hyperparameters.channels_noise, 1, 1).to(self.device)
@@ -602,4 +647,68 @@ class trainDCGAN():
         # Save models            
         torch.save(self.Discriminator, "D:/Jacob Barrie/Documents/COMP3710/models/" + "discriminator.txt")
         torch.save(self.Generator, "D:/Jacob Barrie/Documents/COMP3710/models/" + "generator.txt")
+        
+        
+        
+class generateDCGAN():
+    """
+    Class to use trained generator to output fake images.
+    """
+    def __init__(self, Generator, VQVAE):
+        """
+
+        Parameters
+        ----------
+        Generator : Generator
+            trained Generator model
+        VQVAE : VQVAE
+            trained VQVAE model
+
+        Returns
+        -------
+        None.
+
+        """
+        self.device = torch.device("cuda")
+        self.Generator = Generator
+        self.VQVAE = VQVAE
+     
+    def get_quantized(self, x):
+        # Same as other get quantized
+        encoded = x.unsqueeze(1)
+        index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
+        print(encoded.shape)
+        print(index.shape)
+        index.scatter_(1, encoded, 1)
+        quantized = torch.matmul(index, self.VQVAE.vq._embedding.weight).view(1, 64, 64, 64)
+        return quantized.permute(0, 3, 1, 2).contiguous()
+       
+        
+    def gen(self):
+        """
+        Method to use generator to produce fake codebook indices, which are
+        decoded and visualized.
+        """
+        noise = torch.randn(1, 100, 1, 1).to(self.device)
+        with torch.no_grad():
+            fake = self.Generator(noise)
+            
+        fake_indice = fake[0][0]
+        fake_indice = fake_indice.to('cpu')
+        fake_indice = fake_indice.detach().numpy()
+        plt.imshow(fake_indice)
+        
+        """
+        generated_code_indice =  fake[0][0]
+        generated_code_indice = torch.flatten(generated_code_indice)
+        generated_code_indice = generated_code_indice.long()
+        generated_output = self.get_quantized(generated_code_indice)
+        generated_output = self.VQVAE.decoder(generated_output)
+        
+        # Visualise
+        tt = generated_output[0]
+        tt = tt.to('cpu')
+        tt = tt.detach().numpy()
+        plt.imshow(tt)
+        """
         
