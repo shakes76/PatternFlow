@@ -18,6 +18,7 @@ import numpy as np
 import random
 import os, os.path
 import cv2
+import umap
 
 ### HELPER FUNCTIONS ###
 
@@ -246,7 +247,14 @@ class VectorQuantizer(nn.Module):
         
         # convert quantized from BHWC -> BCHW
         return loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices
-
+    
+    def get_quantized(self, x):
+       encoded = x.unsqueeze(1)
+       index = torch.zeros(encoded.shape[0], self._num_embeddings, device=x.device)
+       index.scatter_(1, encoded, 1)
+       quantized = torch.matmul(index, self._embedding.weight).view(1, 64, 64, 64)
+       return quantized.permute(0, 3, 1, 2).contiguous()
+   
 class VQVAE(nn.Module):
     """
     Class combining sub-modules into the full VQ-VAE model.
@@ -326,8 +334,89 @@ class VQVAEtrain():
 
         # Save model
         torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "vqvae.txt")
-                
-    
+
+class VQVAEpredict():
+    """
+    Class to implement prediction methods for VQVAE. We will want to visialize
+    the original vs reconstructed images, and view an embedding slice from
+    the codebook.
+    """
+    def __init__(self, VQVAE, test):
+        self.VQVAE = VQVAE
+        self.test = test
+        self.device = torch.device("cuda")
+       
+       
+    def reconstruction(self):
+        self.VQVAE.to(self.device)
+        # Obtain an image from the test set
+        real_img = next(iter(self.test))
+        real = real_img[0]
+        real = real.to(self.device)
+        
+        # Pass image through model
+        encoded = self.VQVAE.encoder(real)
+        conv = self.VQVAE.conv(encoded)
+        conv = conv.view(1, 64, 64, 64)   
+        # Obtain quantized outputs
+        _, quantized, _, _ = self.VQVAE.vq(conv)
+        reconstruction = self.VQVAE.decoder(quantized)
+        
+        # Plot reals
+        grid = torchvision.utils.make_grid(real.cpu())
+        grid = grid.detach().numpy()
+        plot = plt.imshow(np.transpose(grid, (1,2,0)), interpolation='nearest')
+        plt.title("Real")
+        plot.axes.get_xaxis().set_visible(False)
+        plot.axes.get_yaxis().set_visible(False)
+        plt.clf()
+        
+        # Plot reconstruction
+        grid = torchvision.utils.make_grid(reconstruction.cpu())
+        grid = grid.detach().numpy()
+        plot = plt.imshow(np.transpose(grid, (1,2,0)), interpolation='nearest')
+        plt.title("Reconstructed")
+        plot.axes.get_xaxis().set_visible(False)
+        plot.axes.get_yaxis().set_visible(False)
+        
+    def embedding_slice(self):
+        test = next(iter(self.test))
+        test = test[0]
+        test = test.to(self.device)
+        
+        # Pass image through model
+        encoded = self.VQVAE.encoder(test)
+        conv =self.VQVAE.conv(encoded)
+        conv = conv.view(1, 64, 64, 64)  
+        _,quantized,encodings,indices = self.VQVAE.vq(conv)
+        decoded = self.VQVAE.decoder(quantized)
+        
+        # Obtain codebook indices visualization
+        idx = indices.view(64,64)
+        idx = idx.to('cpu')
+        index = idx.detach().numpy()
+        
+        test = test[0][0].cpu().detach().numpy()
+        
+        # Obtain quanitzed data visualization
+        quantized = self.get_quantized(indices)
+        quantized_decoded = self.VQVAE.decoder(quantized)
+        quantized_decoded_idx = quantized_decoded[0] 
+        quantized_decoded_idx = quantized_decoded_idx.to('cpu')
+        quantized_decoded_idx = quantized_decoded_idx.detach().numpy()
+        
+      
+        proj = umap.UMAP(n_neighbors=3,
+                 min_dist=0.1,
+                 metric='cosine').fit_transform(self.VQVAE.vq_embedding.weight.data.cpu())
+        
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        fig.suptitle('Real vs Codebook indice vs Quantized')
+        ax1.imshow(test)
+        ax2.imshow(index)
+        ax3.imshow(quantized_decoded_idx[1])
+        plt.scatter(proj[:,0], proj[:,1], alpha=0.3)
+        
 ## DCGAN ##
 
 class Discriminator(nn.Module):
@@ -457,7 +546,6 @@ class trainDCGAN():
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
-        self.batch_size = 32
         self.epochs = 5
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
@@ -488,7 +576,6 @@ class trainDCGAN():
                 d_fake = self.Discriminator(fake.detach()).reshape(-1)
                 d_loss_fake = loss(d_fake, torch.zeros_like(d_fake))
                 lossD = (d_loss_real + d_loss_fake) / 2
-                dlosses.append(lossD)
                 self.Discriminator.zero_grad()
                 lossD.backward()
                 self.optimizer_d.step()
@@ -497,14 +584,15 @@ class trainDCGAN():
                 self.Generator.zero_grad()
                 output = self.Discriminator(fake).reshape(-1)
                 lossG = loss(output, torch.ones_like(output))
-                glosses.append(lossG)
                 lossG.backward()
                 self.optimizer_g.step()
                 
+                dlosses.append(lossD)
+                glosses.append(lossG)
                 if batch % 100 == 0:
                     print("Loss D: ", dlosses[-1], "Loss G: ", glosses[-1])
                     
         # Save models            
-        torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "discriminator.txt")
-        torch.save(self.VQVAE, "D:/Jacob Barrie/Documents/COMP3710/models/" + "generator.txt")
+        torch.save(self.Discriminator, "D:/Jacob Barrie/Documents/COMP3710/models/" + "discriminator.txt")
+        torch.save(self.Generator, "D:/Jacob Barrie/Documents/COMP3710/models/" + "generator.txt")
         

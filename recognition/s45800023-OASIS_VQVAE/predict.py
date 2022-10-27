@@ -17,3 +17,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import cv2
+
+## VQVAE ##
+
+# Initialise model
+VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvae.txt")
+
+# Initalise data
+data = datasets.OASISData()
+train, test, val = data.get_loaders()
+
+# Obtain reconstruction, embedded slices
+VQVAEpredict = modules.VQVAEpredict(VQVAE, test)
+VQVAEpredict.reconstruction()
+VQVAEpredict.embedding_slice()

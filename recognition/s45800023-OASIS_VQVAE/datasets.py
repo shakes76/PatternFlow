@@ -72,8 +72,7 @@ class OASIS_Loader(Dataset):
             idx = idx.tolist()
             
         img_name = os.path.join(self.root_dir, img_names[idx]) # Finds file path based on index
-        image = cv2.imread(img_name) # Reads image
-        sample = image    
+        sample = PIL.Image.open(img_name).convert("RGB")    
         
         if self.transform: # Will apply image transform if required. 
             sample = self.transform(sample)    
@@ -143,7 +142,7 @@ class DCGANLoader():
         
     # Initialize data loaders 
     def get_loaders(self):
-        train_loader = DataLoader(self.train, batch_size=128, shuffle=True)
+        train_loader = DataLoader(self.train, batch_size=256, shuffle=True)
         test_loader = DataLoader(self.test, batch_size=128, shuffle=False)
         val_loader = DataLoader(self.val, batch_size=128, shuffle=False)
         return train_loader, test_loader, val_loader
