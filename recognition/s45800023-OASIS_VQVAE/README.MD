@@ -5,32 +5,32 @@ This algorithm aims to implement a generative model for the OASIS brain dataset.
 ### VQVAE
 The VQVAE model was presented in 2017 as a new generative model that can learn discrete representations. We know how VAE's work, using an encoder and decoder network to project images into a latent space, then learn to reconstruct them. However continuous vector spaces are used to represent the latent space, which is typically not how we find data in the real world. VQ-VAE's solve this problem. The encoder outputs are discrete and priors are learnt. To alleviate posterior collapse, they introduce a vector-quantizer into the model, hence the name. The high level architecture is displayed below.
 
-![vqvaeArchitecture](/Resources/vqvaeA.png)
+![vqvaeArchitecture](./Resources/vqvaeA.png)
 
 We use a VQVAE here to learn a discrete embedding space representation of the OASIS dataset. 
 ### DCGAN
 To then generate fake images, we need a generator network, thus a GAN became necessary. The DCGAN (deep-convolutional generative adversarial network) was introduced in 2015, producing strong results on various image datasets. GAN use a discriminator network to learn real/fake images, and the generate learns to generate fake images, competing each other in a zero-sum game. DCGAN's expand upon this idea by using convolutional layers, making them powerful for image learning. The high level architecture is displayed below:
 
-![dcganArchitecture](/Resources/dcganA.png)
+![dcganArchitecture](./Resources/dcganA.png)
 
 ## Training/Results
 For training, the two main networks had to be trained seperately. The process is as follows.
 ### VQVAE
 For the VQVAE we set up our encoder, decoder and vector quantizer models, and train them on the original images transformed to RGB. Training loss is displayed below:
 
-![dcganLoss](/Resources/vqvaeloss.png)
+![dcganLoss](./Resources/vqvaeloss.png)
 
 With the trained network, we can output an example of a real image and the reconstructed version:
 
-![realVreconstructed](/Resources/realvrec.png)
+![realVreconstructed](./Resources/realvrec.png)
 
 We can also visualize an embedding slice from the network:
 
-![embedding](/Resources/embeddingslice.png)
+![embedding](./Resources/embeddingslice.png)
 
 And a UMAP projection of what the overall embedding space looks like:
 
-![projection](/Resources/umap.png)
+![projection](./Resources/umap.png)
 
 One could further quantize the embedding slice to see the output, but the above results already show the network is trained and we have a viable model.
 
