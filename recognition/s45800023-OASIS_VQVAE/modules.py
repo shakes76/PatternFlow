@@ -681,7 +681,7 @@ class generateDCGAN():
         index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
         print(encoded.shape)
         print(index.shape)
-        #index.scatter_(1, encoded, 1)
+        index.scatter_(1, encoded, 1)
         quantized = torch.matmul(index, self.VQVAE.vq._embedding.weight).view(1, 64, 64, 64)
         return quantized.permute(0, 3, 1, 2).contiguous()
        
@@ -696,15 +696,10 @@ class generateDCGAN():
             fake = self.Generator(noise)
             
         fake_indice = fake[0][0]
-        fake_indice = fake_indice.to('cpu')
-        fake_indice = fake_indice.detach().numpy()
-        plt.imshow(fake_indice)
-
-        fake_indice =  fake[0][0]
         fake_indice = torch.flatten(fake_indice)
         fake_indice = fake_indice.long()
         
-        """
+ 
         gen = self.get_quantized(fake_indice)
 
         gen = self.VQVAE.decoder(gen)
@@ -713,5 +708,5 @@ class generateDCGAN():
         output = gen[0]
         output = output.to('cpu')
         output = output.detach().numpy()
-        plt.imshow(output)
-        """       
+        plt.imshow(output[0])
+      

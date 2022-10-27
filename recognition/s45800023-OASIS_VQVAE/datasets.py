@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import cv2
-import PIL 
 import modules
 
 device = modules.check_cuda()
@@ -74,7 +73,8 @@ class OASIS_Loader(Dataset):
             idx = idx.tolist()
             
         img_name = os.path.join(self.root_dir, img_names[idx]) # Finds file path based on index
-        sample = PIL.Image.open(img_name).convert("RGB")    
+        image = cv2.imread(img_name) # Reads image
+        sample = image   
         
         if self.transform: # Will apply image transform if required. 
             sample = self.transform(sample)    
