@@ -21,7 +21,7 @@ import cv2
 ## VQVAE ##
 
 # Initialise model
-VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvae.txt")
+VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
 
 # Initalise data
 data = datasets.OASISData()

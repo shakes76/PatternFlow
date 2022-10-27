@@ -248,12 +248,6 @@ class VectorQuantizer(nn.Module):
         # convert quantized from BHWC -> BCHW
         return loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices
     
-    def get_quantized(self, x):
-       encoded = x.unsqueeze(1)
-       index = torch.zeros(encoded.shape[0], self._num_embeddings, device=x.device)
-       index.scatter_(1, encoded, 1)
-       quantized = torch.matmul(index, self._embedding.weight).view(1, 64, 64, 64)
-       return quantized.permute(0, 3, 1, 2).contiguous()
    
 class VQVAE(nn.Module):
     """
@@ -345,6 +339,15 @@ class VQVAEpredict():
         self.VQVAE = VQVAE
         self.test = test
         self.device = torch.device("cuda")
+        
+    def get_quantized(self, x):
+       encoded = x.unsqueeze(1)
+       index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
+       print(encoded.shape)
+       print(index.shape)
+       index.scatter_(1, encoded,1)
+       quantized = torch.matmul(index, self.VQVAE.vq._embedding.weight).view(1, 64, 64, 64)
+       return quantized.permute(0, 3, 1, 2).contiguous()
        
        
     def reconstruction(self):
@@ -396,26 +399,30 @@ class VQVAEpredict():
         idx = idx.to('cpu')
         index = idx.detach().numpy()
         
-        test = test[0][0].cpu().detach().numpy()
+        test = test[0].cpu().detach().numpy()
         
+        """
         # Obtain quanitzed data visualization
         quantized = self.get_quantized(indices)
         quantized_decoded = self.VQVAE.decoder(quantized)
         quantized_decoded_idx = quantized_decoded[0] 
         quantized_decoded_idx = quantized_decoded_idx.to('cpu')
         quantized_decoded_idx = quantized_decoded_idx.detach().numpy()
-        
+        """
       
         proj = umap.UMAP(n_neighbors=3,
                  min_dist=0.1,
-                 metric='cosine').fit_transform(self.VQVAE.vq_embedding.weight.data.cpu())
+                 metric='cosine').fit_transform(self.VQVAE.vq._embedding.weight.data.cpu())
         
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-        fig.suptitle('Real vs Codebook indice vs Quantized')
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle('Real vs Codebook indice')
         ax1.imshow(test)
         ax2.imshow(index)
-        ax3.imshow(quantized_decoded_idx[1])
+        
+        """
         plt.scatter(proj[:,0], proj[:,1], alpha=0.3)
+        plt.title("UMAP Projection of embedding space")
+        """
         
 ## DCGAN ##
 
