@@ -14,7 +14,7 @@ This project develops a solution to the ISIC challenge using UNet. The objective
 * Upsampling
 
 Following diagram exactly depicts the architecture
-![Improved UNet] (https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/dice_coefficient.jpg)
+![Improved UNet](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/dice_coefficient.jpg)
 
 
 
