@@ -1,13 +1,13 @@
-Name: Ojas Madhusudan Chaudhari
+<h2> Name: Ojas Madhusudan Chaudhari </h2>
 
-Student Number: 46941893
+<h2> Student Number: 46941893 </h2>
 
-Student Email: o.chaudhari@uqconnect.edu.au
+<h2>Student Email: o.chaudhari@uqconnect.edu.au </h2>
 
-Project: Segmentation using UNet
+<h2>Project: Segmentation using UNet </h2>
 
 
-Segmentation of ISIC data with improved UNet
+<h1> Segmentation of ISIC data with improved UNet </h1>
 
 This project develops a solution to the ISIC challenge using UNet. The objective of the project is to train convolutional neural network to segment the ISIC images using improved UNet. The architecture of improved UNet has been referred from F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein’s “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” research paper. This paper gives the architecture of improved UNet. It consists of two parts: -
 * Downsampling
