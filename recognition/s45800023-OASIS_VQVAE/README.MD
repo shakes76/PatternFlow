@@ -3,13 +3,11 @@
 ## Description
 This algorithm aims to implement a generative model for the OASIS brain dataset. To achieve this we can use a Vector-quantized Variational Auto-encoder to learn an embedding space. We can then feed encoded data into a DCGAN network to then generate realistic images from random noise. Descriptions of each model follow.
 ### VQVAE
-The VQVAE model was presented in 2017 as a new generative model that can learn discrete representations. We know how VAE's work, using an encoder and decoder network to project images into a latent space, then learn to reconstruct them. However continuous vector spaces are used to represent the latent space, which is typically not how we find data in the real world. VQ-VAE's solve this problem. The encoder outputs are discrete and priors are learnt. To alleviate posterior collapse, they introduce a vector-quantizer into the model, hence the name. The high level architecture is displayed below.
+The VQVAE model was presented in 2017 as a new generative model that can learn discrete representations. We know how VAE's work, using an encoder and decoder network to project images into a latent space, then learn to reconstruct them. However continuous vector spaces are used to represent the latent space, which is typically not how we find data in the real world. VQ-VAE's solve this problem. The encoder outputs are discrete and priors are learnt. To alleviate posterior collapse, they introduce a vector-quantizer into the model, hence the name. The vector quantizer transforms the discrete codebook into a probability density function which can then be decoded. The high level architecture is displayed below.
 
 ![vqvaeArchitecture](./Resources/vqvaeA.png)
 
-We use a VQVAE here to learn a discrete embedding space representation of the OASIS dataset. It should also be noted that the encoder and decoder networks make use of residual blocks as presented in resNET. The architecture for these models is also displayed:
-
-![encoderdecoder](./Resources/ed.png)
+We use a VQVAE here to learn a discrete embedding space representation of the OASIS dataset. It should also be noted that the encoder and decoder networks make use of residual blocks as presented in resNET. 
 
 ### DCGAN
 To then generate fake images, we need a generator network, thus a GAN became necessary. The DCGAN (deep-convolutional generative adversarial network) was introduced in 2015, producing strong results on various image datasets. GAN use a discriminator network to learn real/fake images, and the generate learns to generate fake images, competing each other in a zero-sum game. DCGAN's expand upon this idea by using convolutional layers, making them powerful for image learning. The high level architecture is displayed below:
@@ -19,7 +17,7 @@ To then generate fake images, we need a generator network, thus a GAN became nec
 ## Training/Results
 For training, the two main networks had to be trained seperately. The process is as follows.
 ### VQVAE
-For the VQVAE we set up our encoder, decoder and vector quantizer models, and train them on the original images transformed to RGB. The model was trained over 5 epochs. Other hyperparamters are specified in code. Training loss is displayed below:
+For the VQVAE we set up our encoder, decoder and vector quantizer models, and train them on the original images transformed to RGB. The model was trained over 5 epochs. Other hyperparamters are specified in code. Traning time was ~2 minutes on a Nvidia RTX 3070 GPU. Training loss is displayed below:
 
 ![dcganLoss](./Resources/vqvaeloss.png)
 
@@ -48,19 +46,29 @@ We then visualize a generated codebook indice:
 
 ![fake](./Resources/gen.png)
 
-The structure of the brain can be seen, the model produces output to an extent. To visualize the reconstructed image, we quantize this data, then pass through the decoder network. 
+The structure of the brain can be seen, however to model was not converging and is likely not producing quality output. A revision of the training method and tuning of hyperparameters allowed a much better model to be achieved. The generated codebook indice can be seen below:
+
+![fake2](./Resources/gen2.png)
+
+We can then use our trained VQVAE model to quantize and decode the codebook indice to produce a fake:
+
+![fakeV](./Resources/genV.png)
+
+#### SSIM
+Finally we can calculate the structured similarity between real images and the fake image using sklearn. SSIM is a relatively new metric that takes 3 factors into account (luminance (l), contrast (c) and structure (s)). 
+
 
 ## Discussion
-The VQVAE model worked very well and no adjustments should have to be made. The DCGAN converged to a degree, but improvements could definitely be made. Tuning of hyperparameters, or possibly the discriminator architecture could possibly solve these issues. Further a model such as a PixelCNN could be implemented insteaed to potentially produce better results. Overall the problem is mostly solved.
+The VQVAE model worked very well and no adjustments should have to be made. The final DCGAN converged and is generating good results. Further tuning of the model could be done but the reconstructions produced are viable. 
 
 ## Instructions to replicate results
 1. Change the train, test, val dir variables in datasets.py to where you have the image set stored on your computer. 
-2. In trainVQVAE and trainDCGAN classes, change torch.save/load paths to desired location. 
-3. Run train.py
-4. In predict, torch.load for VQVAE and Generator to where you stored models in step 2.
+2. In trainVQVAE and trainDCGAN classes, change VQVAE_PATH and  to desired location. 
+3. In train.py set VQVAE_PATH and run train.py
+4. In predict.py, set VQVAE_PATH and GENERATOR_PATH to locations trained models.
 5. Run predict.py
 
-Please note this is subject to model tuning. The VQVAE hyperparameters are stored, and was trained over 5 epochs. THE DCGAN model, I recommend observing the loss outputted and tuning the model as required. Results here were achieved with hyperparameters stored and running over 3 epochs.
+Please note this is subject to model tuning, but using the default hyperparamters should reproduce viable models. The VQVAE hyperparameters are stored, and was trained over 5 epochs. THE DCGAN model, I recommend observing the loss outputted and tuning the model as required. Results here were achieved with hyperparameters stored and running over 25 epochs.
 
 ## Depedencies
 cuda - 11.7.0
@@ -91,4 +99,6 @@ https://colab.research.google.com/github/zalandoresearch/pytorch-vq-vae/blob/mas
 https://ml.berkeley.edu/blog/posts/vq-vae/
 
 https://github.com/aladdinpersson/Machine-Learning-Collection/tree/master/ML/Pytorch/GANs/2.%20DCGAN
+
+https://code.adonline.id.au/structural-similarity-index-ssim-in-python/
 
