@@ -144,7 +144,7 @@ class DCGANLoader():
         
     # Initialize data loaders 
     def get_loaders(self):
-        train_loader = DataLoader(self.train, batch_size=8, shuffle=True)
+        train_loader = DataLoader(self.train, batch_size=256, shuffle=True)
         test_loader = DataLoader(self.test, batch_size=32, shuffle=False)
         val_loader = DataLoader(self.val, batch_size=32, shuffle=False)
         return train_loader, test_loader, val_loader

@@ -41,7 +41,7 @@ ax.plot(train_res_recon_error_smooth)
 ax.set_yscale('log')
 ax.set_title('Loss over 5 Epochs.')
 ax.set_xlabel('iteration')
-
+ 
 VQVAEtrain = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
 ### Train DCGAN ###
 # Initialise data

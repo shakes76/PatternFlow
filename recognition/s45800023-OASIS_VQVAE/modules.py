@@ -583,7 +583,7 @@ class trainDCGAN():
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
-        self.epochs = 3
+        self.epochs = 1
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
@@ -620,28 +620,35 @@ class trainDCGAN():
             for batch, x in enumerate(self.trainData):
                 data = x.to(self.device)
                 batch_size = data.shape[0]
-                ## Train discriminator
-                noise = torch.randn(batch_size, 100, 1, 1).to(self.device)
-                fake = self.Generator(noise)
-                
-                # Getting discriminator loss
-                d_real = self.Discriminator(data).reshape(-1)
-                d_loss_real = loss(d_real, torch.ones_like(d_real))
-                d_fake = self.Discriminator(fake.detach()).reshape(-1)
-                d_loss_fake = loss(d_fake, torch.zeros_like(d_fake))
-                lossD = (d_loss_real + d_loss_fake) / 2
+
+                # Train Discriminator
                 self.Discriminator.zero_grad()
+                label = (torch.ones(batch_size)*0.9).to(self.device)
+                output = self.Discriminator(data).reshape(-1)
+                lossDR = loss(output, label)
+                D_x = output.mean().item()
+                
+                # Generate fake to pass through model
+                noise = torch.randn(batch_size, 100,1,1).to(self.device)
+                fake = self.Generator(noise)
+                label = (torch.ones(batch_size)*0.1).to(self.device)
+                output = self.Discriminator(fake.detach()).reshape(-1)
+                lossDF = loss(output, label)
+                
+                # Calculate combined loss
+                lossD = lossDR + lossDF
+                dlosses.append(lossD)
                 lossD.backward()
                 self.optimizer_d.step()
                 
-                # Train Generator
+                # Train generator
                 self.Generator.zero_grad()
+                label = torch.ones(batch_size).to(self.device)
                 output = self.Discriminator(fake).reshape(-1)
-                lossG = loss(output, torch.ones_like(output))
+                lossG = loss(output, label)
                 lossG.backward()
                 self.optimizer_g.step()
-                
-                dlosses.append(lossD)
+
                 glosses.append(lossG)
                 if batch % 100 == 0:
                     print("Loss D: ", dlosses[-1], "Loss G: ", glosses[-1])
@@ -696,8 +703,11 @@ class generateDCGAN():
             fake = self.Generator(noise)
             
         fake_indice = fake[0][0]
-        fake_indice = torch.flatten(fake_indice)
-        fake_indice = fake_indice.long()
+        #fake_indice = torch.flatten(fake_indice)
+        #fake_indice = fake_indice.long()
+        fake_indice = fake_indice.to('cpu')
+        fake_indice = fake_indice.detach().numpy()
+        plt.imshow(fake_indice)
         
  
         gen = self.get_quantized(fake_indice)
