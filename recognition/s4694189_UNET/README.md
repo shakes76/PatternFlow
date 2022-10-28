@@ -22,13 +22,15 @@ The neural network starts with giving an input layer of 256*256*3. The actual si
 Please download the modules.ipynb file to run the program or download al =l the files as they are related with each other
 
 <h2> File structure </h2>
-<b> dataset.py </b>:- This file loads the dataset and give the x and y array values with the pre-processing of images.
-<b> module.py </b>:- This file has UNET neural network defined in it and it returns the model
-<b> train.py </b> :- This file trains the model and plots the result. The model uses dice similarity measure to evaluate the model's performance.
-<b> predict.py </b> :- This file evaluates the performance on test data.
+* <b> dataset.py </b>:- This file loads the dataset and give the x and y array values with the pre-processing of images.
+* <b> module.py </b>:- This file has UNET neural network defined in it and it returns the model
+* <b> train.py </b> :- This file trains the model and plots the result. The model uses dice similarity measure to evaluate the model's performance.
+* <b> predict.py </b> :- This file evaluates the performance on test data.
 
-<h2> Plots and visualizations
+<h2> Plots and visualizations</h2>
+
  After building the model. coefficient loss of training and validation data has been visualized with respect to epochs
+ 
  ![Loss](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/loss_picture.jpg)
  
  Similarly dice coefficient values have been visualized
@@ -36,6 +38,9 @@ Please download the modules.ipynb file to run the program or download al =l the 
  
  In this project 3 data files which have been given in 2017 ISIC Challenge have been used. Train, validation and test images with their masks have been used for the study. Also the result on test data is quite good and it is more than 0.8
  ![evaluation](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/prediction.jpg)
+ 
+ After visualizing the truth images with predicted images it is quite evident that the improved UNet has performed realy well on the test images.
+ ![Truth_vs_prediction](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/truth_vs_prediction.jpg)
  
  
 
