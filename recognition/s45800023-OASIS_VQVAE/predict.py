@@ -21,6 +21,7 @@ import cv2
 ## VQVAE ##
 VQVAE_PATH = "D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt"
 GENERATOR_PATH = "D:/Jacob Barrie/Documents/COMP3710/models/generator.txt"
+train_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/train/'
 
 # Initialise model
 VQVAE = torch.load(VQVAE_PATH)
@@ -29,14 +30,15 @@ VQVAE = torch.load(VQVAE_PATH)
 data = datasets.OASISData()
 train, test, val = data.get_loaders()
 
-"""
+
 # Obtain reconstruction, embedded slices
 VQVAEpredict = modules.VQVAEpredict(VQVAE, test)
 VQVAEpredict.reconstruction()
 VQVAEpredict.embedding_slice()
-"""
+
 ## DCGAN ##
 Generator = torch.load(GENERATOR_PATH)
 generate = modules.generateDCGAN(Generator, VQVAE) 
 generated = generate.gen()  # Generate fake codebook indice
 decoded = generate.reconstruct(generated) # Decode and display
+ssim = generate.SSIM(decoded, train_dir, train)

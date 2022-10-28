@@ -19,6 +19,7 @@ import random
 import os, os.path
 import cv2
 import umap
+from skimage.metrics import structural_similarity as ssim
 
 ### HELPER FUNCTIONS ###
 
@@ -733,10 +734,38 @@ class generateDCGAN():
         return_output = output
         output = output.to('cpu')
         output = output.detach().numpy()
-        plt.imshow(output[0])
+        plt.imshow(output)
         
         # return decoded tensor for use with SSIM
         return return_output
     
-    def SSIM(self):
-        return
+    def SSIM(self, fake, root_dir, train_loader):
+        """
+        Method to iterate over images and compute ssim.
+
+        """
+        ssim_max_image = 0
+        image_ssim_max = None
+        num_ssim_passed = 0
+        
+        for i in range(len(train_loader)):
+            # Iterate through training data set
+            img_names = get_filenames(root_dir) 
+            img_name = os.path.join(root_dir, img_names[i]) # Finds file path based on index
+            image = cv2.imread(img_name) # Reads image
+            sample = image
+            
+            # Send image to tensor for computation
+            transform = torchvision.transforms.Compose([
+                    torchvision.transforms.ToTensor()
+                ])
+            image = transform(image)
+            image = image.unsqueeze(0)
+            
+            # extract info and detach
+            fake = fake.detach()
+            real = image[0][0].to("cpu").detach().numpy()
+            
+            # calculate SSIM 
+            ssim_image = ssim(fake, real)
+
