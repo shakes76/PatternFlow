@@ -583,7 +583,7 @@ class trainDCGAN():
         self.Discriminator = Discriminator
         self.Generator = Generator
         self.trainData = trainData
-        self.epochs = 1
+        self.epochs = 25
         self.lr = 0.0002
         self.optimizer_g = torch.optim.Adam(self.Generator.parameters(), lr=self.lr, betas=(0.5, 0.999))
         self.optimizer_d = torch.optim.Adam(self.Discriminator.parameters(), lr=self.lr, betas=(0.5, 0.999))
@@ -683,7 +683,7 @@ class generateDCGAN():
         self.VQVAE = VQVAE
      
     def get_quantized(self, x):
-        # Same as other get quantized
+        # Same as other get quantized, just need to add a dim
         encoded = x.unsqueeze(1)
         index = torch.zeros(encoded.shape[0], self.VQVAE.vq._num_embeddings, device=x.device)
         print(encoded.shape)
@@ -698,25 +698,45 @@ class generateDCGAN():
         Method to use generator to produce fake codebook indices, which are
         decoded and visualized.
         """
+        
+        # Generate fake
         noise = torch.randn(1, 100, 1, 1).to(self.device)
         with torch.no_grad():
             fake = self.Generator(noise)
             
+        # Extract generated indice
         fake_indice = fake[0][0]
-        #fake_indice = torch.flatten(fake_indice)
-        #fake_indice = fake_indice.long()
+        return_indice = fake_indice
         fake_indice = fake_indice.to('cpu')
         fake_indice = fake_indice.detach().numpy()
+        
+        # Visualize
         plt.imshow(fake_indice)
         
- 
-        gen = self.get_quantized(fake_indice)
-
+        # Return fake indice for reconstruction
+        return return_indice
+    
+    def reconstruct(self, indice):  
+        """
+        Method to use trained VQVAE to quantize and decode the generated 
+        codebook indice.
+        """
+        indice = torch.flatten(indice)
+        indice = indice.long()
+        
+        # quantize and decode codebook indice
+        gen = self.get_quantized(indice)
         gen = self.VQVAE.decoder(gen)
         
         # Visualise
-        output = gen[0]
+        output = gen[0][0]
+        return_output = output
         output = output.to('cpu')
         output = output.detach().numpy()
         plt.imshow(output[0])
-      
+        
+        # return decoded tensor for use with SSIM
+        return return_output
+    
+    def SSIM(self):
+        return

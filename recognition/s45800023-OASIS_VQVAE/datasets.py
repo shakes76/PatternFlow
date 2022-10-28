@@ -27,16 +27,22 @@ val_dir = 'D:/Jacob Barrie/Documents/keras_png_slices_data/val/'
 
 class OASISData():
     def __init__(self, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data'):
+        # Initialize tranforms
         data_transforms = [
             torchvision.transforms.ToTensor(),
         ]  
         data_transform = transforms.Compose(data_transforms)
+        
+        # Create datasets
         self.train = OASIS_Loader(root_dir = train_dir, transform=data_transform)
         self.test = OASIS_Loader(root_dir = test_dir, transform=data_transform)
         self.val = OASIS_Loader(root_dir = val_dir, transform=data_transform)
         
     # Initialize data loaders 
     def get_loaders(self):
+        """
+        Method to return data loaders.
+        """
         train_loader = DataLoader(self.train, batch_size=32, shuffle=True, drop_last=True, pin_memory=True)
         test_loader = DataLoader(self.test, batch_size=32, shuffle=False, drop_last=False)
         val_loader = DataLoader(self.val, batch_size=32, shuffle=False, drop_last=False)
@@ -133,10 +139,13 @@ class dataDCGAN(Dataset):
     
 class DCGANLoader():
     def __init__(self, VQVAE, img_dir='D:/Jacob Barrie/Documents/keras_png_slices_data'):
+        # Initialise transforms
         data_transforms = [
             transforms.ToTensor()
         ]  
         data_transform = transforms.Compose(data_transforms)
+        
+        # Initialise trained VQVAE and create datasets
         self.VQVAE = VQVAE
         self.train = dataDCGAN(self.VQVAE, root_dir = train_dir, transform=data_transform)
         self.test = dataDCGAN(self.VQVAE, root_dir = test_dir, transform=data_transform)
@@ -144,6 +153,9 @@ class DCGANLoader():
         
     # Initialize data loaders 
     def get_loaders(self):
+        """
+        Method to return data loaders.
+        """
         train_loader = DataLoader(self.train, batch_size=256, shuffle=True)
         test_loader = DataLoader(self.test, batch_size=32, shuffle=False)
         val_loader = DataLoader(self.val, batch_size=32, shuffle=False)

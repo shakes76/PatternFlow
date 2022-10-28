@@ -19,9 +19,11 @@ import os
 import cv2
 
 ## VQVAE ##
+VQVAE_PATH = "D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt"
+GENERATOR_PATH = "D:/Jacob Barrie/Documents/COMP3710/models/generator.txt"
 
 # Initialise model
-VQVAE = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
+VQVAE = torch.load(VQVAE_PATH)
 
 # Initalise data
 data = datasets.OASISData()
@@ -34,6 +36,7 @@ VQVAEpredict.reconstruction()
 VQVAEpredict.embedding_slice()
 """
 ## DCGAN ##
-Generator = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/generator.txt")
-generate = modules.generateDCGAN(Generator, VQVAE)
-generate.gen()
+Generator = torch.load(GENERATOR_PATH)
+generate = modules.generateDCGAN(Generator, VQVAE) 
+generated = generate.gen()  # Generate fake codebook indice
+decoded = generate.reconstruct(generated) # Decode and display

@@ -23,8 +23,9 @@ data = datasets.OASISData()
 train, test, val = data.get_loaders()
 hyperparameters = modules.Hyperparameters()
 epochs = 5
+VQVAE_PATH = "D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt"
 
-
+"""
 ### Train VQVAE ###
 VQVAE = modules.VQVAEtrain(hyperparameters, train, data) 
 train_res_recon_error = []
@@ -41,8 +42,8 @@ ax.plot(train_res_recon_error_smooth)
 ax.set_yscale('log')
 ax.set_title('Loss over 5 Epochs.')
 ax.set_xlabel('iteration')
- 
-VQVAEtrain = torch.load("D:/Jacob Barrie/Documents/COMP3710/models/vqvaeNewBest.txt")
+""" 
+VQVAEtrain = torch.load(VQVAE_PATH)
 ### Train DCGAN ###
 # Initialise data
 dataGan = datasets.DCGANLoader(VQVAEtrain)
