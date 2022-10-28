@@ -319,8 +319,13 @@ class VQVAEtrain():
             data = x.to(self.device)
             self.optimizer.zero_grad()
             
+            # Find training loss and data reconstruction
             vq_loss, data_recon  = self.VQVAE(data)
+            
+            # Reconstruction loss
             recon_error = F.mse_loss(data_recon, data) / data_variance
+            
+            # total loss
             loss = recon_error + vq_loss
             loss.backward()
         
@@ -435,11 +440,12 @@ class VQVAEpredict():
         quantized_decoded_idx = quantized_decoded_idx.to('cpu')
         quantized_decoded_idx = quantized_decoded_idx.detach().numpy()
         
-      
+        # UMAP projection
         proj = umap.UMAP(n_neighbors=3,
                  min_dist=0.1,
                  metric='cosine').fit_transform(self.VQVAE.vq._embedding.weight.data.cpu())
         
+        # Visualize results
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
         fig.suptitle('Real vs Codebook indice vs Quantized')
         ax1.imshow(test)

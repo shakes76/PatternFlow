@@ -65,7 +65,7 @@ Finally we can calculate the structured similarity between real images and the f
 
 
 ## Discussion
-The VQVAE model worked very well and no adjustments should have to be made. The final DCGAN converged and is generating good results. Further tuning of the model could be done but the models produced are viable. The reconstructions however are not. I believe the generative model has been implemented, but visualization was a challenge that can hopefully be overcame with fixes once bugs can be found.
+The VQVAE model worked very well and no adjustments should have to be made. The final DCGAN converged, and thus generated results should be viable. Further tuning of the model could be done but the models produced are viable. The reconstructions however are not. I believe the generative model has been implemented, but visualization was a challenge that can hopefully be overcame with fixes once bugs can be found.
 
 ## Instructions to replicate results
 1. Change the train, test, val dir variables in datasets.py to where you have the image set stored on your computer. 
