@@ -1,23 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[15]:
-
-
-# load image
-isic_input = glob.glob("ISIC-2017_Training_Data/*.jpg")
-isic_groundtruth = glob.glob("ISIC-2017_Training_Part1_GroundTruth/*.png")
-
-
-# In[17]:
-
-
-len(isic_groundtruth)
-
-
-# In[3]:
-
-
+# ## Import the libraries
 from keras.utils import normalize
 import os
 import glob
@@ -26,8 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# In[18]:
+# ## Loading the images
 
+#Import the images and perform transformation on images
 
 transformed_X = 256
 transformed_Y = 256
@@ -46,9 +28,9 @@ def load_images(path):
     return image_list
 
 
-# In[19]:
+# ## Load mask images
 
-
+#Import the mask dataset
 def load_masks(path):
     masks_list = []
     for fi in os.listdir(path):
@@ -64,21 +46,15 @@ def load_masks(path):
     return masks_list
 
 
-# In[ ]:
-
+# ## Training data
 
 X_train = load_images("ISIC-2017_Training_Data/")
 masks_train_images = load_masks("ISIC-2017_Training_Part1_GroundTruth/")
 
 
-# In[ ]:
-
-
+# ## Validation data
 x_validate = load_images("ISIC-2017_Validation_Data/")
 masks_valid_images = load_masks("ISIC-2017_Validation_Part1_GroundTruth")
-
-
-# In[ ]:
 
 
 x_test = load_images("ISIC-2017_Test_v2_Data/")
