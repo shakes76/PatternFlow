@@ -20,7 +20,7 @@ This project aims to classify images of the brain from the ADNI dataset as eithe
 The model takes images as input, breaking it up into flattened patches which are then fed into a transformer encoder. Each of these patches are given a position embedding to retain information about order. The transformer encoder uses an attention mechanism to retain information about previously viewed data, and is in theory capable of keeping this memory of extremely large sets of data. This allows the model to learn to associate certain patches of an image with others, based on factors such as their positioning. After being run through the transformer encoder, the output is fed to a MLP which classifies the image.
 
 ## Results
-The current best model trained reached 63% accuracy on the test set, with 75% testing accuracy and 71% validation accuracy. This was achieved using the following parameters:
+The current best model trained reached 63% accuracy on the test set, with 75% training accuracy and 71% validation accuracy. This was achieved using the following parameters:
 - `learning_rate` = 0.001
 - `weight_decay` = 0.0015
 - `batch_size` = 256
