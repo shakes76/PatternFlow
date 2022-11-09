@@ -130,17 +130,3 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
-
-recognition/AKOA_Analysis
-
-recognition/45802492_SimpleDiffusion/outputs
-recognition/45802492_SimpleDiffusion/plots
-recognition/45802492_SimpleDiffusion/runs
-recognition/45802492_SimpleDiffusion/*.out
-recognition/45802492_SimpleDiffusion/brain
-
-.DS_Store
-*.pth
-
-recognition/45802492_SimpleDiffusion/inference
-recognition/45802492_SimpleDiffusion/mg_align_celeba.zip
