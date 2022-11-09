@@ -94,4 +94,4 @@ And the test result looks like this:
 
 ![test result](https://github.com/wotahman/PatternFlow/blob/topic-recognition/recognition/s4764115-MASK-RCNN/documentation/output.png)
 
-You can see from the image that the lesion is successfully picked out by the model.
+You can see from the image that the lesion is successfully picked out by the model, with a mAP > 0.9 (shown on the top left corner of the bounding box).
