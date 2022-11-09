@@ -196,7 +196,8 @@ After the model is loaded, it can be used to generate images from noise using th
 ### Images Generated From Stable Diffusion Model
 Here are six Brain MRIs generated from this stable diffusion model
 
-![Generated Brain Images](https://lh3.googleusercontent.com/pw/AL9nZEWOVw8GZ23W_Nn1bzlelZnFbdSNY1OtXRLf2EWPLUAf0EIg8Naw0rXTSUadluIzml-r91DJxK2BNYnNodYBzRSVtL9RLReduJayQ2dP9kGNSFuXGuFsG1LBycxD38to4LS8jNWgJiY5FmKTNbk08SpY=w398-h68-no?authuser=0=796x136)
+![Generated Brain Images](https://lh3.googleusercontent.com/pw/AL9nZEWOVw8GZ23W_Nn1bzlelZnFbdSNY1OtXRLf2EWPLUAf0EIg8Naw0rXTSUadluIzml-r91DJxK2BNYnNodYBzRSVtL9RLReduJayQ2dP9kGNSFuXGuFsG1LBycxD38to4LS8jNWgJiY5FmKTNbk08SpY=w398-h68-no?authuser=0=860x200)
+
 To generate your own images, just run `python predict.py`in the terminal. Remember a model has to be trained, saved, and then its path has to be referenced appropriately in `predict.py`.
 
 ## References
