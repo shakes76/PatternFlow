@@ -1,5 +1,0 @@
-lmdb
-numpy
-torch
-torchvision
-tqdm

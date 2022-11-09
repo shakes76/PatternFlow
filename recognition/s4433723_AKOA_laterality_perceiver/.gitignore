@@ -1,9 +1,0 @@
-__pycache__/
-datasets/
-datatsets/LEFT
-datasets/RIGHT
-yolo/ISIC_Train_Input
-yolo/ISIC_Train_Masks
-AKOA_Analysis/
-AKOA_Analysis.zip
-.idea

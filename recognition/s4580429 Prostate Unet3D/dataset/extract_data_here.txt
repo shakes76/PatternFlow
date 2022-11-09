@@ -1,3 +1,0 @@
-Extract dataset folders into this folder.
-
-This file can safely be deleted at any point.

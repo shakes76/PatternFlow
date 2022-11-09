@@ -1,5 +1,0 @@
-classes= 1
-train=data/ISIS/train.txt
-valid=data/ISIS/val.txt
-names=config/OASIS.names
-backup=backup/
