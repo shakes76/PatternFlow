@@ -1,0 +1,513 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" viewBox="0 0 486 150.42">
+  <defs>
+    <symbol id="b" overflow="visible">
+      <path d="M0-.73h-6.97v-.85h6.3V-4.8H0Zm0 0"/>
+    </symbol>
+    <symbol id="c" overflow="visible">
+      <path d="M.13-2.33c0 .4-.08.75-.2 1.03-.15.28-.34.48-.57.61-.24.13-.5.19-.77.19-.5 0-.88-.2-1.15-.58-.27-.38-.4-.9-.4-1.56v-1.34h-.07c-.44 0-.77.11-.99.34-.21.23-.32.53-.32.9 0 .33.08.61.25.85.15.23.39.37.7.44v.86a1.53 1.53 0 0 1-.9-.36 2.07 2.07 0 0 1-.57-.78c-.13-.32-.2-.65-.2-1 0-.7.18-1.2.56-1.55.37-.35.86-.53 1.47-.53H0v.73l-.9.06c.3.14.53.34.73.61.2.28.3.64.3 1.08Zm-.72-.12c0-.32-.08-.6-.24-.83-.16-.23-.38-.4-.64-.52a1.98 1.98 0 0 0-.84-.18h-.02v1.26c0 .5.09.84.25 1.05.17.2.38.3.64.3.25 0 .46-.1.61-.29.16-.18.24-.45.24-.8zm0 0"/>
+    </symbol>
+    <symbol id="d" overflow="visible">
+      <path d="M0-2.64c0 .46-.1.82-.33 1.08-.22.25-.61.37-1.19.37h-2.71v.86h-.7v-.86l-1.2-.1v-.73h1.2v-1.45h.7v1.45h2.71c.32 0 .53-.06.65-.18.1-.14.15-.36.15-.67v-.52H0Zm0 0"/>
+    </symbol>
+    <symbol id="e" overflow="visible">
+      <path d="M.13-2.9A2.29 2.29 0 0 1-1.1-.8c-.4.21-.85.32-1.37.32-.52 0-.97-.1-1.36-.3a2.31 2.31 0 0 1-1.23-2.14 2.26 2.26 0 0 1 2.31-2.33c.07 0 .15 0 .22.02h.25v3.93c.37-.02.69-.1.94-.26s.43-.35.56-.6c.12-.23.19-.48.19-.75 0-.34-.08-.63-.24-.86a1.3 1.3 0 0 0-.64-.51v-.83a2.2 2.2 0 0 1 1.6 2.2zm-4.47 0c0 .4.12.74.36 1.06.24.3.59.48 1.06.53v-3.11c-.45.02-.8.18-1.05.47a1.5 1.5 0 0 0-.37 1.04zm0 0"/>
+    </symbol>
+    <symbol id="f" overflow="visible">
+      <path d="M0-.69h-4.94v-.75l.9-.06a1.88 1.88 0 0 1-1.02-1.69c0-.6.18-1.06.54-1.4.36-.35.9-.52 1.63-.52H0v.83h-2.8c-1.03 0-1.54.43-1.54 1.28 0 .42.15.77.46 1.06.32.28.75.42 1.32.42H0Zm0 0"/>
+    </symbol>
+    <symbol id="g" overflow="visible">
+      <path d="M0-.69h-4.94v-.75l.96-.08c-.34-.14-.6-.37-.79-.68-.2-.32-.3-.7-.3-1.16h.88v.22c0 .3.06.56.16.81s.28.45.53.6c.24.14.58.21 1.02.21H0Zm0 0"/>
+    </symbol>
+    <symbol id="h" overflow="visible">
+      <path d="M2.19-1.22-.48-2.45v.3L-4.94-.2v-.9l3.85-1.63-3.85-1.74v-.86L2.2-2.09zm0 0"/>
+    </symbol>
+    <symbol id="i" overflow="visible">
+      <path d="M1.44-2.47A6.5 6.5 0 0 1-5.23-.74a6.5 6.5 0 0 1-1.6-.73 7.5 7.5 0 0 1-1.25-1v-.86H-8c.6.62 1.3 1.11 2.1 1.49.8.36 1.66.54 2.59.54a6 6 0 0 0 2.58-.56c.8-.37 1.5-.86 2.09-1.47h.08Zm0 0"/>
+    </symbol>
+    <symbol id="j" overflow="visible">
+      <path d="M0-.73h-6.97v-.85l5.58-3.7h-5.58v-.84H0v.84l-5.58 3.7H0Zm0 0"/>
+    </symbol>
+    <symbol id="k" overflow="visible">
+      <path d="M0-.19-2.47-1.9-4.94-.19v-.9l2.05-1.4-2.05-1.38v-.9l2.47 1.7L0-4.76v.9l-2.05 1.39L0-1.1Zm0 0"/>
+    </symbol>
+    <symbol id="l" overflow="visible">
+      <path d="M0-.73h-6.97v-2.15c0-1.22.31-2.12.94-2.7a3.62 3.62 0 0 1 2.56-.87 3.6 3.6 0 0 1 2.55.87C-.3-5 0-4.1 0-2.88Zm-.7-.85v-1.28c0-.68-.11-1.21-.33-1.6-.22-.42-.54-.7-.95-.87a3.79 3.79 0 0 0-1.49-.26c-.58 0-1.08.09-1.5.26a1.9 1.9 0 0 0-.95.86c-.23.4-.35.93-.35 1.61v1.28zm0 0"/>
+    </symbol>
+    <symbol id="m" overflow="visible">
+      <path d="M1.44-.38h-.08c-.6-.6-1.3-1.09-2.1-1.46a6 6 0 0 0-2.57-.57A6.93 6.93 0 0 0-8-.4h-.08v-.84a7.05 7.05 0 0 1 2.85-1.72c.59-.2 1.23-.28 1.92-.28a6.35 6.35 0 0 1 3.51 1c.48.3.9.63 1.24 1zm0 0"/>
+    </symbol>
+    <symbol id="n" overflow="visible">
+      <path d="M0-.73h-6.97V-3.2c0-.49.08-.9.24-1.22a1.63 1.63 0 0 1 1.53-.95c.46 0 .82.12 1.08.36.25.24.42.53.53.88a1.79 1.79 0 0 1 .9-1.22c.24-.13.5-.2.78-.2A1.8 1.8 0 0 1-.25-4.48c.17.34.25.75.25 1.22zm-3.92-.85v-1.54c0-.45-.1-.8-.31-1.04a1.1 1.1 0 0 0-.88-.36c-.35 0-.63.13-.84.36-.21.25-.32.6-.32 1.07v1.51zm3.22 0v-1.6c0-.47-.11-.84-.33-1.1-.22-.26-.52-.4-.92-.4s-.71.14-.94.41c-.24.28-.36.64-.36 1.11v1.58zm0 0"/>
+    </symbol>
+    <symbol id="o" overflow="visible">
+      <path d="M0-.73h-6.97v-.99l4.86-2.5-4.86-2.48v-.99H0v.83h-5.47L-1-4.53v.62l-4.47 2.33H0Zm0 0"/>
+    </symbol>
+    <symbol id="p" overflow="visible">
+      <path d="M.13-3.8c0 .7-.15 1.28-.46 1.78-.3.5-.72.88-1.26 1.15-.54.27-1.18.4-1.9.4-.7 0-1.33-.13-1.87-.4A3.06 3.06 0 0 1-7.09-3.8c0-.79.2-1.43.57-1.93.4-.5.92-.82 1.6-.97v.93c-.43.11-.77.33-1.03.66-.26.32-.4.76-.4 1.31 0 .5.12.94.35 1.32.23.36.56.65.98.85.43.2.94.3 1.54.3.59 0 1.1-.1 1.54-.3.43-.2.76-.49.99-.85.23-.38.34-.82.34-1.32 0-.55-.13-.99-.39-1.3-.26-.34-.6-.56-1.02-.67v-.93c.67.15 1.2.47 1.58.97.38.5.56 1.14.56 1.93zm0 0"/>
+    </symbol>
+    <symbol id="K" overflow="visible">
+      <path d="M.13-2.94c0 .47-.11.9-.32 1.27a2.4 2.4 0 0 1-.9.87c-.4.21-.86.32-1.38.32-.52 0-.97-.11-1.36-.33-.4-.22-.7-.52-.9-.9a2.43 2.43 0 0 1-.33-1.24A2.39 2.39 0 0 1-3.83-5.1c.39-.22.84-.33 1.36-.33.52 0 .98.12 1.38.34A2.4 2.4 0 0 1 .13-2.94zm-.72 0a1.55 1.55 0 0 0-.83-1.39 2.13 2.13 0 0 0-1.05-.23c-.4 0-.75.08-1.03.23-.28.15-.49.35-.63.6a1.57 1.57 0 0 0 .63 2.17c.28.15.63.23 1.03.23.42 0 .77-.08 1.05-.23A1.54 1.54 0 0 0-.6-2.94zm0 0"/>
+    </symbol>
+    <symbol id="L" overflow="visible">
+      <path d="M-1.55-2.64c0 .28-.03.54-.1.77l.46.5a1 1 0 0 0 .14-.27c.03-.11.07-.27.1-.47l.1-.87c.03-.67.19-1.15.44-1.43.27-.29.6-.43 1.02-.43.28 0 .55.07.81.23s.47.4.64.72c.17.32.25.74.25 1.25 0 .44-.06.83-.19 1.17-.11.34-.29.62-.53.81-.23.2-.52.29-.87.29-.19 0-.4-.05-.61-.15-.2-.1-.41-.28-.61-.56a1.66 1.66 0 0 1-.42.66h-.24l-.82-.85c-.34.4-.77.6-1.32.6a1.7 1.7 0 0 1-1.53-.9 2.21 2.21 0 0 1-.23-1.07c0-.28.04-.54.12-.77v-1.82h.63l.04.92c.28-.19.6-.28.97-.28.33 0 .62.07.9.23.26.16.46.38.62.67.16.28.23.64.23 1.05zm-.68 0c0-.35-.09-.63-.27-.84a1.02 1.02 0 0 0-.8-.32c-.34 0-.6.1-.78.32-.19.2-.28.49-.28.84 0 .37.1.65.28.86.18.21.44.31.78.31.35 0 .61-.1.8-.31.18-.2.27-.5.27-.86zM.64-1.2c.33 0 .58-.13.73-.4a2 2 0 0 0 .25-1.05c0-.41-.09-.75-.28-1a.83.83 0 0 0-.7-.38c-.22 0-.4.1-.56.27-.16.17-.24.48-.27.95-.03.37-.06.69-.1.96.16.27.31.45.48.53.16.08.31.12.45.12zm0 0"/>
+    </symbol>
+    <symbol id="M" overflow="visible">
+      <path d="M-6.03-1.19c0 .16-.05.3-.16.4a.56.56 0 0 1-.42.18A.5.5 0 0 1-7-.78a.56.56 0 0 1-.17-.4c0-.17.06-.3.17-.41.1-.12.23-.18.4-.18.16 0 .3.06.41.18.1.1.16.24.16.4zM0-.79h-4.94v-.82H0Zm0 0"/>
+    </symbol>
+    <symbol id="N" overflow="visible">
+      <path d="M.13-2.58c0 .6-.15 1.1-.46 1.49-.3.38-.7.6-1.22.67v-.86c.26-.05.49-.19.68-.4.18-.23.28-.53.28-.91 0-.35-.07-.6-.22-.77a.68.68 0 0 0-.53-.25c-.3 0-.5.11-.6.33-.1.21-.19.51-.26.9a8.1 8.1 0 0 1-.24.8 2 2 0 0 1-.42.67 1 1 0 0 1-.72.27c-.44 0-.79-.16-1.06-.48a1.92 1.92 0 0 1-.42-1.32c0-.52.13-.94.4-1.28.27-.34.64-.54 1.11-.6v.84a.8.8 0 0 0-.58.32c-.14.18-.21.43-.21.74 0 .3.06.52.18.69.13.15.3.23.5.23s.36-.1.47-.31c.1-.21.2-.5.28-.85.07-.3.15-.58.25-.86s.24-.5.43-.68c.18-.18.46-.27.82-.27.44 0 .8.16 1.1.5.29.35.43.81.43 1.4zm0 0"/>
+    </symbol>
+    <symbol id="q" overflow="visible">
+      <path d="M0-.6h-5.81v-.71h5.25v-2.7H0Zm0 0"/>
+    </symbol>
+    <symbol id="r" overflow="visible">
+      <path d="M.1-1.94c0 .35-.06.64-.18.86-.11.22-.26.39-.45.5-.2.1-.41.16-.64.16-.42 0-.74-.16-.97-.47a2.24 2.24 0 0 1-.34-1.31v-1.11h-.05c-.35 0-.63.1-.81.28a.98.98 0 0 0-.29.75c0 .27.08.5.2.7.14.2.34.32.6.36v.72c-.3-.03-.55-.13-.75-.3-.2-.17-.36-.4-.47-.65a2.04 2.04 0 0 1-.17-.83c0-.57.16-1 .47-1.3.3-.29.71-.44 1.22-.44H0v.63l-.73.03c.23.13.43.3.59.53.16.22.23.52.23.9zm-.58-.1c0-.28-.07-.5-.2-.7a1.65 1.65 0 0 0-1.25-.58v1.05c0 .41.07.7.21.88.14.17.31.25.52.25.22 0 .4-.08.53-.24.12-.16.19-.39.19-.67zm0 0"/>
+    </symbol>
+    <symbol id="s" overflow="visible">
+      <path d="M0-2.2c0 .37-.09.67-.27.89-.18.22-.52.33-1 .33h-2.26v.7h-.58v-.7l-1-.1v-.6h1V-2.9h.58v1.2h2.26c.27 0 .44-.05.54-.15.09-.1.14-.29.14-.55v-.44H0Zm0 0"/>
+    </symbol>
+    <symbol id="t" overflow="visible">
+      <path d="M.1-2.42c0 .4-.1.74-.27 1.04-.18.31-.43.55-.75.72-.32.18-.7.27-1.14.27-.43 0-.8-.08-1.13-.25a1.93 1.93 0 0 1-.75-.72 2.05 2.05 0 0 1-.28-1.08c0-.4.1-.74.28-1.03a1.87 1.87 0 0 1 1.83-.89h.2v3.27c.33-.01.6-.08.8-.2a1.3 1.3 0 0 0 .63-1.13c0-.3-.07-.53-.2-.72a1.1 1.1 0 0 0-.55-.42v-.69c.38.1.7.31.95.63.25.3.37.71.37 1.2zm-3.73 0c0 .33.11.63.32.89.2.25.49.4.87.44v-2.6a1.2 1.2 0 0 0-.87.4c-.21.22-.31.52-.31.87zm0 0"/>
+    </symbol>
+    <symbol id="u" overflow="visible">
+      <path d="M0-.58h-4.1v-.62l.72-.05a1.56 1.56 0 0 1-.84-1.4c0-.5.15-.89.45-1.18.3-.29.75-.44 1.36-.44H0v.7h-2.33c-.86 0-1.3.36-1.3 1.07 0 .36.14.65.4.9.26.22.63.33 1.1.33H0Zm0 0"/>
+    </symbol>
+    <symbol id="v" overflow="visible">
+      <path d="M0-1.97h-5.23v1.74h-.58v-4.18h.58v1.74H0Zm0 0"/>
+    </symbol>
+    <symbol id="w" overflow="visible">
+      <path d="M0-.58h-4.1v-.62l.77-.07a1.43 1.43 0 0 1-.64-.57 1.75 1.75 0 0 1-.25-.96h.74v.2c0 .23.04.46.12.66.09.2.23.36.44.49.2.12.49.18.84.18H0Zm0 0"/>
+    </symbol>
+    <symbol id="x" overflow="visible">
+      <path d="M.1-2.16A2 2 0 0 1-.28-.92a1.5 1.5 0 0 1-1.01.58v-.72c.21-.04.4-.16.56-.35.16-.18.24-.43.24-.75 0-.29-.07-.5-.2-.64a.58.58 0 0 0-.44-.22c-.25 0-.42.1-.5.29-.09.18-.16.43-.22.75-.04.21-.1.44-.2.67-.07.22-.19.4-.33.54a.85.85 0 0 1-.61.22c-.37 0-.66-.13-.9-.39a1.64 1.64 0 0 1-.34-1.1c0-.43.11-.79.33-1.07.22-.28.53-.44.94-.48v.68a.71.71 0 0 0-.49.29.89.89 0 0 0-.19.59c0 .25.06.44.16.58.1.13.25.2.42.2.17 0 .3-.08.4-.25.09-.18.17-.41.23-.72.05-.25.12-.49.2-.72.09-.22.2-.41.36-.56.16-.14.39-.22.69-.22.37 0 .67.13.9.42.25.28.36.67.36 1.14zm0 0"/>
+    </symbol>
+    <symbol id="y" overflow="visible">
+      <path d="M0-.8h-3.53v.63h-.58V-.8h-.72c-.4 0-.68-.1-.86-.3-.18-.19-.28-.48-.28-.87v-.4h.6v.3c0 .2.04.35.12.44.09.1.23.13.44.13h.7v-1h.58v1H0Zm0 0"/>
+    </symbol>
+    <symbol id="z" overflow="visible">
+      <path d="M.1-2.45A2 2 0 0 1-.93-.65c-.32.17-.7.26-1.14.26-.44 0-.82-.1-1.14-.28a2.03 2.03 0 0 1-1.02-1.8 1.95 1.95 0 0 1 1.02-1.76c.32-.2.7-.29 1.14-.29A2.2 2.2 0 0 1-.18-3.5c.17.31.26.66.26 1.05zm-.6 0c0-.23-.05-.45-.17-.66a1.4 1.4 0 0 0-.52-.5 1.87 1.87 0 0 0-.87-.19c-.35 0-.63.07-.86.2-.23.12-.4.28-.52.5-.12.19-.19.4-.19.63a1.41 1.41 0 0 0 .7 1.17c.24.13.52.2.87.2.34 0 .63-.07.87-.2.23-.13.4-.3.52-.5s.17-.41.17-.65Zm0 0"/>
+    </symbol>
+    <symbol id="A" overflow="visible">
+      <path d="M0-.58h-4.1v-.62l.58-.05a1.46 1.46 0 0 1-.7-1.28c0-.32.07-.6.2-.83.14-.24.34-.43.61-.56A1.5 1.5 0 0 1-4-4.5a1.67 1.67 0 0 1-.22-.83c0-.49.15-.88.45-1.17.3-.29.75-.44 1.36-.44H0v.69h-2.33c-.42 0-.75.09-.97.27a.85.85 0 0 0-.33.71c0 .34.14.61.4.83.26.22.63.33 1.1.33H0v.7h-2.33c-.42 0-.75.1-.97.27a.85.85 0 0 0-.33.72c0 .33.14.6.4.83.26.22.63.32 1.1.32H0Zm0 0"/>
+    </symbol>
+    <symbol id="B" overflow="visible">
+      <path d="M.1-3.16a2.8 2.8 0 0 1-.38 1.47c-.25.42-.6.74-1.05.97a3.6 3.6 0 0 1-1.58.33c-.59 0-1.11-.11-1.56-.33-.44-.23-.8-.55-1.05-.97-.25-.41-.39-.9-.39-1.47 0-.66.17-1.2.49-1.62.31-.42.76-.68 1.33-.8v.77c-.37.1-.66.27-.88.54-.22.28-.33.64-.33 1.11 0 .42.1.79.3 1.1.19.3.46.54.81.7.36.17.78.25 1.28.25s.93-.08 1.29-.25c.35-.16.63-.4.82-.7.2-.31.28-.68.28-1.1 0-.46-.1-.83-.3-1.1a1.6 1.6 0 0 0-.87-.55v-.77c.56.12 1 .38 1.31.8.32.42.47.96.47 1.62zm0 0"/>
+    </symbol>
+    <symbol id="C" overflow="visible">
+      <path d="m0-.25-5.81-2.14v-.73L0-5.28v.75l-1.5.54v2.46L0-.98zm-2.06-1.47v-2.06l-2.86 1.03Zm0 0"/>
+    </symbol>
+    <symbol id="D" overflow="visible">
+      <path d="M-5.03-1a.5.5 0 0 1-.13.36.5.5 0 0 1-.36.12.42.42 0 0 1-.3-.12.48.48 0 0 1-.15-.36c0-.13.05-.23.14-.33a.4.4 0 0 1 .31-.15.47.47 0 0 1 .48.48zM0-.64h-4.1v-.7H0Zm0 0"/>
+    </symbol>
+    <symbol id="I" overflow="visible">
+      <path d="M0-1.77-4.1-.2v-.72l3.43-1.25-3.44-1.24v-.71L0-2.56Zm0 0"/>
+    </symbol>
+    <symbol id="J" overflow="visible">
+      <path d="M-1.3-2.2c0 .24-.03.45-.1.64l.4.42c.05-.06.1-.14.13-.24l.07-.39c.03-.17.05-.41.08-.71.04-.56.17-.95.4-1.2.2-.23.48-.35.82-.35a1.37 1.37 0 0 1 1.22.8 3.19 3.19 0 0 1 .06 2.02c-.1.28-.24.5-.44.66C1.14-.39.9-.3.6-.3a1.22 1.22 0 0 1-.5-.14 1.46 1.46 0 0 1-.51-.45 1.8 1.8 0 0 1-.14.31 1.6 1.6 0 0 1-.2.24h-.2l-.7-.7c-.28.32-.64.48-1.09.48a1.37 1.37 0 0 1-1.27-.75 1.8 1.8 0 0 1-.2-.9c0-.23.04-.45.11-.63v-1.52h.52l.03.77a1.46 1.46 0 0 1 2.08.51c.12.24.18.53.18.88zm-.56 0a.97.97 0 0 0-.23-.7.83.83 0 0 0-.66-.26c-.28 0-.5.1-.66.27a.97.97 0 0 0-.23.69c0 .3.08.54.23.72.16.16.38.25.66.25s.5-.09.66-.25c.15-.18.23-.42.23-.72zM.54-.98c.27 0 .48-.12.62-.35.13-.24.2-.53.2-.87 0-.35-.08-.62-.24-.83a.7.7 0 0 0-.59-.31.62.62 0 0 0-.47.21c-.12.15-.2.42-.22.8-.02.3-.04.56-.07.78.11.23.23.39.37.46.15.07.27.1.4.1zm0 0"/>
+    </symbol>
+    <symbol id="E" overflow="visible">
+      <path d="M3.25.1a2.9 2.9 0 0 1-1.5-.38 2.6 2.6 0 0 1-1-1.05A3.32 3.32 0 0 1 .39-2.9c0-.59.12-1.11.36-1.56.24-.44.57-.8 1-1.05.43-.25.93-.39 1.5-.39s1.07.14 1.5.4c.44.24.77.6 1 1.04.24.45.36.97.36 1.56 0 .6-.12 1.12-.36 1.58-.23.45-.55.8-.97 1.03l1.47 1.43h-.9L4.16-.03c-.3.08-.6.12-.92.12Zm0-.62c.43 0 .8-.09 1.13-.28a2 2 0 0 0 .75-.82c.18-.36.28-.79.28-1.29s-.1-.92-.29-1.28A1.94 1.94 0 0 0 4.38-5a2.2 2.2 0 0 0-1.12-.28c-.43 0-.8.1-1.13.28a1.9 1.9 0 0 0-.75.81 2.8 2.8 0 0 0-.26 1.28c0 .5.09.93.26 1.29a1.95 1.95 0 0 0 1.88 1.1zm0 0"/>
+    </symbol>
+    <symbol id="F" overflow="visible">
+      <path d="M.6 0v-5.81h.71v2.64l2.42-2.64h.88L2.45-3.5 4.65 0H3.8L1.95-2.95l-.64.68V0Zm0 0"/>
+    </symbol>
+    <symbol id="G" overflow="visible">
+      <path d="M2.36 0 .19-5.81h.75L2.77-.73l1.85-5.08h.74L3.17 0Zm0 0"/>
+    </symbol>
+    <symbol id="O" overflow="visible">
+      <path d="M1.81.02.21-5.81h.76L2.22-.83 3.64-5.8h.77L5.8-.83 7.06-5.8h.75L6.2 0h-.8L4-4.8 2.6 0Zm0 0"/>
+    </symbol>
+    <symbol id="P" overflow="visible">
+      <path d="M2.42.1c-.4 0-.74-.1-1.04-.27a1.74 1.74 0 0 1-.72-.75 2.3 2.3 0 0 1-.27-1.14c0-.43.08-.8.25-1.13.18-.32.41-.57.72-.75.31-.19.67-.28 1.08-.28.4 0 .74.1 1.03.28a1.87 1.87 0 0 1 .89 1.83v.2H1.09c.01.33.08.6.2.8a1.3 1.3 0 0 0 1.13.63c.3 0 .53-.07.72-.2.2-.14.34-.32.42-.55h.69c-.1.38-.31.7-.63.95-.3.25-.71.37-1.2.37zm0-3.73c-.33 0-.63.11-.89.32-.25.2-.4.49-.44.87h2.6a1.21 1.21 0 0 0-.4-.87 1.22 1.22 0 0 0-.87-.31Zm0 0"/>
+    </symbol>
+    <symbol id="Q" overflow="visible">
+      <path d="M1-5.03a.5.5 0 0 1-.36-.13.5.5 0 0 1-.12-.36c0-.12.03-.22.12-.3.1-.1.21-.15.36-.15.13 0 .23.05.33.14.1.09.15.19.15.31a.47.47 0 0 1-.48.48ZM.64 0v-4.1h.7V0Zm0 0"/>
+    </symbol>
+    <symbol id="R" overflow="visible">
+      <path d="M2.2-1.3c-.24 0-.45-.03-.64-.1l-.42.4c.06.05.14.1.24.13l.39.07c.17.03.41.05.71.08.56.04.95.17 1.2.4.23.2.35.48.35.82a1.37 1.37 0 0 1-.8 1.22 3.19 3.19 0 0 1-2.02.06c-.28-.1-.5-.24-.66-.44C.39 1.14.3.9.3.6.31.44.35.27.44.1c.08-.17.23-.34.45-.51a1.64 1.64 0 0 1-.31-.14 1.68 1.68 0 0 1-.24-.2v-.2l.7-.7a1.38 1.38 0 0 1-.48-1.09 1.37 1.37 0 0 1 .75-1.27c.24-.13.54-.2.9-.2.23 0 .45.04.63.11h1.52v.52l-.77.03a1.46 1.46 0 0 1-.51 2.08c-.24.12-.53.18-.88.18zm0-.56c.3 0 .52-.08.7-.23a.83.83 0 0 0 .26-.66c0-.28-.1-.5-.27-.66a.97.97 0 0 0-.69-.23c-.3 0-.54.08-.72.23a.85.85 0 0 0-.25.66c0 .28.09.5.25.66.18.15.42.23.72.23zM.98.54c0 .27.12.48.35.62.24.13.53.2.87.2.35 0 .62-.08.83-.24a.7.7 0 0 0 .31-.59.62.62 0 0 0-.21-.47c-.15-.12-.42-.2-.8-.22-.3-.02-.56-.04-.78-.07-.23.11-.39.23-.46.37a.86.86 0 0 0-.1.4Zm0 0"/>
+    </symbol>
+    <symbol id="S" overflow="visible">
+      <path d="M.58 0v-5.97h.69v2.56a1.62 1.62 0 0 1 1.42-.81c.47 0 .86.15 1.14.45.29.3.44.75.44 1.36V0h-.7v-2.33c0-.86-.34-1.3-1.04-1.3-.35 0-.65.14-.9.4s-.36.63-.36 1.1V0Zm0 0"/>
+    </symbol>
+    <symbol id="T" overflow="visible">
+      <path d="M2.2 0c-.37 0-.67-.09-.89-.27-.22-.18-.33-.52-.33-1v-2.26h-.7v-.58h.7l.1-1h.6v1H2.9v.58H1.7v2.26c0 .27.05.44.15.54.1.09.29.14.55.14h.44V0Zm0 0"/>
+    </symbol>
+    <symbol id="U" overflow="visible">
+      <path d="M2.16.1A2 2 0 0 1 .92-.28a1.5 1.5 0 0 1-.58-1.01h.72c.04.21.16.4.35.56.18.16.43.24.75.24.29 0 .5-.07.64-.2a.58.58 0 0 0 .22-.44c0-.25-.1-.42-.29-.5a3.46 3.46 0 0 0-.75-.22c-.21-.04-.44-.1-.67-.2-.22-.07-.4-.19-.54-.33a.85.85 0 0 1-.22-.61c0-.37.13-.66.39-.9.27-.22.63-.34 1.1-.34.43 0 .79.11 1.07.33.28.22.44.53.48.94h-.68a.71.71 0 0 0-.29-.49.89.89 0 0 0-.59-.19.94.94 0 0 0-.58.16.5.5 0 0 0-.2.42c0 .17.08.3.25.4.18.09.41.17.72.23.25.05.49.12.72.2.22.09.41.2.56.36.14.16.22.39.22.69 0 .37-.13.67-.42.9A1.7 1.7 0 0 1 2.16.1Zm0 0"/>
+    </symbol>
+    <symbol id="V" overflow="visible">
+      <path d="M2.45.1A2 2 0 0 1 .65-.93 2.3 2.3 0 0 1 .4-2.06c0-.44.1-.82.28-1.14a2.03 2.03 0 0 1 1.8-1.02A1.95 1.95 0 0 1 4.24-3.2c.2.32.29.7.29 1.14A2.2 2.2 0 0 1 3.51-.17a2.1 2.1 0 0 1-1.05.26Zm0-.6c.23 0 .45-.05.66-.17.2-.12.37-.29.5-.52.12-.24.19-.53.19-.87 0-.35-.07-.63-.2-.86a1.3 1.3 0 0 0-.5-.52c-.19-.12-.4-.19-.63-.19a1.41 1.41 0 0 0-1.17.7c-.13.24-.2.52-.2.87 0 .34.07.63.2.87.13.23.3.4.5.52s.41.17.65.17Zm0 0"/>
+    </symbol>
+    <symbol id="W" overflow="visible">
+      <path d="M.58 1.83v-5.94h.62l.07.67c.13-.2.32-.37.56-.53.25-.16.56-.25.95-.25.4 0 .76.1 1.06.28.32.19.55.45.72.78.17.33.25.7.25 1.11 0 .42-.08.8-.25 1.11A1.88 1.88 0 0 1 2.76.1a1.9 1.9 0 0 1-.88-.2 1.45 1.45 0 0 1-.61-.58v2.52ZM2.7-.5a1.34 1.34 0 0 0 1.22-.73c.13-.24.19-.52.19-.83 0-.3-.06-.57-.19-.8A1.36 1.36 0 0 0 2.7-3.6a1.33 1.33 0 0 0-1.23.75c-.13.23-.19.5-.19.8 0 .31.06.59.19.83a1.32 1.32 0 0 0 1.23.73zm0 0"/>
+    </symbol>
+    <symbol id="X" overflow="visible">
+      <path d="M.58 0v-4.1h.62l.05.72a1.56 1.56 0 0 1 1.4-.84c.5 0 .89.15 1.18.45.29.3.44.75.44 1.36V0h-.7v-2.33c0-.86-.36-1.3-1.07-1.3-.36 0-.65.14-.9.4-.22.26-.33.63-.33 1.1V0Zm0 0"/>
+    </symbol>
+    <symbol id="Y" overflow="visible">
+      <path d="M1.94.1a1.8 1.8 0 0 1-.86-.18 1.23 1.23 0 0 1-.5-.45c-.1-.2-.16-.41-.16-.64 0-.42.16-.74.47-.97.32-.23.76-.34 1.31-.34h1.11v-.05c0-.35-.1-.63-.28-.81a1.01 1.01 0 0 0-.75-.29c-.27 0-.5.08-.7.2a.84.84 0 0 0-.36.6H.5c.03-.3.13-.55.3-.75.17-.2.4-.36.65-.47.26-.11.54-.17.83-.17.57 0 1 .16 1.3.47.29.3.44.71.44 1.22V0h-.63l-.03-.73c-.13.23-.3.43-.53.59a1.5 1.5 0 0 1-.9.23Zm.1-.58c.28 0 .5-.07.7-.2a1.65 1.65 0 0 0 .58-1.25H2.26c-.41 0-.7.07-.88.21a.64.64 0 0 0-.25.52c0 .22.08.4.24.53.16.12.39.19.67.19zm0 0"/>
+    </symbol>
+    <symbol id="Z" overflow="visible">
+      <path d="M.58 0v-5.97h.69V0Zm0 0"/>
+    </symbol>
+    <symbol id="aa" overflow="visible">
+      <path d="M1.02 1.83 2.05-.4H1.8L.17-4.11h.75L2.28-.9l1.44-3.2h.73l-2.7 5.94Zm0 0"/>
+    </symbol>
+    <symbol id="ab" overflow="visible">
+      <path d="M.58 0v-4.1h.62l.07.77c.12-.27.31-.48.57-.64.26-.16.58-.25.96-.25v.74h-.2c-.23 0-.46.04-.66.12-.2.09-.36.23-.49.44-.12.2-.18.49-.18.84V0Zm0 0"/>
+    </symbol>
+    <symbol id="ac" overflow="visible">
+      <path d="M2.44.1A2 2 0 0 1 .64-.96a2.29 2.29 0 0 1-.24-1.1c0-.42.08-.79.25-1.11.18-.32.41-.58.72-.77A2.08 2.08 0 0 1 3.34-4c.26.14.46.33.61.58v-2.55h.7V0h-.63l-.07-.69A1.74 1.74 0 0 1 2.43.1Zm.08-.6a1.33 1.33 0 0 0 1.22-.73c.12-.24.18-.52.18-.83 0-.3-.06-.57-.19-.8a1.24 1.24 0 0 0-.5-.55 1.38 1.38 0 0 0-1.45 0 1.4 1.4 0 0 0-.5.55c-.12.23-.17.5-.17.8 0 .31.05.59.17.83.13.23.29.41.5.54.22.13.46.19.74.19Zm0 0"/>
+    </symbol>
+    <symbol id="ad" overflow="visible">
+      <path d="M2.77.1c-.34 0-.64-.08-.9-.2a1.45 1.45 0 0 1-.6-.59L1.2 0H.58v-5.97h.69v2.53c.13-.2.32-.37.56-.53.25-.16.56-.25.95-.25.4 0 .76.1 1.06.28.32.19.55.45.72.78.17.33.25.7.25 1.11 0 .42-.08.8-.25 1.11A1.88 1.88 0 0 1 2.76.1ZM2.7-.5a1.34 1.34 0 0 0 1.22-.73c.13-.24.19-.52.19-.83 0-.3-.06-.57-.19-.8A1.36 1.36 0 0 0 2.7-3.6a1.33 1.33 0 0 0-1.23.75c-.13.23-.19.5-.19.8 0 .31.06.59.19.83a1.32 1.32 0 0 0 1.23.73zm0 0"/>
+    </symbol>
+    <symbol id="ae" overflow="visible">
+      <path d="M1.4 0 .2-4.1h.7l.87 3.2.96-3.2h.79l.96 3.2.86-3.2h.72L4.86 0h-.72L3.13-3.4 2.1 0Zm0 0"/>
+    </symbol>
+    <symbol id="H" overflow="visible">
+      <path d="M1.14.06a.65.65 0 0 1-.48-.18.69.69 0 0 1-.2-.49c0-.19.07-.34.2-.47a.65.65 0 0 1 .48-.19.64.64 0 0 1 .66.66c0 .19-.07.35-.2.48a.64.64 0 0 1-.46.2zm0 0"/>
+    </symbol>
+    <clipPath id="a">
+      <path d="M55.44 67.06h486v150.42h-486Zm0 0"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#a)" transform="translate(-55.44 -67.06)">
+    <path fill="#fff" fill-rule="evenodd" d="M9.2 302.6h597.58V-33.52H9.2Zm0 0"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M357.06 52.22h17.21"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m374.27 53.24 2.83-1.02-2.83-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M284.63 52.22h13.09"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m297.72 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M182.77 52.22h16.66"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m199.43 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M136.12 52.22h17.2"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m153.32 53.24 2.83-1.02-2.83-1.03zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#b" width="100%" height="100%" x="65.3" y="144.18"/>
+    <use xlink:href="#c" width="100%" height="100%" x="65.3" y="138.95"/>
+  </g>
+  <use xlink:href="#d" width="100%" height="100%" x="65.3" y="133.69" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#e" width="100%" height="100%" x="65.3" y="129.97"/>
+    <use xlink:href="#f" width="100%" height="100%" x="65.3" y="124.3"/>
+    <use xlink:href="#d" width="100%" height="100%" x="65.3" y="118.61"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="65.3" y="114.75"/>
+    <use xlink:href="#c" width="100%" height="100%" x="65.3" y="112.11"/>
+    <use xlink:href="#g" width="100%" height="100%" x="65.3" y="106.72"/>
+    <use xlink:href="#g" width="100%" height="100%" x="65.3" y="103.11"/>
+    <use xlink:href="#c" width="100%" height="100%" x="65.3" y="99.49"/>
+  </g>
+  <use xlink:href="#h" width="100%" height="100%" x="65.3" y="94.25" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#i" width="100%" height="100%" x="77.25" y="131.85"/>
+    <use xlink:href="#j" width="100%" height="100%" x="77.25" y="128.14"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="77.25" y="121.28"/>
+    <use xlink:href="#k" width="100%" height="100%" x="77.25" y="118.64"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="77.25" y="113.68"/>
+    <use xlink:href="#l" width="100%" height="100%" x="77.25" y="111.04"/>
+  </g>
+  <use xlink:href="#m" width="100%" height="100%" x="77.25" y="104.78" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#n" width="100%" height="100%" x="65.3" y="214.64"/>
+    <use xlink:href="#h" width="100%" height="100%" x="65.3" y="208.65"/>
+    <use xlink:href="#d" width="100%" height="100%" x="65.3" y="203.11"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#e" width="100%" height="100%" x="65.3" y="199.39"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="65.3" y="193.72"/>
+    <use xlink:href="#c" width="100%" height="100%" x="65.3" y="191.08"/>
+    <use xlink:href="#g" width="100%" height="100%" x="65.3" y="185.69"/>
+    <use xlink:href="#g" width="100%" height="100%" x="65.3" y="182.08"/>
+    <use xlink:href="#c" width="100%" height="100%" x="65.3" y="178.46"/>
+  </g>
+  <use xlink:href="#h" width="100%" height="100%" x="65.3" y="173.22" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#i" width="100%" height="100%" x="77.25" y="207.65"/>
+    <use xlink:href="#o" width="100%" height="100%" x="77.25" y="203.94"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="77.25" y="195.51"/>
+    <use xlink:href="#k" width="100%" height="100%" x="77.25" y="192.87"/>
+    <use xlink:href="#glyph1-6" width="100%" height="100%" x="77.25" y="187.91"/>
+    <use xlink:href="#p" width="100%" height="100%" x="77.25" y="185.27"/>
+  </g>
+  <use xlink:href="#m" width="100%" height="100%" x="77.25" y="178.39" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="#eee" fill-rule="evenodd" d="M28.86 65.66h8.97V56.7h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 56.7h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#ccc" fill-rule="evenodd" d="M28.86 56.7h8.97v-8.96h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 47.74h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#999" fill-rule="evenodd" d="M28.86 47.74h8.97v-8.96h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 38.78h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#68a64c" fill-rule="evenodd" d="M28.86 128.59h8.97v-8.96h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 119.64h8.97v8.95h-8.97zm0 0"/>
+  <path fill="#35751c" fill-rule="evenodd" d="M28.86 119.64h8.97v-8.97h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 110.67h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#264c11" fill-rule="evenodd" d="M28.86 110.67h8.97v-8.96h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 101.71h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#b5d7a6" fill-rule="evenodd" d="M28.86 146.51h8.97v-8.96h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 137.54h8.97v8.97h-8.97zm0 0"/>
+  <path fill="#91c27d" fill-rule="evenodd" d="M28.86 137.54h8.97v-8.95h-8.97zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M28.86 128.59h8.97v8.96h-8.97zm0 0"/>
+  <path fill="#fff" fill-rule="evenodd" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width="1.24" d="M161.34 77.44a4.28 4.28 0 0 1-4.29-4.3V31.31a4.28 4.28 0 0 1 4.29-4.3h17.15a4.3 4.3 0 0 1 4.28 4.3v41.85a4.29 4.29 0 0 1-4.28 4.28zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#q" width="100%" height="100%" x="223.36" y="131.53"/>
+    <use xlink:href="#r" width="100%" height="100%" x="223.36" y="127.17"/>
+  </g>
+  <use xlink:href="#s" width="100%" height="100%" x="223.36" y="122.79" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#t" width="100%" height="100%" x="223.36" y="119.69"/>
+    <use xlink:href="#u" width="100%" height="100%" x="223.36" y="114.96"/>
+    <use xlink:href="#s" width="100%" height="100%" x="223.36" y="110.22"/>
+  </g>
+  <use xlink:href="#v" width="100%" height="100%" x="233.32" y="142.4" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#w" width="100%" height="100%" x="233.32" y="138.22"/>
+    <use xlink:href="#r" width="100%" height="100%" x="233.32" y="135.21"/>
+    <use xlink:href="#u" width="100%" height="100%" x="233.32" y="130.72"/>
+    <use xlink:href="#x" width="100%" height="100%" x="233.32" y="125.97"/>
+    <use xlink:href="#y" width="100%" height="100%" x="233.32" y="121.82"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#z" width="100%" height="100%" x="233.32" y="119.21"/>
+    <use xlink:href="#w" width="100%" height="100%" x="233.32" y="114.3"/>
+    <use xlink:href="#A" width="100%" height="100%" x="233.32" y="111.29"/>
+    <use xlink:href="#t" width="100%" height="100%" x="233.32" y="103.86"/>
+    <use xlink:href="#w" width="100%" height="100%" x="233.32" y="99.14"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M110.34 52.22h13.09"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m123.43 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="#fff" fill-rule="evenodd" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width="1.24" d="M267.86 77.39a3.35 3.35 0 0 1-3.36-3.35V30.4a3.36 3.36 0 0 1 3.36-3.35h13.42c1.85 0 3.35 1.5 3.35 3.35v43.64c0 1.85-1.5 3.35-3.35 3.35zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#B" width="100%" height="100%" x="328.02" y="130.3"/>
+    <use xlink:href="#w" width="100%" height="100%" x="328.02" y="124.32"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#z" width="100%" height="100%" x="328.02" y="121.46"/>
+    <use xlink:href="#x" width="100%" height="100%" x="328.02" y="116.55"/>
+    <use xlink:href="#x" width="100%" height="100%" x="328.02" y="112.4"/>
+  </g>
+  <use xlink:href="#C" width="100%" height="100%" x="337.97" y="137.17" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#s" width="100%" height="100%" x="337.97" y="132"/>
+    <use xlink:href="#s" width="100%" height="100%" x="337.97" y="128.79"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#t" width="100%" height="100%" x="337.97" y="125.69"/>
+    <use xlink:href="#u" width="100%" height="100%" x="337.97" y="120.96"/>
+    <use xlink:href="#s" width="100%" height="100%" x="337.97" y="116.22"/>
+    <use xlink:href="#D" width="100%" height="100%" x="337.97" y="113"/>
+    <use xlink:href="#z" width="100%" height="100%" x="337.97" y="111.02"/>
+    <use xlink:href="#u" width="100%" height="100%" x="337.97" y="106.11"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M212.12 52.22h48.65"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m260.77 53.24 2.83-1.02-2.83-1.03zm0 0"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M236.91 66.4c0-.98.8-1.77 1.78-1.77h7.1a1.79 1.79 0 0 1 1.77 1.77v9.22c0 .98-.8 1.77-1.78 1.77h-7.1c-.97 0-1.77-.79-1.77-1.77zm0 0"/>
+  <use xlink:href="#E" width="100%" height="100%" x="294.4" y="141.06" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M212.12 52.22h12.4v18.8h8.67"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m233.19 72.04 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M212.12 124.11h56.54v-14.37"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m269.69 109.74-1.03-2.82-1.03 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M212.12 124.11h68.35v-14.37"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m281.49 109.74-1.02-2.82-1.03 2.83zm0 0"/>
+  <path fill="#eee" fill-rule="evenodd" d="M127.16 65.66h8.96V56.7h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M127.16 56.7h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#ccc" fill-rule="evenodd" d="M127.16 56.7h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M127.16 47.74h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#999" fill-rule="evenodd" d="M127.16 47.74h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M127.16 38.78h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#fff" fill-rule="evenodd" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width="1.24" d="M93.56 77.39a3.36 3.36 0 0 1-3.36-3.35V30.4a3.36 3.36 0 0 1 3.36-3.35h13.43c1.85 0 3.35 1.5 3.35 3.35v43.64c0 1.85-1.5 3.35-3.35 3.35zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#B" width="100%" height="100%" x="153.72" y="130.3"/>
+    <use xlink:href="#w" width="100%" height="100%" x="153.72" y="124.32"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#z" width="100%" height="100%" x="153.72" y="121.46"/>
+    <use xlink:href="#x" width="100%" height="100%" x="153.72" y="116.55"/>
+    <use xlink:href="#x" width="100%" height="100%" x="153.72" y="112.4"/>
+  </g>
+  <use xlink:href="#C" width="100%" height="100%" x="163.68" y="137.17" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#s" width="100%" height="100%" x="163.68" y="132"/>
+    <use xlink:href="#s" width="100%" height="100%" x="163.68" y="128.79"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#t" width="100%" height="100%" x="163.68" y="125.69"/>
+    <use xlink:href="#u" width="100%" height="100%" x="163.68" y="120.96"/>
+    <use xlink:href="#s" width="100%" height="100%" x="163.68" y="116.22"/>
+    <use xlink:href="#D" width="100%" height="100%" x="163.68" y="113"/>
+    <use xlink:href="#z" width="100%" height="100%" x="163.68" y="111.02"/>
+    <use xlink:href="#u" width="100%" height="100%" x="163.68" y="106.11"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M73.26 71.01h12.98"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m86.24 72.04 2.82-1.03-2.82-1.03zm0 0"/>
+  <path fill="#eee" fill-rule="evenodd" d="M203.16 65.66h8.96V56.7h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 56.7h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#ccc" fill-rule="evenodd" d="M203.16 56.7h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 47.74h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#999" fill-rule="evenodd" d="M203.16 47.74h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 38.78h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#68a64c" fill-rule="evenodd" d="M203.16 128.59h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 119.64h8.96v8.95h-8.96zm0 0"/>
+  <path fill="#35751c" fill-rule="evenodd" d="M203.16 119.64h8.96v-8.97h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 110.67h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#264c11" fill-rule="evenodd" d="M203.16 110.67h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 101.71h8.96v8.96h-8.96zm0 0"/>
+  <path fill="#b5d7a6" fill-rule="evenodd" d="M203.16 146.51h8.96v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 137.54h8.96v8.97h-8.96zm0 0"/>
+  <path fill="#91c27d" fill-rule="evenodd" d="M203.16 137.54h8.96v-8.95h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M203.16 128.59h8.96v8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M94.37 93.24v-11.8"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m95.4 81.44-1.03-2.82-1.02 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M106.17 93.24v-11.8"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m107.2 81.44-1.03-2.82-1.02 2.83zm0 0"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M263.35 95.01c0-.98.79-1.77 1.77-1.77h7.1a1.78 1.78 0 0 1 1.77 1.77v9.22c0 .98-.8 1.77-1.77 1.77h-7.1c-.98 0-1.77-.79-1.77-1.77zm0 0"/>
+  <use xlink:href="#F" width="100%" height="100%" x="321.69" y="169.67" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M275.14 95.01c0-.98.8-1.77 1.78-1.77h7.1a1.78 1.78 0 0 1 1.77 1.77v9.22c0 .98-.8 1.77-1.77 1.77h-7.1c-.98 0-1.78-.79-1.78-1.77zm0 0"/>
+  <use xlink:href="#G" width="100%" height="100%" x="333.14" y="169.67" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M37.83 52.22h48.65"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m86.48 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M62.62 66.4c0-.98.8-1.77 1.77-1.77h7.1a1.77 1.77 0 0 1 1.77 1.77v9.22c0 .98-.79 1.77-1.77 1.77h-7.1c-.97 0-1.77-.79-1.77-1.77zm0 0"/>
+  <use xlink:href="#E" width="100%" height="100%" x="120.11" y="141.06" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M37.83 52.22h12.4v18.8h8.66"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m58.89 72.04 2.83-1.02-2.83-1.03zm0 0"/>
+  <path fill="#eee" fill-rule="evenodd" d="M301.46 65.66h8.95V56.7h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M301.46 56.7h8.95v8.96h-8.96zm0 0"/>
+  <path fill="#ccc" fill-rule="evenodd" d="M301.46 56.7h8.95v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M301.46 47.74h8.95v8.96h-8.96zm0 0"/>
+  <path fill="#999" fill-rule="evenodd" d="M301.46 47.74h8.95v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M301.46 38.78h8.95v8.96h-8.96zm0 0"/>
+  <path fill="#fff" fill-rule="evenodd" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width="1.24" d="M335.63 77.44a4.28 4.28 0 0 1-4.28-4.3V31.31a4.3 4.3 0 0 1 4.28-4.3h17.15a4.29 4.29 0 0 1 4.29 4.3v41.85a4.29 4.29 0 0 1-4.3 4.28zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#q" width="100%" height="100%" x="397.65" y="131.53"/>
+    <use xlink:href="#r" width="100%" height="100%" x="397.65" y="127.17"/>
+  </g>
+  <use xlink:href="#s" width="100%" height="100%" x="397.65" y="122.79" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#t" width="100%" height="100%" x="397.65" y="119.69"/>
+    <use xlink:href="#u" width="100%" height="100%" x="397.65" y="114.96"/>
+    <use xlink:href="#s" width="100%" height="100%" x="397.65" y="110.22"/>
+  </g>
+  <use xlink:href="#v" width="100%" height="100%" x="407.61" y="142.4" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#w" width="100%" height="100%" x="407.61" y="138.22"/>
+    <use xlink:href="#r" width="100%" height="100%" x="407.61" y="135.21"/>
+    <use xlink:href="#u" width="100%" height="100%" x="407.61" y="130.72"/>
+    <use xlink:href="#x" width="100%" height="100%" x="407.61" y="125.97"/>
+    <use xlink:href="#y" width="100%" height="100%" x="407.61" y="121.82"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#z" width="100%" height="100%" x="407.61" y="119.21"/>
+    <use xlink:href="#w" width="100%" height="100%" x="407.61" y="114.3"/>
+    <use xlink:href="#A" width="100%" height="100%" x="407.61" y="111.29"/>
+    <use xlink:href="#t" width="100%" height="100%" x="407.61" y="103.86"/>
+    <use xlink:href="#w" width="100%" height="100%" x="407.61" y="99.14"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M247.56 71.01h12.97"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m260.53 72.04 2.82-1.03-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M268.66 93.24v-11.8"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m269.7 81.44-1.03-2.82-1.03 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M37.83 124.11h56.54v-14.37"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m95.4 109.74-1.03-2.82-1.03 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M37.83 124.11h68.34v-14.37"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m107.2 109.74-1.03-2.82-1.03 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M280.46 93.24v-11.8"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m281.49 81.44-1.02-2.82-1.03 2.83zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M310.41 52.22h17.2"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m327.61 53.24 2.83-1.02-2.83-1.03zm0 0"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#H" width="100%" height="100%" x="435.41" y="120.06"/>
+    <use xlink:href="#H" width="100%" height="100%" x="437.68" y="120.06"/>
+    <use xlink:href="#H" width="100%" height="100%" x="439.94" y="120.06"/>
+  </g>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M89.06 95.01c0-.98.79-1.77 1.77-1.77h7.1a1.78 1.78 0 0 1 1.77 1.77v9.22c0 .98-.8 1.77-1.78 1.77h-7.1c-.97 0-1.77-.79-1.77-1.77zm0 0"/>
+  <use xlink:href="#F" width="100%" height="100%" x="147.4" y="169.67" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M100.85 95.01c0-.98.8-1.77 1.77-1.77h7.1a1.79 1.79 0 0 1 1.78 1.77v9.22c0 .98-.8 1.77-1.78 1.77h-7.1c-.97 0-1.77-.79-1.77-1.77zm0 0"/>
+  <use xlink:href="#G" width="100%" height="100%" x="158.84" y="169.67" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <path fill="none" stroke="#0051d4" stroke-dasharray="2.48 1.86" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M100.27 26.26h.08V15.43h97.76m-.09.01h76.55v11.62"/>
+  <path fill="none" stroke="#0051d4" stroke-dasharray="2.48 1.86" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M169.91 27.01h-.14v-7.12h136.17"/>
+  <path fill="none" stroke="#0051d4" stroke-dasharray="2.48 1.86" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M301.72 19.89h42.45v7.12h.03"/>
+  <path fill="#eee" fill-rule="evenodd" d="M409.66 65.66h8.97V56.7h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M409.66 56.7h8.97v8.96h-8.96zm0 0"/>
+  <path fill="#ccc" fill-rule="evenodd" d="M409.66 56.7h8.97v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M409.66 47.74h8.97v8.96h-8.96zm0 0"/>
+  <path fill="#999" fill-rule="evenodd" d="M409.66 47.74h8.97v-8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#11214a" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M409.66 38.78h8.97v8.96h-8.96zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M388.73 52.22h17.2"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m405.93 53.24 2.83-1.02-2.83-1.03zm0 0"/>
+  <path fill="none" stroke="#0051d4" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M441.64 69.04a2.08 2.08 0 0 1-2.08-2.08V37.48c0-.55.22-1.08.61-1.46.39-.4.92-.61 1.47-.61h8.3c1.14 0 2.07.93 2.07 2.07v29.48c0 1.14-.93 2.07-2.07 2.07zm0 0"/>
+  <use xlink:href="#C" width="100%" height="100%" x="504.22" y="134.56" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <use xlink:href="#I" width="100%" height="100%" x="504.22" y="129.46" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#t" width="100%" height="100%" x="504.22" y="125.34"/>
+    <use xlink:href="#w" width="100%" height="100%" x="504.22" y="120.62"/>
+    <use xlink:href="#r" width="100%" height="100%" x="504.22" y="117.6"/>
+    <use xlink:href="#J" width="100%" height="100%" x="504.22" y="113.11"/>
+  </g>
+  <use xlink:href="#t" width="100%" height="100%" x="504.22" y="108.69" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <use xlink:href="#b" width="100%" height="100%" x="536.93" y="132.99" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <use xlink:href="#K" width="100%" height="100%" x="536.93" y="127.96" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#L" width="100%" height="100%" x="536.93" y="122.26"/>
+    <use xlink:href="#M" width="100%" height="100%" x="536.93" y="116.77"/>
+    <use xlink:href="#d" width="100%" height="100%" x="536.93" y="114.39"/>
+    <use xlink:href="#N" width="100%" height="100%" x="536.93" y="110.53"/>
+  </g>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M418.63 52.22h17.2"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m435.83 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <path fill="none" stroke="#113591" stroke-linejoin="round" stroke-miterlimit="8" stroke-width=".62" d="M452.01 52.22h17.2"/>
+  <path fill="#113591" fill-rule="evenodd" stroke="#113591" stroke-miterlimit="10" stroke-width=".62" d="m469.22 53.24 2.82-1.02-2.82-1.03zm0 0"/>
+  <use xlink:href="#O" width="100%" height="100%" x="197.16" y="76.35" fill="#0051d4" transform="translate(-55.44 -67.06)"/>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#P" width="100%" height="100%" x="204.77" y="76.35"/>
+    <use xlink:href="#Q" width="100%" height="100%" x="209.49" y="76.35"/>
+    <use xlink:href="#R" width="100%" height="100%" x="211.48" y="76.35"/>
+    <use xlink:href="#S" width="100%" height="100%" x="216.06" y="76.35"/>
+    <use xlink:href="#T" width="100%" height="100%" x="220.81" y="76.35"/>
+    <use xlink:href="#U" width="100%" height="100%" x="224.02" y="76.35"/>
+    <use xlink:href="#glyph3-11" width="100%" height="100%" x="228.17" y="76.35"/>
+    <use xlink:href="#V" width="100%" height="100%" x="230.37" y="76.35"/>
+    <use xlink:href="#W" width="100%" height="100%" x="235.28" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#T" width="100%" height="100%" x="240.34" y="76.35"/>
+    <use xlink:href="#Q" width="100%" height="100%" x="243.55" y="76.35"/>
+    <use xlink:href="#V" width="100%" height="100%" x="245.53" y="76.35"/>
+    <use xlink:href="#X" width="100%" height="100%" x="250.45" y="76.35"/>
+    <use xlink:href="#Y" width="100%" height="100%" x="255.19" y="76.35"/>
+    <use xlink:href="#Z" width="100%" height="100%" x="259.68" y="76.35"/>
+    <use xlink:href="#Z" width="100%" height="100%" x="261.53" y="76.35"/>
+    <use xlink:href="#aa" width="100%" height="100%" x="263.37" y="76.35"/>
+    <use xlink:href="#glyph3-11" width="100%" height="100%" x="267.98" y="76.35"/>
+    <use xlink:href="#U" width="100%" height="100%" x="270.18" y="76.35"/>
+    <use xlink:href="#S" width="100%" height="100%" x="274.33" y="76.35"/>
+    <use xlink:href="#Y" width="100%" height="100%" x="279.08" y="76.35"/>
+    <use xlink:href="#ab" width="100%" height="100%" x="283.57" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#P" width="100%" height="100%" x="286.43" y="76.35"/>
+    <use xlink:href="#ac" width="100%" height="100%" x="291.16" y="76.35"/>
+    <use xlink:href="#glyph3-11" width="100%" height="100%" x="296.37" y="76.35"/>
+    <use xlink:href="#ad" width="100%" height="100%" x="298.57" y="76.35"/>
+    <use xlink:href="#P" width="100%" height="100%" x="303.78" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#T" width="100%" height="100%" x="308.36" y="76.35"/>
+    <use xlink:href="#ae" width="100%" height="100%" x="311.57" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#P" width="100%" height="100%" x="317.68" y="76.35"/>
+    <use xlink:href="#P" width="100%" height="100%" x="322.4" y="76.35"/>
+    <use xlink:href="#X" width="100%" height="100%" x="327.13" y="76.35"/>
+    <use xlink:href="#glyph3-11" width="100%" height="100%" x="331.87" y="76.35"/>
+    <use xlink:href="#ab" width="100%" height="100%" x="334.07" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#P" width="100%" height="100%" x="336.94" y="76.35"/>
+    <use xlink:href="#W" width="100%" height="100%" x="341.66" y="76.35"/>
+    <use xlink:href="#P" width="100%" height="100%" x="346.87" y="76.35"/>
+    <use xlink:href="#Y" width="100%" height="100%" x="351.59" y="76.35"/>
+  </g>
+  <g fill="#0051d4" transform="translate(-55.44 -67.06)">
+    <use xlink:href="#T" width="100%" height="100%" x="355.98" y="76.35"/>
+    <use xlink:href="#U" width="100%" height="100%" x="359.19" y="76.35"/>
+  </g>
+</svg>
