@@ -230,6 +230,7 @@ class AE(tf.keras.Model):
     The encoder reduces the input images by 2^n (see hyperparameter)
     The decoder reverses this effect after vq has been applied
     """
+
     def __init__(self, **kwargs):
         super(AE, self).__init__(**kwargs)
 
@@ -287,6 +288,7 @@ class AE(tf.keras.Model):
             padding = 'same',
             name = "to_image",
             activation = 'sigmoid')(x)
+
         self.decoder = tf.keras.Model(input, x, name="decoder")
 
     def train_step(self, train_data):
