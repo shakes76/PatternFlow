@@ -7,13 +7,13 @@ Diffusion Models are a generative model. They can be used to generate new data, 
 There are two main processes in diffusion, the ***Forward Diffusion Process*** and the ***Reverse Diffusion Process***. The math for both processes is very complex and long so I recommend either checking out the *Denoising Diffusion Probabilistic Models* [*Denoising Diffusion Probabilistic Models*](https://arxiv.org/pdf/2006.11239.pdf) paper or this [*Repository*](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/) as both give an indepth explaination on the derivation of the maths. But to summarize, 
 - **Forward Diffusion Process** is when noise is gradually added to the image until you get pure noise. And,
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/0_0_0_backward_smaller.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/0_0_0_backward_smaller.png?raw=true>
 </p>
 
 - **Reverse Diffusion Process** is the learned process where a neural network is trained to denoise the image from pure noise to an actual image.
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/455_0_0_backward_smaller.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/455_0_0_backward_smaller.png?raw=true>
 </p>
 
 Stable diffusion models are diffusion models but have a cross-attention layer in the model architecture. By introducting this layer, the generator can be turned into a more flexible generator (Rombach, 2022). However, the model created in this report differs from stable diffusion in that we are only reproducing images of brains so we do not need to be flexible in the images that we are generating. Thus, we can get rid of some complexity in our architecture.
@@ -134,7 +134,7 @@ The model contraction path of the UNET is four levels of a block, skip connectio
 The training file contains the functions for the noising (forward process), training, ploting the loss, and saving. For training, the maximum time step was set to 600 (```NOISE_STEP = 600```), this is much smaller than the suggested 1000 in the original paper. 600 was chosen because, as seen in the image below, after about 600~700 timesteps the original images is already complete destroyed. Thus, by making the timestep 1000 it would be harder to training the model to denoise the image. 
 
 <p align = "center">
-<img width = "745" height = "215" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/test_2.png?raw=true>
+<img width = "745" height = "215" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/test_2.png?raw=true>
 </p>
 
 For training the loss function used was ```l1_loss``` and the optimizer used was ```optim.Adam```. 
@@ -151,7 +151,7 @@ vloss.append(loss.item())
 The loss is appended to a list ```vloss```, this list is then plotted every 10 iterations within every epoch. The model was trained for approximately 205 epochs. The resulting plot of the loss is as below.
 
 <p align = "center">
-<img width = "640" height = "480" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/loss_plot.png?raw=true>
+<img width = "640" height = "480" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/loss_plot.png?raw=true>
 </p>
 (note: the x-axis is all the iterations performed. Epoch = iteration/number of iterations in a batch, i.e. 205 = 36285/177)
 
@@ -215,27 +215,27 @@ The denoising process is then applied to a random distribution of noise and an i
 Here are some of the results of the trained model.
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/1_0_0_backward.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/1_0_0_backward.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/nice.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/nice.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/2_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/2_0_0_backward_colour.png?raw=true>
 </p>
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/3_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/3_0_0_backward_colour.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/12_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/12_0_0_backward_colour.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/21_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/21_0_0_backward_colour.png?raw=true>
 </p>
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/28_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/28_0_0_backward_colour.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/15_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/15_0_0_backward_colour.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/41_0_0_backward_colour.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/41_0_0_backward_colour.png?raw=true>
 </p>
 
 The model is getting the shape of the brain to be correct in most cases, but the colour is sometimes off (e.g. a pink brain). A "bandaid" solution is to open the image after saving the colour version and then using the Pillow package open the image in grayscale ```.convert("L")``` and save the image again. 
@@ -247,19 +247,19 @@ plt.savefig(f"{epoch}_{i}_{disc}_gray")
 The result in doing so is as below.
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/3_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/3_0_0_backward_gray.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/12_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/12_0_0_backward_gray.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/21_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/21_0_0_backward_gray.png?raw=true>
 </p>
 
 <p align = "center">
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/28_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/28_0_0_backward_gray.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/15_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/15_0_0_backward_gray.png?raw=true>
 &nbsp;
-<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/41_0_0_backward_gray.png?raw=true>
+<img width = "256" height = "256" src =https://github.com/s4583222/PatternFlow/blob/topic-recognition/recognition/s4583222_Solution/Git%20images/41_0_0_backward_gray.png?raw=true>
 </p>
 
 As observed from the images above, the images generated by the model are clearly brains, and although the results aren't identical to the Oasis data it can be concluded that they are pretty close/reasonably clear.  
