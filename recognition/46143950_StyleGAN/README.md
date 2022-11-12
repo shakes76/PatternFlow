@@ -128,7 +128,7 @@ Both discriminator and generator converged well in the low resolution blocks, bu
 ## How to play with `predict.py`?
 Once trained, `predict.py` can be used to load trained models and generate above images by running **`python predict.py`**. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly configured before running the command. 
 
-When then program finishes running, the generated images can be found in the specified folder.
+When the program finishes running, the generated images can be found in the specified folder.
 
 > **Note** make sure the same parameters are used as how model is trained, especially the target resolution has to match. Keep all `.py` files under the same folder, as other files are dependencies of `predict.py`.
 
