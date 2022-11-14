@@ -16,10 +16,10 @@ This project develops a solution to the ISIC challenge using UNet. The objective
 Following diagram exactly depicts the architecture
 ![Improved UNet](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/improvedunet.png)
 
-The neural network starts with giving an input layer of 256*256*3. The actual size of the images are 128*128. The images are then resized, normalized and given as array to the network. The neural network starts with contraction at start. It starts with 16 layers and increases in each step. Each step consists of two equal features. After it reaches to 256, Expansion starts. In this project Transposecv has been used for the expansion.
+The neural network starts with giving an input layer of 256*256*3. The actual size of the images are 128*128. The images are then resized, normalized and given as array to the network. The neural network starts with contraction at start. It starts with 16 layers and increases in each step. Each step consists of two equal features. After it reaches to 256, Expansion starts. In this project Transposecv has been used for the expansion. In this code I have used dropout(0.1) as it was giving me a good result but it can be changed.
 
 <h2>Running the program: </h2>
-Please download the modules.ipynb file to run the program or download al =l the files as they are related with each other
+Please download the modules.ipynb file to run the program or alternatively download modules.py, dataset.py, train.py and predict.py files and run train and predict files. The modules.ipynb has all the result data with the merged code and all other files have been created according to their functionality.
 
 <h2> File structure </h2>
 * <b> dataset.py </b>:- This file loads the dataset and give the x and y array values with the pre-processing of images.
@@ -41,6 +41,8 @@ Please download the modules.ipynb file to run the program or download al =l the 
  
  After visualizing the truth images with predicted images it is quite evident that the improved UNet has performed realy well on the test images.
  ![Truth_vs_prediction](https://github.com/OjasChaudhari23/PatternFlow/blob/topic-recognition/recognition/s4694189_UNET/truth_vs_prediction.jpg)
+ 
+ This project uses tensorflow version 2.1 version and cv2 for image processing operations. Also Improved Unet has given better image segmentation result that Unet with greater than 80% dice similarity on the test set.
  
  
 
