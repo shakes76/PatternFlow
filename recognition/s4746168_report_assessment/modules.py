@@ -57,26 +57,32 @@ def build_unet_model():
 
     # encoder: contracting path - downsample
     # 1 - downsample
-    f1, p1 = down_sample_block(inputs, 64)
+    f1, p1 = down_sample_block(inputs, 16)
     # 2 - downsample
-    f2, p2 = down_sample_block(p1, 128)
+    f2, p2 = down_sample_block(p1, 32)
     # 3 - downsample
-    f3, p3 = down_sample_block(p2, 256)
+    f3, p3 = down_sample_block(p2, 64)
     # 4 - downsample
-    f4, p4 = down_sample_block(p3, 512)
+    f4, p4 = down_sample_block(p3, 128)
 
     # 5 - bottleneck
-    bottleneck = double_conv_block(p4, 1024)
+    bottleneck = double_conv_block(p4, 256)
 
     # decoder: expanding path - upsample
     # 6 - upsample
-    u6 = up_sample_block(bottleneck, f4, 512)
+    u6 = up_sample_block(bottleneck, f4, 128)
     # 7 - upsample
-    u7 = up_sample_block(u6, f3, 256)
+    u7 = up_sample_block(u6, f3, 64)
     # 8 - upsample
-    u8 = up_sample_block(u7, f2, 128)
+    u8 = up_sample_block(u7, f2, 32)
     # 9 - upsample
-    u9 = up_sample_block(u8, f1, 64)
+    u9 = up_sample_block(u8, f1, 16)
+    
+    # Adding some skip connections for unet
+    skip_con1 = layers.Conv2D(filters=32, 1, padding="same", activation="relu")(u8)
+    skip_con1 = layers.BatchNormalization()(skip_con1)
+    skip_con1 = layers.UpSampling2D((2, 2))(skip_con1)
+    seg2 = layers.Conv2D(filters=32, 1, padding="same", activation="relu")(u9)
 
     # outputs
     outputs = layers.Conv2D(1, 1, padding="same", activation="softmax")(u9)
