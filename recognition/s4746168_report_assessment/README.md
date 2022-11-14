@@ -75,9 +75,9 @@ the results that model brings.</sub>
 <sub> I have plotted two graphs. Both of these graphs are **plotted** 
 **after** the training of model is completed. One graph is for the 
 **dice coefficient similaritiy** : 
-[Dice-Coefficient](images/dice-coef.png) 
+![Dice-Coefficient](images/dice-coef.png) 
 and the other one is for the **loss** : 
-[Loss](images/loss.png). 
+![Loss](images/loss.png). 
 
 **IMPORTANT NOTE : ** 
 **_These graphs are plotted for 3 epochs only and the dataset for these_** 
