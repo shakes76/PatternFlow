@@ -1,0 +1,16 @@
+name: diff
+channels:
+  - pytorch
+  - anaconda
+dependencies:
+  - python
+  - pytorch
+  - torchvision
+  - cudatoolkit=11.3
+  - matplotlib
+  - pip
+  - pip:
+    - tensorboard
+    - einops
+    - datasets
+
