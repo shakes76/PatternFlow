@@ -128,5 +128,8 @@ dmypy.json
 # vscode config file
 .vscode/
 
+# pycharm project settings
+.idea/
+
 # no tracking mypy config file
 mypy.ini
