@@ -1,8 +1,0 @@
-channels:
-  - conda-forge
-  - defaults
-envs_dirs:
-  - /home/Student/envs
-channel_priority: strict
-auto_activate_base: false
-allow_conda_downgrades: true

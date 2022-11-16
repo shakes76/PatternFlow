@@ -1,1 +1,0 @@
-Place the FOLDER containing the ground truth/mask images, e.g. 'ISIC2018_Task1_Training_GroundTruth_x2' within this directory.
