@@ -1,2 +1,7 @@
 # Ignore the dataset files - too big for github
 ISIC_data/
+TODO.txt
+*.pt
+misc_tests/
+pred_out/
+test_out/
