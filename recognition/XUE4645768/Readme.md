@@ -1,101 +1,105 @@
-# Segment the ISICs data set with the U-net
+# Graph Convolutional Networks
+*COMP3710 Report
 
-## Project Overview
-This project aim to solve the segmentation of skin lesian (ISIC2018 data set) using the U-net, with all labels having a minimum Dice similarity coefficient of 0.7 on the test set[Task 3].
+*Student Name: Xue Zhang
 
-## ISIC2018
-![ISIC example](imgs/example.jpg)
+*Student ID: 46457684
 
-Skin Lesion Analysis towards Melanoma Detection
-
-Task found in https://challenge2018.isic-archive.com/
+*TensorFlow implementation of Graph Convolutional Networks based on Facebook Large Page-Page Network dataset for semi-supervised multi-class node classification.
 
 
-## U-net
-![UNet](imgs/uent.png)
+# Requirement 
 
-U-net is one of the popular image segmentation architectures used mostly in biomedical purposes. The name UNet is because it’s architecture contains a compressive path and an expansive path which can be viewed as a U shape. This architecture is built in such a way that it could generate better results even for a less number of training data sets.
+*Python version 3.6 
 
-## Data Set Structure
+*Tensorflow 2.5
 
-data set folder need to be stored in same directory with structure same as below
-```bash
-ISIC2018
-  |_ ISIC2018_Task1-2_Training_Input_x2
-    |_ ISIC_0000000
-    |_ ISIC_0000001
-    |_ ...
-  |_ ISIC2018_Task1_Training_GroundTruth_x2
-    |_ ISIC_0000000_segmentation
-    |_ ISIC_0000001_segmentation
-    |_ ...
-```
+*Pytorch installation
 
-## Dice Coefficient
-
-The Sørensen–Dice coefficient is a statistic used to gauge the similarity of two samples.
-
-Further information in https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
-
-## Dependencies
-
-- python 3
-- tensorflow 2.1.0
-- pandas 1.1.4
-- numpy 1.19.2
-- matplotlib 3.3.2
-- scikit-learn 0.23.2
-- pillow 8.0.1
+*Sklearn, pandas, numpy,scipy and matplotlib libraries 
 
 
-## Usages
 
-- Run `train.py` for training the UNet on ISIC data.
-- Run `evaluation.py` for evaluation and case present.
 
-## Advance
 
-- Modify `setting.py` for custom setting, such as different batch size.
-- Modify `unet.py` for custom UNet, such as different kernel size.
 
-## Algorithm
-
-- data set: 
-    - The data set we used is the training set of ISIC 2018 challenge data which has segmentation labels.
-    - Training: Validation: Test = 1660: 415: 519 = 0.64: 0.16 : 0.2 (Training: Test = 4: 1 and in Training, further split 4: 1 for Training: Validation)
-    - Training data augmentations: rescale, rotate, shift, zoom, grayscale
-- model: 
-    - Original UNet with padding which can keep the shape of input and output same.
-    - The first convolutional layers has 16 output channels.
-    - The activation function of all convolutional layers is ELU.
-    - Without batch normalization layers.
-    - The inputs is (384, 512, 1)
-    - The output is (384, 512, 1) after sigmoid activation.
-    - Optimizer: Adam, lr = 1e-4
-    - Loss: dice coefficient loss
-    - Metrics: accuracy & dice coefficient
+# Data
+Facebook Large Page-Page Network
+https://snap.stanford.edu/data/facebook-large-page-page-network.htm
     
-## Results
+Processed dataset where the features are in the form of 128 dim vectors .
 
-Evaluation dice coefficient is 0.805256724357605.
+Data Structure:
 
-plot of train/valid Dice coefficient: 
+Shape of Edge data: (342004, 2)
 
-![img](imgs/train_and_valid_dice_coef.png)
+Shape of Feature data: (22470, 128)
 
-case present:
+Shape of Target data (22470,)
 
-![case](imgs/case%20present.png)
+Number of features of each node: 128
+    
+Categories of labels: {0, 1, 2, 3}
+    
+Data split:
+Training set : Validation set : Test set = 0.2 : 0.2 :0.6
 
-## Reference
-Manna, S. (2020). K-Fold Cross Validation for Deep Learning using Keras. [online] Medium. Available at: https://medium.com/the-owl/k-fold-cross-validation-in-keras-3ec4a3a00538 [Accessed 24 Nov. 2020].
+# Running  
 
-zhixuhao (2020). zhixuhao/unet. [online] GitHub. Available at: https://github.com/zhixuhao/unet.
+In the gcn.py:Data preprocessing, accuracy of model training  &model test, TSNE embeddings plot with ground truth in colors.
+A main function is included in the code
 
-GitHub. (n.d.). NifTK/NiftyNet. [online] Available at: https://github.com/NifTK/NiftyNet/blob/a383ba342e3e38a7ad7eed7538bfb34960f80c8d/niftynet/layer/loss_segmentation.py [Accessed 24 Nov. 2020].
+python gcn.py
 
-Team, K. (n.d.). Keras documentation: Losses. [online] keras.io. Available at: https://keras.io/api/losses/#creating-custom-losses [Accessed 24 Nov. 2020].
+Warning: Please pay attention to whether the data path is correct when you run the gcn.py.
 
-262588213843476 (n.d.). unet.py. [online] Gist. Available at: https://gist.github.com/abhinavsagar/fe0c900133cafe93194c069fe655ef6e [Accessed 24 Nov. 2020].
+# Training
 
-Stack Overflow. (n.d.). python - Disable Tensorflow debugging information. [online] Available at: https://stackoverflow.com/questions/35911252/disable-tensorflow-debugging-information [Accessed 24 Nov. 2020].
+Learning rate= 0.01
+Weight dacay =0.005
+
+For 200 epoches:
+```Epoch 000: Loss 0.2894, TrainAcc 0.9126, ValAcc 0.8954
+Epoch 001: Loss 0.2880, TrainAcc 0.9126, ValAcc 0.895
+Epoch 002: Loss 0.2866, TrainAcc 0.9126, ValAcc 0.8961
+Epoch 003: Loss 0.2853, TrainAcc 0.9132, ValAcc 0.8961
+Epoch 004: Loss 0.2839, TrainAcc 0.9137, ValAcc 0.8961
+Epoch 005: Loss 0.2826, TrainAcc 0.9141, ValAcc 0.8963
+Epoch 006: Loss 0.2813, TrainAcc 0.9146, ValAcc 0.8956
+Epoch 007: Loss 0.2800, TrainAcc 0.9146, ValAcc 0.8956
+Epoch 008: Loss 0.2788, TrainAcc 0.9146, ValAcc 0.8959
+Epoch 009: Loss 0.2775, TrainAcc 0.9146, ValAcc 0.8970
+Epoch 010: Loss 0.2763, TrainAcc 0.915, ValAcc 0.8974
+Epoch 011: Loss 0.2751, TrainAcc 0.915, ValAcc 0.8972
+Epoch 012: Loss 0.2739, TrainAcc 0.915, ValAcc 0.8976
+Epoch 013: Loss 0.2727, TrainAcc 0.9157, ValAcc 0.8979
+Epoch 014: Loss 0.2716, TrainAcc 0.9157, ValAcc 0.8983
+Epoch 015: Loss 0.2704, TrainAcc 0.9161, ValAcc 0.8990
+Epoch 016: Loss 0.2693, TrainAcc 0.9168, ValAcc 0.8988
+Epoch 017: Loss 0.2682, TrainAcc 0.9181, ValAcc 0.8990
+Epoch 018: Loss 0.2671, TrainAcc 0.9179, ValAcc 0.8990
+Epoch 019: Loss 0.2660, TrainAcc 0.9179, ValAcc 0.8992
+Epoch 020: Loss 0.2650, TrainAcc 0.9188, ValAcc 0.8996
+......
+Epoch 190: Loss 0.1623, TrainAcc 0.9553, ValAcc 0.9134
+Epoch 191: Loss 0.1619, TrainAcc 0.9555, ValAcc 0.9134
+Epoch 192: Loss 0.1615, TrainAcc 0.9555, ValAcc 0.9132
+Epoch 193: Loss 0.1611, TrainAcc 0.9557, ValAcc 0.9130
+Epoch 194: Loss 0.1607, TrainAcc 0.9562, ValAcc 0.9130
+Epoch 195: Loss 0.1603, TrainAcc 0.9559, ValAcc 0.9130
+Epoch 196: Loss 0.1599, TrainAcc 0.9562, ValAcc 0.9126
+Epoch 197: Loss 0.1595, TrainAcc 0.9562, ValAcc 0.9123
+Epoch 198: Loss 0.1591, TrainAcc 0.9562, ValAcc 0.9123
+Epoch 199: Loss 0.1587, TrainAcc 0.9562, ValAcc 0.9123```
+
+For test accuracy:around 0.9 
+
+# TSNE
+For the test:iteration=500, with lower dimension to 2
+
+<img src="https://github.com/eliasxue/3710-pattern-flow/blob/main/tsne%20.png?raw=true">
+
+
+```python
+
+```
