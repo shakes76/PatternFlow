@@ -77,15 +77,14 @@ def GeneratedImages():
   height=256
   width=256
   for x in range(0,height):  #The purpose of these two loops is to generate indexes for each sample and pixel, one at time, as a result of conditionalizes the index probability of a pixel on the indexes generated for previous pixels
-   print(x)
+   
    for y in range(0,width):
       sample=Sampler(torch.tensor(samplearray),priormodel)
       samplearray[:,x,y]=sample[:,x,y].cpu().detach().numpy()
-   print(samplearray)  
+    
   embeddingarray=finalmodel.embedding.weight
   embeddingsamples=F.one_hot(torch.tensor(samplearray).long(),finalmodel.numembedding).float() #convert the generated embedding vector indexes into one hot encoded format
-  print(embeddingsamples)
-  print(embeddingsamples.shape)
+  
   embeddingvectorsamples=torch.matmul(embeddingsamples.cuda(),embeddingarray.T) #Use the one-hot encoded embedding vector indexes to select the embedding vectors corresponding to those indexes    
   img=F.sigmoid(finalmodel.layer6(finalmodel.layer5(F.relu(finalmodel.layer4(embeddingvectorsamples.permute(0,3,2,1)))))).cpu().detach().numpy() #Run on the decoder from the best VQVAE model on the embedding vectors generated for each sample and pixel, selected in the previous line
   img=torch.tensor(img).permute(0,3,2,1).detach().numpy() #permute the image arrays into the right dimensional format so they can be viewed

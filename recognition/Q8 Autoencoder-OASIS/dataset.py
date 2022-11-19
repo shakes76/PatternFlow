@@ -195,7 +195,7 @@ def dataencodings(DATA):
  
 
  for t in range(0,len(DATA)): #This loops generates the encoding (index of each embedding vector) of each training sample's pixels. It is done one sample at a time due to memory issues. Encoding is a result of running first the encoder and then the VQVAE layer
-  print(t)
+  
   x=finalmodel.VQVAE(finalmodel.layer3(F.relu(finalmodel.layer2(finalmodel.layer1(F.relu(finalmodel.layer0(DATA[t].cuda().float().reshape((1,DATA[t].shape[0],DATA[t].shape[1],DATA[t].shape[2])))))))),finalmodel.numembedding,finalmodel.embeddingdim,finalmodel.commitcost)[2].cpu().detach().numpy()
   x=x.reshape((256,256)) 
   encoding[t,:,:]=x
