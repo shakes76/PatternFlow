@@ -61,10 +61,13 @@ print('Loss of {} and Accuracy is {} %'.format(metrics[0], metrics[1] * 100))
 metrics = model.evaluate([test_x1, test_x2], test_y)
 print('Loss of {} and Accuracy is {} %'.format(metrics[0], metrics[1] * 100))
 
+# select two images as known image
+# this can be changed to any image that is already know the label
 image1 = process_image("./test/AD/392277_97.jpeg")
 image2 = process_image("./test/NC/1188738_96.jpeg")
 known_images = [process_image("./train/AD/250168_103.jpeg"),process_image("./train/NC/839474_87.jpeg")]
 
+# make two prediction by the model
+# the real label of the predicting image can be found
 prediction(model,image1,known_images)
 prediction(model,image2,known_images)
-
