@@ -6,6 +6,8 @@
 
 ​	Siamese network is a network that will receive two input images at a time. These two image will both go through the network. For a binary question, like identifying whether a brain has Alzheimer, if they are in the same class, the label would be true, would be false otherwise.
 
+​	SNNs learn a similarity between two inputs. Thus, we can train the SNN to see if the two images are identical. This process enables us to classify new classes of data without retraining the network.
+
 ​	The below image is an example of Siamese network.
 
 ![1](https://github.com/Xinyan44/PatternFlow/blob/master/recognition/45996216-Siamese%20network/1.png)
