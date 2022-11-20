@@ -23,6 +23,9 @@ def img_shuffle(x, y):
     :return: images and labels after shuffle
     """
     pack = list(zip(x, y))
+    # shuffle the image
+    # the original order of image is all the positive label followed by negative label.
+    # So it needs to shuffle
     random.shuffle(pack)
     x[:], y[:] = zip(*pack)
     return x, y
@@ -34,7 +37,9 @@ def load_path(path):
     :param path: a path of a folder
     :return: all the path of files in this folder
     """
+    # load the root path
     all_path = os.listdir("./" + path)
+    # find all the path of images
     for i in range(len(all_path)):
         all_path[i] = "./" + path + '/' + all_path[i]
     return all_path
@@ -63,18 +68,25 @@ def get_dataset():
     x_train_false = "train/NC"
     x_test_true = "test/AD"
     x_test_false = "test/NC"
-    # load path of images
+    
+    # load path of true train images
     x_train_true = load_path(x_train_true)
     # create array for label, set AD for true
     y_train_true = np.ones(len(x_train_true))
-
+    
+    # load path of false train images
     x_train_false = load_path(x_train_false)
+    # create array for label, set NC for false
     y_train_false = np.zeros(len(x_train_false))
-
+    
+    # load path of test train images
     x_test_true = load_path(x_test_true)
+    # create array for label, set AD for true
     y_test_true = np.ones(len(x_test_true))
 
+    # load path of false test images
     x_test_false = load_path(x_test_false)
+    # create array for label, set NC for false
     y_test_false = np.zeros(len(x_test_false))
 
     # shuffle the images
@@ -98,7 +110,8 @@ def get_dataset():
     test = np.array(list(test.as_numpy_iterator()))
 
     import numpy.random as random
-
+    # use random to randomly select imgage in the dataset to train the model
+    
     # lists for train and test
     train_x1 = list()
     train_x2 = list()
@@ -122,10 +135,14 @@ def get_dataset():
         else:
             train_y.append(0)
 
+    # create train and test label
+    # if two images have the same label, this pair of image will be true
+    # if two images have different labels, this pair of image will be false
     for i in range(563):
         index = random.randint(0, 21519, size=21520)
         test_x1.append(train[i][0])
         test_x2.append(train[index[i]][0])
+        # judge wether the two labels are identical
         if train[i][1] == train[index[i]][1]:
             test_y.append(1)
         else:
@@ -139,4 +156,5 @@ def get_dataset():
     test_x1 = np.array(test_x1)
     test_x2 = np.array(test_x2)
     test_y = np.array(test_y)
+    # output the dataset
     return train_x1,train_x2,train_y,test_x1,test_x2,test_y
