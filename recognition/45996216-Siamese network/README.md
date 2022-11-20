@@ -37,7 +37,7 @@
 ## How to use :
 
 1. You can run the demo.ipynb file to run the whole program
-2. Put train and test image file directly to the main folder. like this:![2](C:\Users\xxx\Desktop\45996216-Siamese network\2.png)
+2. Put train and test image file directly to the main folder. like this:![2](.\2.png)
 
 The train and test image can be downloaded on http://adni.loni.usc.edu/ or on the COMP3710 blackboard page for UQ students.
 
