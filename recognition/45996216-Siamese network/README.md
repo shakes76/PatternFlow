@@ -8,7 +8,7 @@
 
 ​	The below image is an example of Siamese network.
 
-![1](C:\Users\xxx\Desktop\45996216-Siamese network\1.png)
+![1](https://github.com/Xinyan44/PatternFlow/blob/master/recognition/45996216-Siamese%20network/1.png)
 
 
 
