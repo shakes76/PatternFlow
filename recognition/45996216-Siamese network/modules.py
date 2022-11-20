@@ -52,7 +52,10 @@ def SiameseNetwork():
     outputs = tf.keras.layers.Dense(1, activation=tf.keras.activations.sigmoid)(distance_euclid)
     # finish the model
     model = tf.keras.models.Model([input_x1, input_x2], outputs)
-
+    
+    # compile the model
+    # use Adam optimizer and set learning rate to 0.0001
+    # use binary cross entropy loss function
     model.compile(loss=tf.keras.losses.binary_crossentropy, optimizer=tf.keras.optimizers.Adam(lr=0.0001),
                   metrics=['accuracy'])
 
