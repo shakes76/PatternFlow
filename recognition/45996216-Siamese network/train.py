@@ -22,5 +22,6 @@ train_x1, train_x2, train_y, test_x1, test_x2, test_y = dataset.get_dataset()
 
 # fit
 model.fit([train_x1, train_x2], train_y, epochs=25, batch_size=16)
+# save the model so it can be used to make prediction
 model.save('my_model.h5')
 
