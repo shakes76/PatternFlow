@@ -21,7 +21,7 @@ This model is utilised for upscaling low resolution MRI imaging.
 The following figure was taken from a paper that discribes the SRCNN. It outlines the structure 
 of the algorithm as well as the models convolution layers. 
 
-![Figure 1: SRCNN structure](./figures/SCRNN_structure.PNG)
+![Figure 1: SRCNN structure](./figures/SRCNN_structure.PNG)
 
 The implemented SRCNN utilises a gaussian filter to convolve the initial input images and then 
 downsample by a constant factor of 4, to produce a low-resolution image which will be used for 
@@ -46,13 +46,13 @@ output images that the model produced.
 
 ### Inputs
 Brain MRI images downscaled by a factor of 4
-![Input example 1](./figures/Input_image_1.PNG)
-![Input example 2](./figures/Input_image_2.PNG)
+![Input example 1](./figures/Input_image_1.png)
+![Input example 2](./figures/Input_image_2.png)
 
 ### Outputs
 Brain MRI images output from SRCNN
-![Output example 1](./figures/Output_image_1.PNG)
-![Output example 2](./figures/Output_image_2.PNG)
+![Output example 1](./figures/Output_image_1.png)
+![Output example 2](./figures/Output_image_2.png)
 
 Here are a few final predictions from the model comparing the output upscaled image vs the original
 image. 
@@ -72,10 +72,10 @@ This version of the dataset set was split into training and testing. For the pur
 model this was not changed, using the training and validation for each epoch. 
 
 Accuracy plot
-![Accuracy](.figures/loss_plot.png)
+![Accuracy](./figures/loss_plot.png)
 
 PSNR metric plot
-![PSNR](/figures/PSNR_plot.png)
+![PSNR](./figures/PSNR_plot.png)
 
 # References
 https://arxiv.org/pdf/1609.05158.pdf
