@@ -73,7 +73,7 @@ model this was not changed, using the training and validation for each epoch.
 
 Accuracy plot
 ![Accuracy](./figures/loss_plot.png)
-
+    
 PSNR metric plot
 ![PSNR](./figures/PSNR_plot.png)
 
