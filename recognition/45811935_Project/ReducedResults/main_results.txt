@@ -1,0 +1,8 @@
+Final Training Mean SSIM 0.9242054
+Final Validation Mean SSIM 0.92403483
+SSIM between Test Image 0 and Reconstruction:  0.92993516
+SSIM between Test Image 1 and Reconstruction:  0.9194878
+SSIM between Test Image 2 and Reconstruction:  0.91119474
+SSIM between Test Image 3 and Reconstruction:  0.9243342
+SSIM between Test Image 4 and Reconstruction:  0.914299
+Final Test Mean SSIM 0.9136042
