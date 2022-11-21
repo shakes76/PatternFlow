@@ -46,11 +46,13 @@ output images that the model produced.
 
 ### Inputs
 Brain MRI images downscaled by a factor of 4
+
 ![Input example 1](./figures/Input_image_1.png)
 ![Input example 2](./figures/Input_image_2.png)
 
 ### Outputs
 Brain MRI images output from SRCNN
+
 ![Output example 1](./figures/Output_image_1.png)
 ![Output example 2](./figures/Output_image_2.png)
 
@@ -72,9 +74,11 @@ This version of the dataset set was split into training and testing. For the pur
 model this was not changed, using the training and validation for each epoch. 
 
 Accuracy plot
+
 ![Accuracy](./figures/loss_plot.png)
-    
+
 PSNR metric plot
+
 ![PSNR](./figures/PSNR_plot.png)
 
 # References
