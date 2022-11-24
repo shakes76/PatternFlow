@@ -1,0 +1,12 @@
+batch_size = 8
+image_size = (64, 64)
+image_shape = (256, 256) # From OASIS
+latent_dimensions = 16
+num_embeddings = 128
+dataset_seed = 13
+n_channels = 3
+variance = 0.035253614  # TODO: Create a Python file to automatically compute the variance.
+vqvae_epochs = 40
+n_residual_blocks = 2
+n_pixel_cnn_layers = 2
+n_epochs = 60

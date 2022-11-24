@@ -1,0 +1,1 @@
+# Training was done through the .ipynb file inside this folder as it was done on Kaggle

@@ -1,0 +1,5 @@
+tensorflow
+tensorflow-probability
+numpy
+matplotlib
+pandas

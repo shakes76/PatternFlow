@@ -1,0 +1,1 @@
+# Refer to the yolo v5 GitHub for the model, available at https://github.com/ultralytics/yolov5, also linked as a git submodule inside the current folder
