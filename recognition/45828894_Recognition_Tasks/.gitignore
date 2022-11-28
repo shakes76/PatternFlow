@@ -1,0 +1,10 @@
+keras_png_slices_data.zip
+keras_png_slices_data/
+.idea/
+/Task1_Improved_UNet/ISIC2018_Task1-2_Training_Data/
+/Task7_StyleGan/img/
+/Task7_StyleGan/img2/
+/Task7_StyleGan/checkpoints2/
+/Task7_StyleGan/checkpoints/
+/Task7_StyleGan/AKOA_Analysis/
+/Task7_StyleGan/img3/
