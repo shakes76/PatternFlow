@@ -91,15 +91,9 @@ Epoch 196: Loss 0.1599, TrainAcc 0.9562, ValAcc 0.9126
 Epoch 197: Loss 0.1595, TrainAcc 0.9562, ValAcc 0.9123
 Epoch 198: Loss 0.1591, TrainAcc 0.9562, ValAcc 0.9123
 Epoch 199: Loss 0.1587, TrainAcc 0.9562, ValAcc 0.9123```
-
 For test accuracy:around 0.9 
-
 # TSNE
 For the test:iteration=500, with lower dimension to 2
-
 <img src="https://github.com/eliasxue/3710-pattern-flow/blob/main/tsne%20.png?raw=true">
 
-
 ```python
-
-```
