@@ -1,0 +1,2 @@
+model_checkpoint_path: "pixel_weights"
+all_model_checkpoint_paths: "pixel_weights"
