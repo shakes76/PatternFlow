@@ -20,4 +20,3 @@ In the recognition folder, you will find many recognition problems solved includ
 * OASIS brain segmentation
 * Classification
 etc.
-
