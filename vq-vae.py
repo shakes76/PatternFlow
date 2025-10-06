@@ -20,8 +20,8 @@ href: https://keras.io/examples/generative/vq_vae/
 # TRAIN_FOLDER = "data/keras_slices_data/keras_slices_train/"
 TRAIN_FOLDER = "/home/groups/comp3710/HipMRI_Study_open/keras_slices_data/keras_slices_train"
 HISTORY_PATH = "history.json"
-LATENT_DIM = 32 # WAS 128
-CODEBOOK_SIZE = 1024
+LATENT_DIM = 3
+CODEBOOK_SIZE = 512
 
 class VectorQuantizerLayer(layers.Layer):
 
@@ -29,7 +29,7 @@ class VectorQuantizerLayer(layers.Layer):
             self,
             num_embeddings,  # number of vectors in codebook
             embedding_dim,
-            commitment_weight=6,  # coefficient of commitment loss
+            commitment_weight=0.25,  # coefficient of commitment loss
             **kwargs
         ):
         super().__init__(**kwargs)
@@ -120,6 +120,27 @@ class VectorQuantizerLayer(layers.Layer):
         return smallest_indices
 
 
+def residual_block(x, num_filters):
+        """
+        standard residual block. used for encoder and decoder both
+        """
+        start = x
+        x = keras.layers.Conv2D(
+            num_filters, 3, 1, padding="same"
+        )(x)
+
+        x = keras.activations.relu(x)
+
+        x = keras.layers.Conv2D(
+            num_filters, 1, 1, padding="same"
+        )(x)
+
+        x = keras.layers.Add()([x, start])
+        x = keras.activations.relu(x)
+
+        return x
+
+
 def get_encoder(
         input_shape,
         layers_filters,
@@ -137,12 +158,16 @@ def get_encoder(
     for num_filters in layers_filters:
         x = keras.layers.Conv2D(
             num_filters,
-            3,
+            4,
             strides=2,
             padding="same"
         )(x)
 
         x = keras.activations.relu(x)
+
+    # down sampling followed by residual blocks
+    x = residual_block(x, num_filters)
+    x = residual_block(x, num_filters)
 
     # use 1x1 kernel to convert to latent dim size
     outputs = keras.layers.Conv2D(
@@ -167,10 +192,13 @@ def get_decoder(
     for num_filters in layers_filters:
 
         x = keras.layers.Conv2DTranspose(
-            num_filters, 3, strides=2, padding="same"
+            num_filters, 4, strides=2, padding="same"
         )(x)
 
         x = keras.activations.relu(x)
+
+    x = residual_block(x, num_filters)
+    x = residual_block(x, num_filters)
 
     # 1x1 kernel to bring to a single layer
     x = layers.Conv2DTranspose(1, 3, padding="same")(x)
@@ -189,7 +217,7 @@ def vq_vae(
     )
 
     filter_layers = [
-        64, 128, 256, 512
+        128, 256, 512
     ]
 
     encoder = get_encoder(
@@ -410,12 +438,12 @@ def main():
     )
 
     vq_trainer.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+        optimizer=keras.optimizers.Adam(learning_rate=0.001),
     )
 
     history = vq_trainer.fit(
         train_dataset,
-        epochs=40,
+        epochs=10,
 
     )
 
