@@ -17,6 +17,10 @@ Based on example: 'Vector-Quantized Variational Autoencoders' by Sayak Paul
 href: https://keras.io/examples/generative/vq_vae/
 """
 
+"""
+IDEAS: Could increase the number of hidden units across the board
+"""
+
 # TRAIN_FOLDER = "data/keras_slices_data/keras_slices_train/"
 TRAIN_FOLDER = "/home/groups/comp3710/HipMRI_Study_open/keras_slices_data/keras_slices_train"
 HISTORY_PATH = "history.json"
@@ -40,12 +44,19 @@ class VectorQuantizerLayer(layers.Layer):
 
         # Initialise codebook
         rand_field = tf.random_uniform_initializer()
-        self.codebook = tf.Variable(
-            initial_value=rand_field(
-                shape=(self.embedding_dim, self.num_embeddings), dtype="float32"
-            ),
-            trainable=True,  # let the values be learnable
-            name="VQ-CODEBOOK"
+        # self.codebook = tf.Variable(
+        #     initial_value=rand_field(
+        #         shape=(self.embedding_dim, self.num_embeddings), dtype="float32"
+        #     ),
+        #     trainable=True,  # let the values be learnable
+        #     name="VQ-CODEBOOK"
+        # )
+
+        self.codebook = self.add_weight(
+            name="VQ-CODEBOOK",
+            shape=(self.embedding_dim, self.num_embeddings),
+            initializer=tf.random_uniform_initializer(),
+            trainable=True
         )
 
 
@@ -353,7 +364,7 @@ def load_image_to_tensor(filepath):
 
 def get_dataset(folder):
     train_files = [
-        os.path.join(TRAIN_FOLDER, f)
+        os.path.join(folder, f)
         for f in os.listdir(folder)
         if f.endswith(".nii.gz")
     ]
@@ -420,7 +431,7 @@ def main():
     train_dataset = get_dataset(TRAIN_FOLDER).batch(128)
 
     data_augmentation = keras.Sequential([
-        layers.RandomRotation(0.05),        # ±10% rotation
+        layers.RandomRotation(0.05),        # 10% rotation
         layers.RandomZoom(0.1),            # zoom in/out
         layers.RandomTranslation(0.05, 0.05), # shift
         layers.RandomContrast(0.1),
@@ -487,9 +498,15 @@ def load_model(path):
     )
 
     new_vq_vae.compile(optimizer="adam")
+    new_vq_vae.build(get_image_shape())
     new_vq_vae.load_weights(path)
 
     return new_vq_vae
 
+def test_load():
+    model = load_model("trained_models/trainer.weights.h5")
+    model.summary()
+
 if __name__ == "__main__":
-    main()
+    # main()
+    test_load()
