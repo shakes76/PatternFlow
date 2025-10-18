@@ -1,5 +1,7 @@
 tensorflow
+tensorflow_probability
 keras
+tf-keras
 numpy
 scikit-image
 nibabel
