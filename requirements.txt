@@ -1,7 +1,7 @@
-tensorflow
+tensorflow==2.15
 tensorflow_probability
-keras
-tf-keras
+keras==2.15
+tf-keras==2.15
 numpy
 scikit-image
 nibabel

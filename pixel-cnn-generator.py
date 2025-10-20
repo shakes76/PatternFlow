@@ -8,9 +8,11 @@ PixelCNN to mimic latent space of the encoders output. For generation
 import keras
 import numpy as np
 from keras import layers
-from keras import ops
+
 import tensorflow as tf
-import tensorflow_probability as tfp
+# from keras import mixed_precision
+# mixed_precision.set_global_policy("mixed_float16") # speed up
+
 
 # for displaying
 import matplotlib.pyplot as plt
@@ -18,6 +20,10 @@ import math
 
 import importlib
 vqvae = importlib.import_module("vq-vae")
+
+class MaskConstraint(keras.constraints.Constraint):
+    def __init__(self, mask): self.mask = tf.constant(mask, dtype=tf.float32)
+    def __call__(self, w):    return w * self.mask
 
 class PixelConvLayer(layers.Layer):
 
@@ -42,7 +48,7 @@ class PixelConvLayer(layers.Layer):
         self.conv.build(input_shape)
 
         # now mask the kernel
-        kernel_shape = ops.shape(self.conv.kernel)
+        kernel_shape = self.conv.kernel.shape
         self.mask = np.zeros(shape=kernel_shape) # initialise to zero
 
         self.mask[: kernel_shape[0] // 2, ...] = 1.0 # above pixels
@@ -54,11 +60,13 @@ class PixelConvLayer(layers.Layer):
         if self.mask_type == "B":
             self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
 
+        self.conv.kernel_constraint = MaskConstraint(self.mask)
+
     def call(
             self, x
     ):
         # mask the kernel with the mask
-        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        # self.conv.kernel.assign(self.conv.kernel * self.mask)
 
         # return
         return self.conv(x)
@@ -99,7 +107,7 @@ def residual_pixel_layer(
 def pixel_cnn_model(
         input_shape,
         num_residuals,
-        latent_dim,
+        num_embeddings,
         num_filters=128
 ):
     """
@@ -132,10 +140,9 @@ def pixel_cnn_model(
         x = keras.activations.relu(x)
 
     output = layers.Conv2D(
-        filters=latent_dim,
+        filters=num_embeddings,
         kernel_size=1,
         strides=1,
-        activation="sigmoid",
         padding="valid"
     )(x)
 
@@ -147,8 +154,19 @@ class CategoricalLayer(layers.Layer):
     Wraps tfp.distributions.Categorical for use in sampler
     """
     def call(self, logits):
-        dist = tfp.distributions.Categorical(logits=logits)
-        return dist.sample()
+        shape = tf.shape(logits)
+        batch, height, width, num_embeddings = (
+            shape[0], shape[1], shape[2], shape[3]
+        )
+
+        # Flatten spatial dims
+        flat_logits = tf.reshape(logits, [batch * height * width, num_embeddings])
+
+        # Sample one index per spatial location
+        samples = tf.random.categorical(flat_logits, num_samples=1)
+        samples = tf.reshape(samples, [batch, height, width])
+
+        return tf.cast(samples, tf.int32)
 
 
 class sampler:
@@ -168,7 +186,6 @@ class sampler:
     def _build_sampler(self):
         inputs = layers.Input(shape=self.pixel_cnn.input_shape[1:])
         logits = self.pixel_cnn(inputs, training=False)
-
         outputs = CategoricalLayer()(logits)
 
         self.sampler = keras.Model(inputs, outputs)
@@ -214,8 +231,8 @@ def dataset_pipeline(img):
 
     # quantize
     indices = quantizer.get_code_indices(flattened)
-
-    indices = tf.reshape(indices, prediction.shape[:-1])
+    indices = tf.cast(indices, tf.int32)
+    indices = tf.reshape(indices, prediction.shape[1:-1])
     indices = tf.expand_dims(indices, -1) # channel dim
     return (indices, indices)
 
@@ -275,9 +292,10 @@ def show_generated_images(batch, title="Generated Images"):
 
 
 if __name__ == "__main__":
+    print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 
     vae_model = vqvae.load_model(
-        "trained_models/trainer.weights.h5"
+        "trainer.weights.h5"
     )
 
     encoder = vae_model.get_layer("encoder")
@@ -289,19 +307,32 @@ if __name__ == "__main__":
     )
 
     pixelcnn_dataset = image_dataset.map(dataset_pipeline)
-    io_shape = pixelcnn_dataset.element_spec[0].shape[1:] # it adds batch dim auto
+    io_shape = pixelcnn_dataset.element_spec[0].shape#[1:] # it adds batch dim auto
     pcnn = pixel_cnn_model(
-        io_shape, 4, vqvae.CODEBOOK_SIZE, num_filters=256
+        io_shape, 4, vqvae.CODEBOOK_SIZE, num_filters=32
     )
 
+
     pcnn.compile(
-        "adam",
+        keras.optimizers.Adam(
+            # dtype_policy="mixed_float16"
+        ),
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     )
 
+    pcnn.summary()
+
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
+        filepath='checkpoints/pcnn_epoch_{epoch:02d}.keras',  # filename pattern
+        save_weights_only=True,   # save full model (set True to save only weights)
+        save_freq='epoch',         # save at end of each epoch
+        verbose=1                  # print when saving
+    )
+
     pcnn.fit(
-        pixelcnn_dataset,
-        epochs=10
+        pixelcnn_dataset.batch(32),  # batch
+        epochs=10,
+        callbacks=[checkpoint_cb]
     )
 
     # now use it to predict
@@ -317,7 +348,7 @@ if __name__ == "__main__":
 
     # save model
     pcnn.save_weights(
-        "trained_models/pixel.weights.h5"
+        "pixel.weights.h5"
     )
 
     # # reload and test
