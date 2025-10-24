@@ -99,7 +99,7 @@ def residual_pixel_layer(
     )(x)
 
     x = keras.layers.add([x, start])
-    x = keras.activations.relu(x)  # tutorial does relu THEN add
+    x = keras.activations.relu(x)
 
     return x
 
@@ -114,7 +114,10 @@ def pixel_cnn_model(
     returns a pixelCNN model
     """
 
-    inputs = layers.Input(shape=input_shape)
+    inputs = layers.Input(shape=input_shape, dtype=tf.int32)
+
+    # one hot
+    one_hot = tf.one_hot(inputs, num_embeddings)
 
     # initial convolution
     x = PixelConvLayer(
@@ -122,7 +125,7 @@ def pixel_cnn_model(
         filters=num_filters,
         kernel_size=7,
         padding="same"
-    )(inputs)
+    )(one_hot)
 
     x = keras.activations.relu(x)
 
@@ -148,79 +151,47 @@ def pixel_cnn_model(
 
     return keras.Model(inputs=inputs, outputs=output)
 
+def generate_images(
+    pixelcnn,
+    quantizer,
+    decoder,
+    image_shape,          # (rows, cols)
+    num_samples=16,
+):
 
-class CategoricalLayer(layers.Layer):
-    """
-    Wraps tfp.distributions.Categorical for use in sampler
-    """
-    def call(self, logits):
-        shape = tf.shape(logits)
-        batch, height, width, num_embeddings = (
-            shape[0], shape[1], shape[2], shape[3]
-        )
+    rows, cols = image_shape
+    batch_size = num_samples
+    num_embeddings = quantizer.num_embeddings
 
-        # Flatten spatial dims
-        flat_logits = tf.reshape(logits, [batch * height * width, num_embeddings])
+    # initialise latent index grid
+    priors = np.random.random_integers(0, num_embeddings-1, (batch_size, rows, cols, 1))
+    # priors = np.zeros((batch_size, rows, cols, 1))
 
-        # Sample one index per spatial location
-        samples = tf.random.categorical(flat_logits, num_samples=1)
-        samples = tf.reshape(samples, [batch, height, width])
+    for r in range(rows):
+        for c in range(cols):
+            logits = pixelcnn(priors) / 0.001
 
-        return tf.cast(samples, tf.int32)
+            B, H, W, K = logits.shape
+            flat_logits = tf.reshape(logits, [B * H * W, K])
+            samples = tf.random.categorical(flat_logits, num_samples=1)
+            indices = tf.reshape(samples, [B, H, W])
 
+            priors[:, r, c, 0] = indices[:,r,c]
 
-class sampler:
+    # back to one-hot
+    priors = priors.squeeze(-1)
+    indices = tf.one_hot(priors, num_embeddings)
 
-    """
-    Wraps pixel_cnn model in Distribution object that allows random sampling
-    """
+    codebook = tf.convert_to_tensor(quantizer.codebook, dtype=tf.float32)
+    quantized = tf.matmul(indices, tf.transpose(codebook))
 
-    def __init__(self, pixel_cnn, quantizer, decoder):
+    # decode to image space
+    generated = decoder(quantized, training=False)
 
-        self.quantizer = quantizer
-        self.decoder = decoder
-        self.pixel_cnn = pixel_cnn
-
-        self._build_sampler()
-
-    def _build_sampler(self):
-        inputs = layers.Input(shape=self.pixel_cnn.input_shape[1:])
-        logits = self.pixel_cnn(inputs, training=False)
-        outputs = CategoricalLayer()(logits)
-
-        self.sampler = keras.Model(inputs, outputs)
-
-    def sample(self, batch_size):
-        priors = np.zeros(
-            shape=(batch_size,) + (self.pixel_cnn.input_shape)[1:-1]
-        )
-
-        batch, rows, cols = priors.shape
-
-        for row in range(rows):
-            for col in range(cols):
-                probabilities = self.sampler.predict(priors, verbose=0)
-                priors[:, row, col] = probabilities[:, row, col]
-
-        # convert to one hot to extract from codebook
-        one_hot = tf.one_hot(priors.astype("int32"), quantizer.num_embeddings)
-        codebook_vectors = tf.matmul(
-            tf.cast(one_hot, tf.float32), # convert bc we are mult by floats
-            quantizer.codebook, transpose_b=True
-        )
-        codebook_vectors = tf.reshape(
-            codebook_vectors, (-1, *(self.decoder.input.shape[1:]))
-        )
-
-        # actually generate now
-        generated = self.decoder.predict(
-            codebook_vectors
-        )
-
-        return generated
+    return generated
 
 
- # pass image dataset through new pipeline
+# pass image dataset through new pipeline
 def dataset_pipeline(img):
     # add batch and channel dimension
     img = tf.expand_dims(img, axis=0) # batch
@@ -234,6 +205,7 @@ def dataset_pipeline(img):
     indices = tf.cast(indices, tf.int32)
     indices = tf.reshape(indices, prediction.shape[1:-1])
     indices = tf.expand_dims(indices, -1) # channel dim
+
     return (indices, indices)
 
 
@@ -241,15 +213,16 @@ def load_model(path):
     shape = (
         vqvae.get_dataset(vqvae.TRAIN_FOLDER)
         .map(dataset_pipeline)
-        .element_spec[0].shape[1:]
+        .element_spec[0].shape#[1:]
     )
 
     new_pixel = pixel_cnn_model(
         shape,
         4,
         vqvae.CODEBOOK_SIZE,
-        num_filters=256
+        num_filters=32
     ) # new model with same parameters
+
 
     new_pixel.compile("adam")
     new_pixel.build(shape)
@@ -258,7 +231,7 @@ def load_model(path):
     return new_pixel
 
 
-def show_generated_images(batch, title="Generated Images"):
+def show_generated_images(batch, title="Generated_Images"):
     """
     Display a batch of generated grayscale images as a square grid.
 
@@ -288,30 +261,45 @@ def show_generated_images(batch, title="Generated Images"):
     plt.suptitle(title)
     plt.tight_layout()
     # plt.show()  # show doesnt work on ranpur
-    plt.savefig("novel_generation.jpg")
+    plt.savefig(title+".jpg")
 
 
 if __name__ == "__main__":
-    print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
-
+    # load existing vqvae model
     vae_model = vqvae.load_model(
         "trainer.weights.h5"
     )
 
+    # get components
     encoder = vae_model.get_layer("encoder")
     decoder = vae_model.get_layer("decoder")
     quantizer = vae_model.get_layer("quantizer")
 
-    image_dataset = vqvae.get_dataset(
-        vqvae.TRAIN_FOLDER
-    )
+    print("Codebook shape:", quantizer.codebook.shape)
 
-    pixelcnn_dataset = image_dataset.map(dataset_pipeline)
+
+    # load the dataset if it already exists
+    dataset_save_path = "pixelcnn_dataset"
+    try:
+        pixelcnn_dataset = tf.data.Dataset.load(dataset_save_path)
+    except:
+        print("Dataset not found, creating now...")
+        # create pixelcnn dataset
+        image_dataset = vqvae.get_dataset(
+            vqvae.TRAIN_FOLDER
+        )
+
+        pixelcnn_dataset = image_dataset.map(dataset_pipeline)
+        pixelcnn_dataset = pixelcnn_dataset.cache().batch(64)
+
+        # save so it isnt used again
+        pixelcnn_dataset.save(dataset_save_path)
+
+    # initialise pixelcnn object
     io_shape = pixelcnn_dataset.element_spec[0].shape#[1:] # it adds batch dim auto
     pcnn = pixel_cnn_model(
         io_shape, 4, vqvae.CODEBOOK_SIZE, num_filters=32
     )
-
 
     pcnn.compile(
         keras.optimizers.Adam(
@@ -320,43 +308,23 @@ if __name__ == "__main__":
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     )
 
-    pcnn.summary()
-
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
-        filepath='checkpoints/pcnn_epoch_{epoch:02d}.keras',  # filename pattern
-        save_weights_only=True,   # save full model (set True to save only weights)
-        save_freq='epoch',         # save at end of each epoch
-        verbose=1                  # print when saving
-    )
+    # load in existing weights
+    # pcnn = load_model("pixel.weights.h5")
 
     pcnn.fit(
         pixelcnn_dataset.batch(32),  # batch
-        epochs=10,
-        callbacks=[checkpoint_cb]
+        epochs=6
     )
 
-    # now use it to predict
-    slice_sampler = sampler(
-        pcnn, quantizer, decoder
+    generated_outputs = generate_images(
+        pcnn, quantizer, decoder, io_shape[:-1]
     )
 
-    generated_outputs = slice_sampler.sample(
-        9
-    )
-
-    show_generated_images(generated_outputs, title="Novel Generated Outputs")
+    show_generated_images(generated_outputs, title="Novel_Generated_Outputs_3")
 
     # save model
     pcnn.save_weights(
-        "pixel.weights.h5"
+        "pixel_round_2.weights.h5"
     )
-
-    # # reload and test
-    # pcnn = load_model("trained_models/pixel.weights.h5")
-    # slice_sampler = sampler(pcnn, quantizer, decoder)
-    # generated_outputs = slice_sampler.sample(4)
-    # show_generated_images(
-    #     generated_outputs, "reloaded, novel generation"
-    # )
 
 
