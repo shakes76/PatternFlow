@@ -44,29 +44,31 @@ class PixelConvLayer(layers.Layer):
     def build(
             self, input_shape
     ):
-        # initialise kernels
         self.conv.build(input_shape)
+        k = self.conv.kernel
 
-        # now mask the kernel
-        kernel_shape = self.conv.kernel.shape
-        self.mask = np.zeros(shape=kernel_shape) # initialise to zero
+        # get dimensions
+        kh, kw, cin, cout = k.shape
 
-        self.mask[: kernel_shape[0] // 2, ...] = 1.0 # above pixels
+        mask = np.zeros((kh, kw, cin, cout), dtype=np.float32)
+        mask[: kh // 2, :, :, :] = 1.0                       # rows above
+        mask[kh // 2, : kw // 2, :, :] = 1.0                  # same row, left
 
-        # same row
-        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
-
-        # center pixel (if type B)
         if self.mask_type == "B":
-            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+            mask[kh // 2, kw // 2, ...] = 1.0                # center (only for B)
 
+        self.mask = tf.constant(mask, dtype=tf.float32)
+        # Hard-apply once at init to eliminate any initial leakage
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        # Keep enforcing after each optimizer step
         self.conv.kernel_constraint = MaskConstraint(self.mask)
 
+        print(self.mask_type, self.mask[..., 0, 0][k.shape[0]//2])
     def call(
             self, x
     ):
         # mask the kernel with the mask
-        # self.conv.kernel.assign(self.conv.kernel * self.mask)
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
 
         # return
         return self.conv(x)
@@ -88,7 +90,8 @@ def residual_pixel_layer(
     x = keras.activations.relu(x)
 
     x = PixelConvLayer(
-        "B", filters=num_filters//2, kernel_size=3, padding="same"
+        # "B", filters=num_filters//2, kernel_size=3, padding="same"
+        "B", filters=num_filters, kernel_size=3, padding="same"
     )(x)
 
     x = keras.activations.relu(x)
@@ -115,9 +118,10 @@ def pixel_cnn_model(
     """
 
     inputs = layers.Input(shape=input_shape, dtype=tf.int32)
-
+    # x = tf.cast(inputs, tf.float32) / 511
     # one hot
-    one_hot = tf.one_hot(inputs, num_embeddings)
+    # x = layers.Embedding(num_embeddings, 3)(tf.squeeze(inputs, -1))
+    x = tf.one_hot(tf.squeeze(inputs, -1), num_embeddings)
 
     # initial convolution
     x = PixelConvLayer(
@@ -125,7 +129,7 @@ def pixel_cnn_model(
         filters=num_filters,
         kernel_size=7,
         padding="same"
-    )(one_hot)
+    )(x)
 
     x = keras.activations.relu(x)
 
@@ -139,8 +143,6 @@ def pixel_cnn_model(
         x = PixelConvLayer(
             "B", filters=num_filters, kernel_size=1, strides=1, padding='valid'
         )(x)
-
-        x = keras.activations.relu(x)
 
     output = layers.Conv2D(
         filters=num_embeddings,
@@ -164,19 +166,15 @@ def generate_images(
     num_embeddings = quantizer.num_embeddings
 
     # initialise latent index grid
-    priors = np.random.random_integers(0, num_embeddings-1, (batch_size, rows, cols, 1))
-    # priors = np.zeros((batch_size, rows, cols, 1))
+    # priors = np.random.random_integers(0, num_embeddings-1, (batch_size, rows, cols, 1))
+    priors = np.zeros((batch_size, rows, cols, 1))
 
     for r in range(rows):
         for c in range(cols):
-            logits = pixelcnn(priors) / 0.001
-
-            B, H, W, K = logits.shape
-            flat_logits = tf.reshape(logits, [B * H * W, K])
-            samples = tf.random.categorical(flat_logits, num_samples=1)
-            indices = tf.reshape(samples, [B, H, W])
-
-            priors[:, r, c, 0] = indices[:,r,c]
+            logits = pixelcnn(priors)
+            logits_rc = logits[:, r, c, :] / 0.7
+            sample = tf.random.categorical(logits_rc, 1)
+            priors[:, r, c, 0] = tf.squeeze(sample, -1).numpy().astype(np.int32)
 
     # back to one-hot
     priors = priors.squeeze(-1)
@@ -238,7 +236,7 @@ def show_generated_images(batch, title="Generated_Images"):
     Args:
         batch: np.ndarray or tf.Tensor of shape (N, H, W, 1) or (N, H, W)
                N = number of images
-        title: optional string for figure title
+    title: optional string for figure title + save file name
     """
 
     # Convert to numpy
@@ -260,7 +258,6 @@ def show_generated_images(batch, title="Generated_Images"):
             ax.imshow(batch[i], cmap="gray")
     plt.suptitle(title)
     plt.tight_layout()
-    # plt.show()  # show doesnt work on ranpur
     plt.savefig(title+".jpg")
 
 
@@ -295,25 +292,32 @@ if __name__ == "__main__":
         # save so it isnt used again
         pixelcnn_dataset.save(dataset_save_path)
 
+    # actually need to remove channel dim on Y
+    pixelcnn_dataset = pixelcnn_dataset.map(lambda x, y: (x, tf.squeeze(y, -1)))
+    pixelcnn_dataset = pixelcnn_dataset.shuffle(pixelcnn_dataset.cardinality())
+
     # initialise pixelcnn object
-    io_shape = pixelcnn_dataset.element_spec[0].shape#[1:] # it adds batch dim auto
+    io_shape = pixelcnn_dataset.element_spec[0].shape[1:] # it adds batch dim auto
     pcnn = pixel_cnn_model(
-        io_shape, 4, vqvae.CODEBOOK_SIZE, num_filters=32
+        io_shape, 8, vqvae.CODEBOOK_SIZE, num_filters=256
     )
 
     pcnn.compile(
         keras.optimizers.Adam(
-            # dtype_policy="mixed_float16"
+            # dtype_policy="mixed_float16",
+            learning_rate=0.001,
+            clipnorm=1.0
         ),
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=[keras.metrics.SparseCategoricalAccuracy()]
     )
 
     # load in existing weights
     # pcnn = load_model("pixel.weights.h5")
 
     pcnn.fit(
-        pixelcnn_dataset.batch(32),  # batch
-        epochs=6
+        pixelcnn_dataset,
+        epochs=200
     )
 
     generated_outputs = generate_images(
