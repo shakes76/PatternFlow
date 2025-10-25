@@ -43,15 +43,6 @@ class VectorQuantizerLayer(layers.Layer):
         self.num_embeddings = num_embeddings
 
         # Initialise codebook
-        rand_field = tf.random_uniform_initializer()
-        # self.codebook = tf.Variable(
-        #     initial_value=rand_field(
-        #         shape=(self.embedding_dim, self.num_embeddings), dtype="float32"
-        #     ),
-        #     trainable=True,  # let the values be learnable
-        #     name="VQ-CODEBOOK"
-        # )
-
         self.codebook = self.add_weight(
             name="VQ-CODEBOOK",
             shape=(self.embedding_dim, self.num_embeddings),
@@ -193,7 +184,9 @@ def get_decoder(
     latent_dim = 64
 ):
     """
-    layers_filters should be the same as the encoder but reversed
+    layers_filters should be the same as the encoder but reversed.
+
+    Returns decoder object.
     """
 
     inputs = keras.Input(
@@ -454,7 +447,7 @@ def main():
 
     history = vq_trainer.fit(
         train_dataset,
-        epochs=10,
+        epochs=1,
 
     )
 
@@ -472,8 +465,8 @@ def main():
         img = batch # just fetch one image
         break
 
-    img_batched = tf.expand_dims(img, axis=0)
-    img_batched = tf.expand_dims(img_batched, axis=-1)
+    img_batched = tf.expand_dims(img, axis=0) # add batch dim
+    img_batched = tf.expand_dims(img_batched, axis=-1) # add channel dim
     reconstruction = tf.squeeze(model(img_batched), axis=0)
 
     plot_reconstruction(
@@ -509,4 +502,21 @@ def test_load():
 
 if __name__ == "__main__":
     # main()
-    test_load()
+    ####### PLOT RECONSTRUCTION
+
+    model = load_model("trainer.weights.h5")
+
+    i = 0
+    for batch in get_dataset(TRAIN_FOLDER):
+        img = batch # just fetch one image
+        if i > 25:
+            break
+        i += 1
+
+    img_batched = tf.expand_dims(img, axis=0) # add batch dim
+    img_batched = tf.expand_dims(img_batched, axis=-1) # add channel dim
+    reconstruction = tf.squeeze(model(img_batched), axis=0)
+
+    plot_reconstruction(
+        img, reconstruction
+    )
