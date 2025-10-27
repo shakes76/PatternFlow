@@ -1,0 +1,11 @@
+Makefile
+plan.txt
+s_run_script.sh
+slurm.sh
+trainer.weights.h5
+w-gan.py
+venv/
+data/
+.DS_Store
+trained_models/
+plot_history.py
