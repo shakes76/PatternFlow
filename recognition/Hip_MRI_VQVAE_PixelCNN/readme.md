@@ -2,7 +2,11 @@
 
 This completes problem 10 of the COMP3710 (Pattern Recognition) assignment 2025.
 
-In vq-vae.py, there is the implementation in tf/keras of a vector quantised variational autoencoder. This uses a default architecture and takes only as hyperparameters the latent dimension (of embeddings) and the number of embeddings (ie codebook size)
+All requirements for this project are listed in requirements.txt
+
+#### VQ-VAE
+
+In vq-vae.py, there is the implementation in tf/keras of a vector quantised variational autoencoder. Calling this implementation uses a default architecture designed by me and takes only as hyperparameters the latent dimension (of embeddings) and the number of embeddings (ie codebook size)
 
 ![model architecture](plots/model_architecture.png)
 
@@ -18,7 +22,9 @@ The end result are the following reconstructions:
 
 This was tested in ssim-evalution.py and it scored 0.78039 structured similarity across the test set.
 
-This is with 3 halvings in spacial dimension and a latent dimension of 3 corresponding to roughly 21x compression in latent representation.
+This is with 3 halvings in spacial dimension and a latent dimension of 3 corresponding to roughly 21x compression in latent representation (128x256 in image space and 16x32x3 in latent).
+
+#### PixelCNN
 
 Then, in pixel-cnn-generator.py a pixelcnn model was trained on the latent distribution. Attempting to conditionally predict latent vector indices.
 
@@ -33,7 +39,7 @@ then this model can be used in the generate_images function to sample this learn
 First the examples were very rough
 ![rough](plots/Novel_Generated_Outputs_working.jpg)
 
-But then by adding one-hot encoding to input, adjusting the temperature of sampling and tweaking the model architecture, they could be improved to the following
+But then by adding one-hot encoding to input, adjusting the temperature of sampling and tweaking the model architecture (to that described above), they could be improved to the following
 
 ![better](plots/Novel_Generated_Outputs_3_better.jpg)
 
